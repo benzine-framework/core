@@ -126,15 +126,17 @@ class ⌬
 
         $this->setupMiddlewares();
 
-        $this->addViewPath($this->getContainer()->get(Controllers\Controller::class)->getViewsPath());
-        if (file_exists($this->configuration->get(Configuration::KEY_APP_ROOT).'/views/')) {
-            $this->addViewPath($this->configuration->get(Configuration::KEY_APP_ROOT).'/views/');
-        }
-        if (file_exists($this->configuration->get(Configuration::KEY_APP_ROOT).'/src/Views')) {
-            $this->addViewPath($this->configuration->get(Configuration::KEY_APP_ROOT).'/src/Views');
-        }
+        if(class_exists(Controllers\Controller::class)) {
+            $this->addViewPath($this->getContainer()->get(Controllers\Controller::class)->getViewsPath());
+            if (file_exists($this->configuration->get(Configuration::KEY_APP_ROOT) . '/views/')) {
+                $this->addViewPath($this->configuration->get(Configuration::KEY_APP_ROOT) . '/views/');
+            }
+            if (file_exists($this->configuration->get(Configuration::KEY_APP_ROOT) . '/src/Views')) {
+                $this->addViewPath($this->configuration->get(Configuration::KEY_APP_ROOT) . '/src/Views');
+            }
 
-        $this->interrogateControllers();
+            $this->interrogateControllers();
+        }
     }
 
     public function getConfiguration(): Configuration
@@ -213,13 +215,13 @@ class ⌬
             $dbConfig = new DatabaseConfig();
             foreach ($configuration->getArray('benzine/databases') as $dbName => $database) {
                 $dbConfig->set($dbName, [
-                    'driver' => 'Pdo_Mysql',
+                    'driver' => $database['driver'] ?? 'Pdo_Mysql',
                     'hostname' => gethostbyname($database['host']),
                     'port' => $database['port'] ?? 3306,
                     'username' => $database['username'],
                     'password' => $database['password'],
                     'database' => $database['database'],
-                    'charset' => 'UTF8',
+                    'charset' => $database['charset'] ?? 'UTF8',
                 ]);
             }
 
