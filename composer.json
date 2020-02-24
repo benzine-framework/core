@@ -1,0 +1,29 @@
+{
+    "name": "benzine/core",
+    "description": "The core nugget.",
+    "type": "library",
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Matthew Baggett",
+            "email": "matthew@baggett.me"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "ext-reflection": "*",
+        "benzine/benzine-configuration": "dev-master",
+        "benzine/benzine-container": "dev-master",
+    },
+    "require-dev": {
+        "benzine/benzine-style": "dev-master",
+        "benzine/benzine-test": "dev-master",
+        "benzine/benzine-test-fake-data": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "⌬\\": "src",
+            "⌬\\Tests\\": "tests/"
+        }
+    }
+}
