@@ -12,6 +12,8 @@ use DebugBar\DebugBar;
 use DebugBar\StandardDebugBar;
 use Faker\Factory as FakerFactory;
 use Faker\Provider;
+use Monolog\Handler\StreamHandler;
+use Monolog\Processor\PsrLogMessageProcessor;
 use Predis\Client as Predis;
 use Psr\Http\Message\ResponseInterface;
 use SebastianBergmann\Diff\Differ;
@@ -317,7 +319,12 @@ class ⌬
             $configuration = $c->get(Configuration::class);
             $appName = $configuration->get(Configuration::KEY_APP_NAME);
 
-            return new \Monolog\Logger($appName);
+            $monolog = new \Monolog\Logger($appName);
+
+            $monolog->pushHandler(new \Monolog\Handler\ErrorLogHandler(), \Monolog\Logger::DEBUG);
+            $monolog->pushProcessor(new PsrLogMessageProcessor());
+
+            return $monolog;
         };
 
         $this->container[DebugBar::class] = function (Slim\Container $container) {
