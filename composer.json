@@ -1,5 +1,5 @@
 {
-    "name": "benzine/core",
+    "name": "benzine/benzine-core",
     "description": "The core nugget.",
     "type": "library",
     "license": "GPL-3.0-or-later",
