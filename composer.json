@@ -13,7 +13,7 @@
         "php": ">=7.4",
         "ext-reflection": "*",
         "benzine/benzine-configuration": "dev-master",
-        "benzine/benzine-container": "dev-master",
+        "benzine/benzine-container": "dev-master"
     },
     "require-dev": {
         "benzine/benzine-style": "dev-master",
