@@ -12,7 +12,6 @@ use DebugBar\DebugBar;
 use DebugBar\StandardDebugBar;
 use Faker\Factory as FakerFactory;
 use Faker\Provider;
-use Monolog\Handler\StreamHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
 use Predis\Client as Predis;
 use Psr\Http\Message\ResponseInterface;
@@ -128,13 +127,13 @@ class ⌬
 
         $this->setupMiddlewares();
 
-        if(class_exists(Controllers\Controller::class)) {
+        if (class_exists(Controllers\Controller::class)) {
             $this->addViewPath($this->getContainer()->get(Controllers\Controller::class)->getViewsPath());
-            if (file_exists($this->configuration->get(Configuration::KEY_APP_ROOT) . '/views/')) {
-                $this->addViewPath($this->configuration->get(Configuration::KEY_APP_ROOT) . '/views/');
+            if (file_exists($this->configuration->get(Configuration::KEY_APP_ROOT).'/views/')) {
+                $this->addViewPath($this->configuration->get(Configuration::KEY_APP_ROOT).'/views/');
             }
-            if (file_exists($this->configuration->get(Configuration::KEY_APP_ROOT) . '/src/Views')) {
-                $this->addViewPath($this->configuration->get(Configuration::KEY_APP_ROOT) . '/src/Views');
+            if (file_exists($this->configuration->get(Configuration::KEY_APP_ROOT).'/src/Views')) {
+                $this->addViewPath($this->configuration->get(Configuration::KEY_APP_ROOT).'/src/Views');
             }
 
             $this->interrogateControllers();
