@@ -627,10 +627,11 @@ class ⌬
                                                     ;
 
                                                     foreach ($options as $key => $value) {
-                                                        $keyMethod = "set{$key}";
-
+                                                        $keyMethod = 'set'.ucfirst($key);
                                                         if (method_exists($newRoute, $keyMethod)) {
                                                             $newRoute->{$keyMethod}($value);
+                                                        } else {
+                                                            $newRoute->setArgument($key, $value);
                                                         }
                                                     }
 
