@@ -216,9 +216,9 @@ class ⌬
             $dbConfig = new DatabaseConfig();
             foreach ($configuration->getArray('benzine/databases') as $dbName => $database) {
                 $dbConfig->set($dbName, [
-                    'driver' => $database['driver'] ?? 'Pdo_Mysql',
+                    'driver' => DatabaseConfig::DbTypeToDriver($database['type']),
                     'hostname' => gethostbyname($database['host']),
-                    'port' => $database['port'] ?? 3306,
+                    'port' => $database['port'] ?? DatabaseConfig::DbTypeToDefaultPort($database['type']),
                     'username' => $database['username'],
                     'password' => $database['password'],
                     'database' => $database['database'],
