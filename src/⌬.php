@@ -359,6 +359,8 @@ class ⌬
         $environmentService = $this->getContainer()->get(Services\EnvironmentService::class);
         if ($environmentService->isSet('TIMEZONE')) {
             date_default_timezone_set($environmentService->get('TIMEZONE'));
+        } elseif (file_exists("/etc/timezone")) {
+            date_default_timezone_set(trim(file_get_contents("/etc/timezone")));
         } else {
             date_default_timezone_set(self::DEFAULT_TIMEZONE);
         }
