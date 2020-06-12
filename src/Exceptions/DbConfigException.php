@@ -1,7 +1,7 @@
 <?php
 
-namespace ⌬\Exceptions;
+namespace Benzine\Exceptions;
 
-class DbConfigException extends BenzineException
+class DbConfigException extends Exception
 {
 }

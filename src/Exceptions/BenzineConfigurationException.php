@@ -1,7 +1,7 @@
 <?php
 
-namespace ⌬\Exceptions;
+namespace Benzine\Exceptions;
 
-class BenzineConfigurationException extends BenzineException
+class BenzineConfigurationException extends Exception
 {
 }

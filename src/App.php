@@ -2,226 +2,144 @@
 
 namespace Benzine;
 
+use Benzine\ORM\Laminator;
 use Benzine\Services\ConfigurationService;
+use Benzine\Services\EnvironmentService;
+use Benzine\Services\SessionService;
+use Benzine\Twig\Extensions;
 use Cache\Adapter\Apc\ApcCachePool;
 use Cache\Adapter\Apcu\ApcuCachePool;
 use Cache\Adapter\Chain\CachePoolChain;
 use Cache\Adapter\PHPArray\ArrayCachePool;
+use Cache\Adapter\Redis\RedisCachePool;
 use DebugBar\Bridge\MonologCollector;
 use DebugBar\DebugBar;
 use DebugBar\StandardDebugBar;
+use DI\Container;
+use DI\ContainerBuilder;
 use Faker\Factory as FakerFactory;
 use Faker\Provider;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\ErrorLogHandler;
+use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
-use SebastianBergmann\Diff\Differ;
 use Slim;
-
+use Slim\Factory\AppFactory;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Twig;
+use Twig\Loader\FilesystemLoader;
 
 class App
 {
     public const DEFAULT_TIMEZONE = 'Europe/London';
 
-    /** @var App */
-    public static $instance;
+    private static bool $isInitialised = false;
+    public static App $instance;
 
-    /** @var ConfigurationService */
-    protected $configuration;
-    /** @var \Slim\App */
-    protected $app;
-    /** @var Container\Container */
-    protected $container;
-    /** @var Log\Logger */
-    protected $logger;
+    protected EnvironmentService $environmentService;
+    protected ConfigurationService $configurationService;
+    protected \Slim\App $app;
+    protected Logger $logger;
+    protected bool $isSessionsEnabled = true;
+    protected array $routePaths = [];
+    protected array $viewPaths = [];
+    protected bool $interrogateControllersComplete = false;
 
-    protected $isSessionsEnabled = true;
-
-    protected $containerAliases = [
-        'view' => Slim\Views\Twig::class,
-        'DatabaseInstance' => DbConfig::class,
-        'Differ' => Differ::class,
-        'HttpClient' => \GuzzleHttp\Client::class,
-        'Faker' => \Faker\Generator::class,
-        'Environment' => EnvironmentService::class,
-        'Redis' => Redis\Redis::class,
-        'Monolog' => Log\Logger::class,
-        'Gone\AppCore\Logger' => Log\Logger::class,
-        'Cache' => CachePoolChain::class,
-    ];
-
-    protected $routePaths = [];
-
-    protected $viewPaths = [];
-
-    protected $optionsDefaults = [];
-
-    protected $interrogateControllersComplete = false;
-
-    public function __construct($options = [])
+    public function __construct()
     {
-        $this->configuration = new Configuration();
+#        $this->environmentService = new EnvironmentService();
+#        $this->configurationService = new ConfigurationService($this->environmentService);
 
+        // Configure Dependency Injector
+        $container = $this->setupContainer();
+        AppFactory::setContainer($container);
+
+        // Configure Router
         $this->routePaths = [
-            $this->configuration->get(Configuration::KEY_APP_ROOT).'/src/Routes.php',
-            $this->configuration->get(Configuration::KEY_APP_ROOT).'/src/RoutesExtra.php',
+            APP_ROOT.'/src/Routes.php',
+            APP_ROOT.'/src/RoutesExtra.php',
         ];
 
-        $options = array_merge($this->optionsDefaults, $options);
+        $this->setup($container);
 
-        if (isset($options['config'])) {
-            if (is_string($options['config'])) {
-                $configRealpath = $options['config'];
-                if (!file_exists($configRealpath)) {
-                    throw new Exceptions\BenzineConfigurationException("Cant find {$configRealpath}.");
-                }
-                $this->configuration->configureFromYaml($options['config']);
-            }
-        }
-        $this->setup();
+        // Configure Slim
+        $this->app = AppFactory::create();
+        $this->app->add(Slim\Views\TwigMiddleware::createFromContainer($this->app));
+        $this->app->addRoutingMiddleware();
+        $errorMiddleware = $this->app->addErrorMiddleware(true, true, true);
+
     }
 
-    public function setup(): void
+    protected function setup(ContainerInterface $container): void
     {
-        // Create Slim app
-        $this->app = new \Slim\App(
-            new Container\Container([
-                'settings' => [
-                    'debug' => $this->getConfiguration()->get(Configuration::KEY_DEBUG_ENABLE),
-                    'displayErrorDetails' => $this->getConfiguration()->get(Configuration::KEY_DEBUG_ENABLE),
-                    'determineRouteBeforeAppMiddleware' => true,
-                ],
-            ])
-        );
-
-        // Fetch DI Container
-        $this->container = $this->app->getContainer();
-        // @todo remove this depenency on getting the container from Slim.
-        //$this->container = new Container\Container();
-
-        $this->populateContainerAliases($this->container);
-
-        $this->setupDependencies();
-
-        $this->logger = $this->getContainer()->get(Log\Logger::class);
-
-        if (file_exists($this->configuration->get(Configuration::KEY_APP_ROOT).'/src/AppContainer.php')) {
-            require $this->configuration->get(Configuration::KEY_APP_ROOT).'/src/AppContainer.php';
-        }
-        if (file_exists($this->configuration->get(Configuration::KEY_APP_ROOT).'/src/AppContainerExtra.php')) {
-            require $this->configuration->get(Configuration::KEY_APP_ROOT).'/src/AppContainerExtra.php';
-        }
-
-        $this->addRoutePathsRecursively($this->configuration->get(Configuration::KEY_APP_ROOT).'/src/Routes');
+        $this->logger = $container->get(Logger::class);
 
         if ('cli' != php_sapi_name() && $this->isSessionsEnabled) {
-            $session = $this->getContainer()->get(Session\Session::class);
+            $session = $container->get(SessionService::class);
         }
 
-        $this->setupMiddlewares();
-
-        if (class_exists(Controllers\Controller::class)) {
-            $this->addViewPath($this->getContainer()->get(Controllers\Controller::class)->getViewsPath());
-            if (file_exists($this->configuration->get(Configuration::KEY_APP_ROOT).'/views/')) {
-                $this->addViewPath($this->configuration->get(Configuration::KEY_APP_ROOT).'/views/');
-            }
-            if (file_exists($this->configuration->get(Configuration::KEY_APP_ROOT).'/src/Views')) {
-                $this->addViewPath($this->configuration->get(Configuration::KEY_APP_ROOT).'/src/Views');
-            }
-
-            $this->interrogateControllers();
-        }
+        $this->setupMiddlewares($container);
+        $this->viewPaths[] = APP_ROOT.'/views/';
+        $this->viewPaths[] = APP_ROOT.'/src/Views/';
+        $this->interrogateControllers();
     }
 
-    public function getConfiguration(): Configuration
+    public function setupContainer(): Container
     {
-        return $this->configuration;
-    }
+        $container =
+            (new ContainerBuilder())
+                ->useAutowiring(true)
+                ->useAnnotations(true)
+                #->enableCompilation(APP_ROOT . "/cache")
+                #->writeProxiesToFile(true, APP_ROOT . "/cache/injection-proxies")
+                ->build();
 
-    public function getLogger(): Log\Logger
-    {
-        return $this->logger;
-    }
-
-    public function setupDependencies(): void
-    {
-        // add PSR-15 support shim
-        $this->container['callableResolver'] = function ($container) {
-            return new \Bnf\Slim3Psr15\CallableResolver($container);
-        };
-
-        // Register Twig View helper
-        $this->container[Slim\Views\Twig::class] = function ($c) {
+        $container->set(Slim\Views\Twig::class, function(ContainerInterface $container) {
             foreach ($this->viewPaths as $i => $viewLocation) {
                 if (!file_exists($viewLocation) || !is_dir($viewLocation)) {
                     unset($this->viewPaths[$i]);
                 }
             }
+            $settings = ['cache' => 'cache/twig'];
+            $loader = new FilesystemLoader();
 
-            $view = new \Slim\Views\Twig(
-                $this->viewPaths,
-                [
-                    'cache' => false,
-                    'debug' => true,
-                ]
-            );
-
-            // Instantiate and add Slim specific extension
-            $view->addExtension(
-                new Slim\Views\TwigExtension(
-                    $c['router'],
-                    $c['request']->getUri()
-                )
-            );
-
-            $view->addExtension(new Extensions\ArrayUniqueTwigExtension());
-            $view->addExtension(new Extensions\FilterAlphanumericOnlyTwigExtension());
-
-            // Add coding string transform filters (ie: camel_case to StudlyCaps)
-            $view->addExtension(new Extensions\TransformExtension());
-
-            // Add pluralisation/depluralisation support with singularize/pluralize filters
-            $view->addExtension(new Extensions\InflectionExtension());
-
-            // Added Twig_Extension_Debug to enable twig dump() etc.
-            $view->addExtension(new \Twig_Extension_Debug());
-            $view->addExtension(new \Twig_Extensions_Extension_Date());
-            $view->addExtension(new \Twig_Extensions_Extension_Text());
-
-            $view->offsetSet('app_name', $this->configuration->get(Configuration::KEY_APP_NAME));
-            $view->offsetSet('year', date('Y'));
-
-            return $view;
-        };
-
-        $this->container[Configuration::class] = function (Slim\Container $c) {
-            $benzineYamlFile = '/app/.benzine.yml'; // @todo this shouldn't be hardcoded into /app
-            return Configuration::InitFromFile($benzineYamlFile);
-        };
-
-        $this->container[Db::class] = function (Slim\Container $c) {
-            return new Db($c->get(DatabaseConfig::class));
-        };
-
-        $this->container[DatabaseConfig::class] = function (Slim\Container $c) {
-            /** @var Configuration $configuration */
-            $configuration = $c->get(Configuration::class);
-            $dbConfig = new DatabaseConfig();
-            foreach ($configuration->getArray('benzine/databases') as $dbName => $database) {
-                $dbConfig->set($dbName, [
-                    'driver' => DatabaseConfig::DbTypeToDriver($database['type']),
-                    'hostname' => gethostbyname($database['host']),
-                    'port' => $database['port'] ?? DatabaseConfig::DbTypeToDefaultPort($database['type']),
-                    'username' => $database['username'],
-                    'password' => $database['password'],
-                    'database' => $database['database'],
-                    'charset' => $database['charset'] ?? 'UTF8',
-                ]);
+            foreach ($this->viewPaths as $path) {
+                    $loader->addPath($path);
             }
 
-            return $dbConfig;
-        };
+            $twig = new Slim\Views\Twig($loader, $settings);
 
-        $this->container[\Faker\Generator::class] = function (Slim\Container $c) {
+            $twig->addExtension(new Extensions\ArrayUniqueTwigExtension());
+            $twig->addExtension(new Extensions\FilterAlphanumericOnlyTwigExtension());
+
+            // Add coding string transform filters (ie: camel_case to StudlyCaps)
+            $twig->addExtension(new Extensions\TransformExtension());
+
+            // Add pluralisation/depluralisation support with singularize/pluralize filters
+            $twig->addExtension(new Extensions\InflectionExtension());
+
+            // Added Twig_Extension_Debug to enable twig dump() etc.
+            $twig->addExtension(new Twig\Extension\DebugExtension());
+
+            $twig->offsetSet('app_name', APP_NAME);
+            $twig->offsetSet('year', date('Y'));
+
+            return $twig;
+        });
+        $container->set('view', function(ContainerInterface $container){
+            return $container->get(Slim\Views\Twig::class);
+        });
+
+        $container->set(EnvironmentService::class, function(ContainerInterface $container){
+            return new EnvironmentService();
+        });
+
+        $container->set(ConfigurationService::class, function(ContainerInterface $container){
+            return new ConfigurationService($container->get(EnvironmentService::class));
+        });
+        $container->set(\Faker\Generator::class, function(ContainerInterface $c) {
             $faker = FakerFactory::create();
             $faker->addProvider(new Provider\Base($faker));
             $faker->addProvider(new Provider\DateTime($faker));
@@ -234,48 +152,8 @@ class App
             $faker->addProvider(new Provider\en_US\Company($faker));
 
             return $faker;
-        };
-
-        $this->container[\GuzzleHttp\Client::class] = function (Slim\Container $c) {
-            return new \GuzzleHttp\Client([
-                // You can set any number of default request options.
-                'timeout' => 2.0,
-            ]);
-        };
-
-        $this->container[Services\EnvironmentService::class] = function (Slim\Container $c) {
-            return new Services\EnvironmentService();
-        };
-
-        $this->container[Predis::class] = function (Slim\Container $c) {
-            /** @var EnvironmentService $environmentService */
-            $environmentService = $c->get(EnvironmentService::class);
-            if ($environmentService->isSet('REDIS_HOST')) {
-                $redisMasterHosts = explode(',', $environmentService->get('REDIS_HOST'));
-            }
-            if ($environmentService->isSet('REDIS_HOST_MASTER')) {
-                $redisMasterHosts = explode(',', $environmentService->get('REDIS_HOST_MASTER'));
-            }
-            if ($environmentService->isSet('REDIS_HOST_SLAVE')) {
-                $redisSlaveHosts = explode(',', $environmentService->get('REDIS_HOST_SLAVE'));
-            }
-
-            $options = [];
-
-            $options['profile'] = function ($options) {
-                $profile = $options->getDefault('profile');
-                $profile->defineCommand('setifhigher', SetIfHigherLuaScript::class);
-
-                return $profile;
-            };
-
-            return new Predis(
-                $redisMasterHosts[0],
-                $options
-            );
-        };
-
-        $this->container[CachePoolChain::class] = function (Slim\Container $c) {
+        });
+        $container->set(CachePoolChain::class, function(ContainerInterface $c) {
             $caches = [];
 
             // If apc/apcu present, add it to the pool
@@ -286,13 +164,14 @@ class App
             }
 
             // If Redis is configured, add it to the pool.
-            $caches[] = new PredisCachePool($c->get(Redis\Redis::class));
+            $caches[] = new RedisCachePool($c->get(\Redis::class));
             $caches[] = new ArrayCachePool();
 
             return new CachePoolChain($caches);
-        };
+        });
 
-        $this->container['MonologFormatter'] = function (Slim\Container $c) {
+        $container->set('MonologFormatter', function(ContainerInterface $c) {
+
             /** @var Services\EnvironmentService $environment */
             $environment = $c->get(Services\EnvironmentService::class);
 
@@ -301,55 +180,63 @@ class App
             // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%"
                 $environment->get('MONOLOG_FORMAT', '[%datetime%] %channel%.%level_name%: %message% %context% %extra%')."\n",
                 'Y n j, g:i a'
-            )
-            ;
-        };
+            );
+        });
 
-        $this->container[\Monolog\Logger::class] = function (Slim\Container $c) {
-            /** @var Configuration $configuration */
-            $configuration = $c->get(Configuration::class);
-            $appName = $configuration->get(Configuration::KEY_APP_NAME);
+        $container->set(Logger::class, function(ContainerInterface $c) {
+            /** @var ConfigurationService $configuration */
+            $configuration = $c->get(ConfigurationService::class);
 
-            $monolog = new \Monolog\Logger($appName);
-
-            $monolog->pushHandler(new \Monolog\Handler\ErrorLogHandler(), \Monolog\Logger::DEBUG);
+            $monolog = new Logger($configuration->get(ConfigurationService::KEY_APP_NAME));
+            $monolog->pushHandler(new ErrorLogHandler(), Logger::DEBUG);
             $monolog->pushProcessor(new PsrLogMessageProcessor());
 
             return $monolog;
-        };
+        });
 
-        $this->container[DebugBar::class] = function (Slim\Container $container) {
+        $container->set(DebugBar::class, function(ContainerInterface $container) {
             $debugBar = new StandardDebugBar();
             /** @var Logger $logger */
-            $logger = $container->get(Log\Logger::class);
-            /** @var \Monolog\Logger $monolog */
-            $monolog = $logger->getMonolog();
-            $debugBar->addCollector(new MonologCollector($monolog));
+            $logger = $container->get(Logger::class);
+            $debugBar->addCollector(new MonologCollector($logger));
 
             return $debugBar;
-        };
+        });
 
-        $this->container[\Middlewares\Debugbar::class] = function (Slim\Container $container) {
+        $container->set(\Middlewares\Debugbar::class, function(ContainerInterface $container) {
             $debugBar = $container->get(DebugBar::class);
 
             return new \Middlewares\Debugbar($debugBar);
-        };
+        });
 
-        $this->container[Session\Session::class] = function (Slim\Container $container) {
-            return Session\Session::start($container->get(Redis\Redis::class));
-        };
+        $container->set(\Redis::class, function(ContainerInterface $container){
+            $environmentService = $container->get(EnvironmentService::class);
 
-        $this->container[Differ::class] = function (Slim\Container $container) {
-            return new Differ();
-        };
+           $redis = new \Redis();
+           $redis->connect(
+               $environmentService->get('REDIS_HOST', 'redis'),
+               $environmentService->get('REDIS_PORT', 6379)
+           );
 
-        $this->container[Profiler\Profiler::class] = function (Slim\Container $container) {
-            return new Profiler\Profiler($container->get(Log\Logger::class));
-        };
+           return $redis;
+        });
+
+        $container->set(SessionService::class, function(ContainerInterface $container){
+            return new SessionService(
+                $container->get(\Redis::class)
+            );
+        });
+
+        $container->set(Laminator::class, function(ContainerInterface $container){
+           return new Laminator(
+               APP_ROOT,
+               $container->get(ConfigurationService::class)
+           );
+        });
 
         /** @var Services\EnvironmentService $environmentService */
-        $environmentService = $this->getContainer()->get(Services\EnvironmentService::class);
-        if ($environmentService->isSet('TIMEZONE')) {
+        $environmentService = $container->get(Services\EnvironmentService::class);
+        if ($environmentService->has('TIMEZONE')) {
             date_default_timezone_set($environmentService->get('TIMEZONE'));
         } elseif (file_exists('/etc/timezone')) {
             date_default_timezone_set(trim(file_get_contents('/etc/timezone')));
@@ -357,23 +244,23 @@ class App
             date_default_timezone_set(self::DEFAULT_TIMEZONE);
         }
 
-        $debugBar = $this->getContainer()->get(DebugBar::class);
+        $debugBar = $container->get(DebugBar::class);
+
+        return $container;
     }
 
-    public function setupMiddlewares(): void
+    public function setupMiddlewares(ContainerInterface $container): void
     {
         // Middlewares
-        //$this->app->add($this->container->get(Middleware\EnvironmentHeadersOnResponse::class));
-        //#$this->app->add($this->container->get(\Middlewares\ContentType(["text/html", "application/json"])));
-        $this->app->add($this->container->get(\Middlewares\Debugbar::class));
-        //#$this->app->add($this->container->get(\Middlewares\Geolocation::class));
-        //$this->app->add($this->container->get(\Middlewares\TrailingSlash::class));
-        //$this->app->add($this->container->get(Middleware\JSONResponseLinter::class));
-        //$this->app->add($this->container->get(\Middlewares\Whoops::class));
-        //$this->app->add($this->container->get(\Middlewares\CssMinifier::class));
-        //$this->app->add($this->container->get(\Middlewares\JsMinifier::class));
-        //$this->app->add($this->container->get(\Middlewares\HtmlMinifier::class));
-        //$this->app->add($this->container->get(\Middlewares\GzipEncoder::class));
+        #$this->app->add($container->get(Middleware\EnvironmentHeadersOnResponse::class));
+        #$this->app->add($container->get(\Middlewares\ContentLength::class));
+        #$this->app->add($container->get(\Middlewares\Debugbar::class));
+        #$this->app->add($container->get(\Middlewares\Geolocation::class));
+        #$this->app->add($container->get(\Middlewares\TrailingSlash::class));
+        #$this->app->add($container->get(Middleware\JSONResponseLinter::class));
+        #$this->app->add($container->get(\Middlewares\Whoops::class));
+        #$this->app->add($container->get(\Middlewares\Minifier::class));
+        #$this->app->add($container->get(\Middlewares\GzipEncoder::class));
     }
 
     /**
@@ -383,30 +270,12 @@ class App
      */
     public static function Instance(array $options = [])
     {
-        if (!self::$instance) {
+        if (!self::$isInitialised) {
             $calledClass = get_called_class();
             self::$instance = new $calledClass($options);
         }
 
-        $expectedClass = self::$instance->getConfiguration()->get(Configuration::KEY_CLASS);
-        if (get_class(self::$instance) != $expectedClass) {
-            self::$instance = new $expectedClass($options);
-        }
-
         return self::$instance;
-    }
-
-    /**
-     * @return Container\Container
-     */
-    public static function Container()
-    {
-        return self::Instance()->getContainer();
-    }
-
-    public function getContainer(): Container\Container
-    {
-        return $this->container;
     }
 
     public function getApp()
@@ -430,30 +299,6 @@ class App
         return $this;
     }
 
-    /**
-     * @param $directory
-     *
-     * @return int number of Paths added
-     */
-    public function addRoutePathsRecursively($directory)
-    {
-        $count = 0;
-        if (file_exists($directory)) {
-            foreach (new \DirectoryIterator($directory) as $file) {
-                if (!$file->isDot()) {
-                    if ($file->isFile() && 'php' == $file->getExtension()) {
-                        $this->addRoutePath($file->getRealPath());
-                        ++$count;
-                    } elseif ($file->isDir()) {
-                        $count += $this->addRoutePathsRecursively($file->getRealPath());
-                    }
-                }
-            }
-        }
-
-        return $count;
-    }
-
     public function addViewPath($path)
     {
         if (file_exists($path)) {
@@ -469,17 +314,6 @@ class App
         $this->loadAllRoutes();
 
         return $this;
-    }
-
-    public function populateContainerAliases(&$container)
-    {
-        foreach ($this->containerAliases as $alias => $class) {
-            if ($alias != $class) {
-                $container[$alias] = function (Slim\Container $c) use ($class) {
-                    return $c->get($class);
-                };
-            }
-        }
     }
 
     public static function Log(int $level = Logger::DEBUG, $message)
@@ -542,9 +376,9 @@ class App
         $environmentService->rebuildEnvironmentVariables();
     }
 
-    public function runHttp(): ResponseInterface
+    public function runHttp(): void
     {
-        return $this->app->run();
+        $this->app->run();
     }
 
     protected function interrogateControllers()
@@ -555,16 +389,16 @@ class App
         $this->interrogateControllersComplete = true;
 
         $controllerPaths = [
-            $this->getConfiguration()->get(Configuration::KEY_APP_ROOT).'/src/Controllers',
-            $this->getConfiguration()->get(Configuration::KEY_APP_ROOT).'/vendor/benzine/benzine-controllers/src',
+            APP_ROOT . '/src/Controllers',
         ];
+
         foreach ($controllerPaths as $controllerPath) {
             //$this->logger->debug("Route Discovery - {$controllerPath}");
             if (file_exists($controllerPath)) {
                 foreach (new \DirectoryIterator($controllerPath) as $controllerFile) {
                     if (!$controllerFile->isDot() && $controllerFile->isFile() && $controllerFile->isReadable()) {
                         //$this->logger->debug(" >  {$controllerFile->getPathname()}");
-                        $appClass = new \ReflectionClass($this->getConfiguration()->get(Configuration::KEY_CLASS));
+                        $appClass = new \ReflectionClass(get_called_class());
                         $expectedClasses = [
                             $appClass->getNamespaceName().'\\Controllers\\'.str_replace('.php', '', $controllerFile->getFilename()),
                             '⌬\\Controllers\\'.str_replace('.php', '', $controllerFile->getFilename()),
@@ -576,7 +410,7 @@ class App
                                 if (!$rc->isAbstract()) {
                                     foreach ($rc->getMethods() as $method) {
                                         /** @var \ReflectionMethod $method */
-                                        if (1 == 1 || ResponseInterface::class == ($method->getReturnType() instanceof \ReflectionType ? $method->getReturnType()->getName() : null)) {
+                                        if (true || ResponseInterface::class == ($method->getReturnType() instanceof \ReflectionType ? $method->getReturnType()->getName() : null)) {
                                             $docBlock = $method->getDocComment();
                                             foreach (explode("\n", $docBlock) as $docBlockRow) {
                                                 if (false === stripos($docBlockRow, '@route')) {
