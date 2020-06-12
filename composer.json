@@ -13,13 +13,10 @@
         "php": ">=7.4",
         "ext-reflection": "*"
     },
-    "require-dev": {
-        "benzine/benzine-test": "dev-master"
-    },
     "autoload": {
         "psr-4": {
-            "⌬\\": "src",
-            "⌬\\Tests\\": "tests/"
+            "Benzine\\": "src",
+            "Benzine\\Tests\\": "tests/"
         }
     }
 }

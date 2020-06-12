@@ -1,39 +1,31 @@
 <?php
 
-namespace ⌬;
+namespace Benzine;
 
+use Benzine\Services\ConfigurationService;
 use Cache\Adapter\Apc\ApcCachePool;
 use Cache\Adapter\Apcu\ApcuCachePool;
 use Cache\Adapter\Chain\CachePoolChain;
 use Cache\Adapter\PHPArray\ArrayCachePool;
-use Cache\Adapter\Predis\PredisCachePool;
 use DebugBar\Bridge\MonologCollector;
 use DebugBar\DebugBar;
 use DebugBar\StandardDebugBar;
 use Faker\Factory as FakerFactory;
 use Faker\Provider;
 use Monolog\Processor\PsrLogMessageProcessor;
-use Predis\Client as Predis;
 use Psr\Http\Message\ResponseInterface;
 use SebastianBergmann\Diff\Differ;
 use Slim;
-use ⌬\Configuration\Configuration;
-use ⌬\Configuration\DatabaseConfig;
-use ⌬\Database\Db;
-use ⌬\Database\Profiler;
-use ⌬\HTML\Twig\Extensions;
-use ⌬\Log\Logger;
-use ⌬\Redis\RedisLuaScripts\SetIfHigherLuaScript;
-use ⌬\Services\EnvironmentService;
 
-class ⌬
+
+class App
 {
     public const DEFAULT_TIMEZONE = 'Europe/London';
 
-    /** @var ⌬ */
+    /** @var App */
     public static $instance;
 
-    /** @var Configuration */
+    /** @var ConfigurationService */
     protected $configuration;
     /** @var \Slim\App */
     protected $app;
