@@ -1,5 +1,5 @@
 {
-    "name": "benzine/benzine-core",
+    "name": "benzine/core",
     "description": "The core nugget.",
     "type": "library",
     "license": "GPL-3.0-or-later",
@@ -11,14 +11,10 @@
     ],
     "require": {
         "php": ">=7.4",
-        "ext-reflection": "*",
-        "benzine/benzine-configuration": "dev-master",
-        "benzine/benzine-container": "dev-master"
+        "ext-reflection": "*"
     },
     "require-dev": {
-        "benzine/benzine-style": "dev-master",
-        "benzine/benzine-test": "dev-master",
-        "benzine/benzine-test-fake-data": "dev-master"
+        "benzine/benzine-test": "dev-master"
     },
     "autoload": {
         "psr-4": {
