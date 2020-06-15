@@ -56,6 +56,9 @@
         "middlewares/minifier": "^2.0",
         "middlewares/encoder": "^2.1"
     },
+    "suggest": {
+        "benzine/orm" : "Model/Service/Crud generation made easy"
+    },
     "autoload": {
         "psr-4": {
             "Benzine\\": "src",
