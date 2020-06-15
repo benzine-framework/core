@@ -11,6 +11,11 @@
     ],
     "require": {
         "php": ">=7.4",
+        "ext-curl": "*",
+        "ext-sockets": "*",
+        "ext-json": "*",
+        "ext-zip": "*",
+        "ext-openssl": "*",
         "ext-reflection": "*",
         "phpunit/phpunit": "^8.2",
         "phpunit/phpcov": "^6.0",
