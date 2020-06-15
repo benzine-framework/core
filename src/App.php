@@ -49,9 +49,6 @@ class App
 
     public function __construct()
     {
-#        $this->environmentService = new EnvironmentService();
-#        $this->configurationService = new ConfigurationService($this->environmentService);
-
         // Configure Dependency Injector
         $container = $this->setupContainer();
         AppFactory::setContainer($container);
@@ -69,7 +66,6 @@ class App
         $this->app->add(Slim\Views\TwigMiddleware::createFromContainer($this->app));
         $this->app->addRoutingMiddleware();
         $errorMiddleware = $this->app->addErrorMiddleware(true, true, true);
-
     }
 
     protected function setup(ContainerInterface $container): void
@@ -176,7 +172,6 @@ class App
         });
 
         $container->set('MonologFormatter', function(ContainerInterface $c) {
-
             /** @var Services\EnvironmentService $environment */
             $environment = $c->get(Services\EnvironmentService::class);
 
