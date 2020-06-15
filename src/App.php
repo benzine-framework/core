@@ -88,6 +88,7 @@ class App
 
     public function setupContainer(): Container
     {
+        $app = $this;
         $container =
             (new ContainerBuilder())
                 ->useAutowiring(true)
@@ -136,9 +137,13 @@ class App
             return new EnvironmentService();
         });
 
-        $container->set(ConfigurationService::class, function(ContainerInterface $container){
-            return new ConfigurationService($container->get(EnvironmentService::class));
+        $container->set(ConfigurationService::class, function(ContainerInterface $container) use ($app){
+            return new ConfigurationService(
+                $app,
+                $container->get(EnvironmentService::class)
+            );
         });
+
         $container->set(\Faker\Generator::class, function(ContainerInterface $c) {
             $faker = FakerFactory::create();
             $faker->addProvider(new Provider\Base($faker));

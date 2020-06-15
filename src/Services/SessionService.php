@@ -4,7 +4,9 @@ namespace Benzine\Services;
 
 class SessionService
 {
-    public function __construct()
+    protected \Redis $redis;
+    public function __construct(\Redis $redis)
     {
+        $this->redis = $redis;
     }
 }

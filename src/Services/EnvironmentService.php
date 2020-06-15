@@ -16,6 +16,12 @@ class EnvironmentService
         return $this->get($key) !== null;
     }
 
+    public function all() : array
+    {
+        ksort($this->environmentVariables);
+        return $this->environmentVariables;
+    }
+
     public function get(string $key, string $default = null){
         if(isset($this->environmentVariables[$key])){
             return $this->environmentVariables[$key];
