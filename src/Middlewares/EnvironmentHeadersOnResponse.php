@@ -6,12 +6,10 @@ use Slim\Http\Request;
 use Slim\Http\Response;
 use Benzine\Configuration;
 use Benzine\ORM\Profiler;
-use Benzine\Traits\InlineCssTrait;
 use Benzine\⌬;
 
 class EnvironmentHeadersOnResponse
 {
-    use InlineCssTrait;
 
     protected $apiExplorerEnabled = true;
 
