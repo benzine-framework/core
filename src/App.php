@@ -2,6 +2,7 @@
 
 namespace Benzine;
 
+use Benzine\ORM\Connection\Databases;
 use Benzine\ORM\Laminator;
 use Benzine\Services\ConfigurationService;
 use Benzine\Services\EnvironmentService;
@@ -66,6 +67,15 @@ class App
         $this->app->add(Slim\Views\TwigMiddleware::createFromContainer($this->app));
         $this->app->addRoutingMiddleware();
         $errorMiddleware = $this->app->addErrorMiddleware(true, true, true);
+    }
+
+    /**
+     * Get item from Dependency Injection
+     *
+     * @return mixed
+     */
+    public function get(string $id){
+        return $this->getApp()->getContainer()->get($id);
     }
 
     protected function setup(ContainerInterface $container): void
@@ -227,10 +237,17 @@ class App
             );
         });
 
+        $container->set(Databases::class, function(ContainerInterface $container){
+            return new Databases(
+                $container->get(ConfigurationService::class)
+            );
+
+        });
         $container->set(Laminator::class, function(ContainerInterface $container){
            return new Laminator(
                APP_ROOT,
-               $container->get(ConfigurationService::class)
+               $container->get(ConfigurationService::class),
+               $container->get(Databases::class)
            );
         });
 

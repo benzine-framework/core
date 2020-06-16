@@ -4,6 +4,7 @@ namespace Benzine\Services;
 
 use Benzine\App;
 use Benzine\ORM\Connection\Database;
+use Benzine\ORM\Connection\Databases;
 use Symfony\Component\Yaml\Yaml;
 
 class ConfigurationService
@@ -95,17 +96,9 @@ class ConfigurationService
         return trim($scope);
     }
 
-    /**
-     * @return Database[]
-     */
-    public function getDatabases() : array
+    public function getDatabases() : Databases
     {
-        $databases = [];
-        foreach($this->config['databases'] as $name => $config){
-               $database = new Database($name, $config);
-               $databases[$database->getName()] = $database;
-        }
-        return $databases;
+        return $this->databases;
     }
 
     public function getNamespace(): string
