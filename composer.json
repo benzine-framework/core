@@ -17,6 +17,7 @@
         "ext-zip": "*",
         "ext-openssl": "*",
         "ext-reflection": "*",
+        "ext-redis": "*",
         "phpunit/phpunit": "^8.2",
         "phpunit/phpcov": "^6.0",
         "php-coveralls/php-coveralls": "^2.1",
