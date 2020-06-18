@@ -2,10 +2,10 @@
 
 namespace Benzine\Controllers;
 
+use Benzine\ORM\Interfaces\ModelInterface;
 use Laminas\Db\Adapter\Exception\InvalidQueryException;
 use Slim\Http\Request;
 use Slim\Http\Response;
-use Benzine\ORM\Interfaces\ModelInterface;
 
 abstract class CrudController extends Controller
 {

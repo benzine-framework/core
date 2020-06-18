@@ -9,7 +9,6 @@ use ⌬\Filters\Filter;
 
 abstract class Controller
 {
-
     /** @var Service */
     protected $service;
     /** @var bool */

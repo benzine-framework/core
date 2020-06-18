@@ -12,31 +12,39 @@ class EnvironmentService
         ksort($this->environmentVariables);
     }
 
-    public function has(string $key) : bool {
-        return $this->get($key) !== null;
+    public function has(string $key): bool
+    {
+        return null !== $this->get($key);
     }
 
-    public function all() : array
+    public function all(): array
     {
         ksort($this->environmentVariables);
+
         return $this->environmentVariables;
     }
 
-    public function get(string $key, string $default = null){
-        if(isset($this->environmentVariables[$key])){
+    public function get(string $key, string $default = null)
+    {
+        if (isset($this->environmentVariables[$key])) {
             return $this->environmentVariables[$key];
         }
+
         return $default;
     }
 
-    public function set(string $key, string $value) : self {
+    public function set(string $key, string $value): self
+    {
         $this->environmentVariables[$key] = $value;
         ksort($this->environmentVariables);
+
         return $this;
     }
 
-    public function delete(string $key) : self {
+    public function delete(string $key): self
+    {
         unset($this->environmentVariables[$key]);
+
         return $this;
     }
 }

@@ -2,15 +2,14 @@
 
 namespace Benzine\Middleware;
 
-use Slim\Http\Request;
-use Slim\Http\Response;
 use Benzine\Configuration;
 use Benzine\ORM\Profiler;
 use Benzine\⌬;
+use Slim\Http\Request;
+use Slim\Http\Response;
 
 class EnvironmentHeadersOnResponse
 {
-
     protected $apiExplorerEnabled = true;
 
     /** @var Configuration\Configuration */

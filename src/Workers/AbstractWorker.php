@@ -2,8 +2,8 @@
 
 namespace Benzine\Workers;
 
-use Monolog\Logger;
 use Benzine\Services\EnvironmentService;
+use Monolog\Logger;
 
 abstract class AbstractWorker
 {

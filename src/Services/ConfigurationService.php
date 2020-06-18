@@ -3,8 +3,6 @@
 namespace Benzine\Services;
 
 use Benzine\App;
-use Benzine\ORM\Connection\Database;
-use Benzine\ORM\Connection\Databases;
 use Symfony\Component\Yaml\Yaml;
 
 class ConfigurationService
@@ -32,54 +30,19 @@ class ConfigurationService
         $this->setupDefines();
     }
 
-    protected function setupDefines() : void
+    public function has(string $key): bool
     {
-        define("APP_ROOT", $this->appRoot);
-        define("APP_NAME", $this->get('application/name'));
+        return null !== $this->get($key);
     }
 
     /**
-     * Locate .benzine.yml
-     * @param string|null $path
+     * @param string      $key
+     * @param null|string $defaultValue
+     *
+     * @return null|array|string
      */
-    protected function findConfig(string $path = null) : bool {
-        if(!$path){
-            $path = getcwd();
-            //$path = dirname($this->environmentService->get('SCRIPT_FILENAME'));
-        }
-        if(!file_exists($path . "/.benzine.yml")){
-            $currentDirElem = explode(DIRECTORY_SEPARATOR, $path);
-            array_pop($currentDirElem);
-            $parentPath = implode(DIRECTORY_SEPARATOR, $currentDirElem);
-            return $this->findConfig($parentPath);
-        }
-
-        $this->parseFile($path . "/.benzine.yml");
-        $this->appRoot = $path;
-
-        return true;
-    }
-
-    protected function parseFile(string $file)
+    public function get(string $key, string $defaultValue = null)
     {
-        $yaml = file_get_contents($file);
-        foreach($this->environmentService->all() as $key => $value){
-            if(is_string($value)) {
-                $yaml = str_replace("\$$key", $value, $yaml);
-            }
-        }
-        $this->config = Yaml::parse($yaml);
-    }
-
-    public function has(string $key) : bool {
-        return $this->get($key) !== null;
-    }
-    /**
-     * @param string $key
-     * @param string|null $defaultValue
-     * @return string|array|null
-     */
-    public function get(string $key, string $defaultValue = null){
         $scope = $this->config;
         foreach (explode('/', strtolower($key)) as $keyBit) {
             $scope = &$scope[$keyBit];
@@ -98,9 +61,11 @@ class ConfigurationService
 
     public function getNamespace(): string
     {
-        $coreClass = explode("\\", $this->getCore());
+        $coreClass = explode('\\', $this->getCore());
         array_pop($coreClass);
-        return implode("\\", $coreClass);
+        $namespace = implode('\\', $coreClass);
+
+        return ltrim($namespace, '\\');
     }
 
     public function getCore(): string
@@ -117,5 +82,47 @@ class ConfigurationService
     {
         return $this->get('laminator/templates')
             ?? ['Models', 'Services', 'Controllers', 'Endpoints', 'Routes'];
+    }
+
+    protected function setupDefines(): void
+    {
+        define('APP_ROOT', $this->appRoot);
+        define('APP_NAME', $this->get('application/name'));
+    }
+
+    /**
+     * Locate .benzine.yml.
+     *
+     * @param null|string $path
+     */
+    protected function findConfig(string $path = null): bool
+    {
+        if (!$path) {
+            $path = getcwd();
+            //$path = dirname($this->environmentService->get('SCRIPT_FILENAME'));
+        }
+        if (!file_exists($path.'/.benzine.yml')) {
+            $currentDirElem = explode(DIRECTORY_SEPARATOR, $path);
+            array_pop($currentDirElem);
+            $parentPath = implode(DIRECTORY_SEPARATOR, $currentDirElem);
+
+            return $this->findConfig($parentPath);
+        }
+
+        $this->parseFile($path.'/.benzine.yml');
+        $this->appRoot = $path;
+
+        return true;
+    }
+
+    protected function parseFile(string $file)
+    {
+        $yaml = file_get_contents($file);
+        foreach ($this->environmentService->all() as $key => $value) {
+            if (is_string($value)) {
+                $yaml = str_replace("\${$key}", $value, $yaml);
+            }
+        }
+        $this->config = Yaml::parse($yaml);
     }
 }

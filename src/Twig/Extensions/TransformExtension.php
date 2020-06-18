@@ -2,7 +2,6 @@
 
 namespace Benzine\Twig\Extensions;
 
-use Benzine\Twig\Extensions\TransformExtensionException;
 use Camel\CaseTransformer;
 use Camel\Format;
 use Twig\Extension\AbstractExtension;

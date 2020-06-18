@@ -2,8 +2,8 @@
 
 namespace Benzine\Router;
 
-use Slim\App;
 use Monolog\Logger;
+use Slim\App;
 
 class Router
 {

@@ -28,15 +28,12 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Slim;
 use Slim\Factory\AppFactory;
-use Symfony\Component\HttpFoundation\Session\Session;
 use Twig;
 use Twig\Loader\FilesystemLoader;
 
 class App
 {
     public const DEFAULT_TIMEZONE = 'Europe/London';
-
-    private static bool $isInitialised = false;
     public static App $instance;
 
     protected EnvironmentService $environmentService;
@@ -47,6 +44,8 @@ class App
     protected array $routePaths = [];
     protected array $viewPaths = [];
     protected bool $interrogateControllersComplete = false;
+
+    private static bool $isInitialised = false;
 
     public function __construct()
     {
@@ -69,15 +68,6 @@ class App
         $errorMiddleware = $this->app->addErrorMiddleware(true, true, true);
     }
 
-    /**
-     * Get item from Dependency Injection
-     *
-     * @return mixed
-     */
-    public function get(string $id){
-        return $this->getApp()->getContainer()->get($id);
-    }
-
     protected function setup(ContainerInterface $container): void
     {
         $this->logger = $container->get(Logger::class);
@@ -92,6 +82,16 @@ class App
         $this->interrogateControllers();
     }
 
+    /**
+     * Get item from Dependency Injection.
+     *
+     * @return mixed
+     */
+    public function get(string $id)
+    {
+        return $this->getApp()->getContainer()->get($id);
+    }
+
     public function setupContainer(): Container
     {
         $app = $this;
@@ -99,11 +99,12 @@ class App
             (new ContainerBuilder())
                 ->useAutowiring(true)
                 ->useAnnotations(true)
-                #->enableCompilation(APP_ROOT . "/cache")
-                #->writeProxiesToFile(true, APP_ROOT . "/cache/injection-proxies")
-                ->build();
+                //->enableCompilation(APP_ROOT . "/cache")
+                //->writeProxiesToFile(true, APP_ROOT . "/cache/injection-proxies")
+                ->build()
+            ;
 
-        $container->set(Slim\Views\Twig::class, function(ContainerInterface $container) {
+        $container->set(Slim\Views\Twig::class, function (ContainerInterface $container) {
             foreach ($this->viewPaths as $i => $viewLocation) {
                 if (!file_exists($viewLocation) || !is_dir($viewLocation)) {
                     unset($this->viewPaths[$i]);
@@ -113,7 +114,7 @@ class App
             $loader = new FilesystemLoader();
 
             foreach ($this->viewPaths as $path) {
-                    $loader->addPath($path);
+                $loader->addPath($path);
             }
 
             $twig = new Slim\Views\Twig($loader, $settings);
@@ -135,22 +136,22 @@ class App
 
             return $twig;
         });
-        $container->set('view', function(ContainerInterface $container){
+        $container->set('view', function (ContainerInterface $container) {
             return $container->get(Slim\Views\Twig::class);
         });
 
-        $container->set(EnvironmentService::class, function(ContainerInterface $container){
+        $container->set(EnvironmentService::class, function (ContainerInterface $container) {
             return new EnvironmentService();
         });
 
-        $container->set(ConfigurationService::class, function(ContainerInterface $container) use ($app){
+        $container->set(ConfigurationService::class, function (ContainerInterface $container) use ($app) {
             return new ConfigurationService(
                 $app,
                 $container->get(EnvironmentService::class)
             );
         });
 
-        $container->set(\Faker\Generator::class, function(ContainerInterface $c) {
+        $container->set(\Faker\Generator::class, function (ContainerInterface $c) {
             $faker = FakerFactory::create();
             $faker->addProvider(new Provider\Base($faker));
             $faker->addProvider(new Provider\DateTime($faker));
@@ -164,7 +165,7 @@ class App
 
             return $faker;
         });
-        $container->set(CachePoolChain::class, function(ContainerInterface $c) {
+        $container->set(CachePoolChain::class, function (ContainerInterface $c) {
             $caches = [];
 
             // If apc/apcu present, add it to the pool
@@ -181,7 +182,7 @@ class App
             return new CachePoolChain($caches);
         });
 
-        $container->set('MonologFormatter', function(ContainerInterface $c) {
+        $container->set('MonologFormatter', function (ContainerInterface $c) {
             /** @var Services\EnvironmentService $environment */
             $environment = $c->get(Services\EnvironmentService::class);
 
@@ -193,7 +194,7 @@ class App
             );
         });
 
-        $container->set(Logger::class, function(ContainerInterface $c) {
+        $container->set(Logger::class, function (ContainerInterface $c) {
             /** @var ConfigurationService $configuration */
             $configuration = $c->get(ConfigurationService::class);
 
@@ -204,7 +205,7 @@ class App
             return $monolog;
         });
 
-        $container->set(DebugBar::class, function(ContainerInterface $container) {
+        $container->set(DebugBar::class, function (ContainerInterface $container) {
             $debugBar = new StandardDebugBar();
             /** @var Logger $logger */
             $logger = $container->get(Logger::class);
@@ -213,42 +214,41 @@ class App
             return $debugBar;
         });
 
-        $container->set(\Middlewares\Debugbar::class, function(ContainerInterface $container) {
+        $container->set(\Middlewares\Debugbar::class, function (ContainerInterface $container) {
             $debugBar = $container->get(DebugBar::class);
 
             return new \Middlewares\Debugbar($debugBar);
         });
 
-        $container->set(\Redis::class, function(ContainerInterface $container){
+        $container->set(\Redis::class, function (ContainerInterface $container) {
             $environmentService = $container->get(EnvironmentService::class);
 
-           $redis = new \Redis();
-           $redis->connect(
-               $environmentService->get('REDIS_HOST', 'redis'),
-               $environmentService->get('REDIS_PORT', 6379)
-           );
+            $redis = new \Redis();
+            $redis->connect(
+                $environmentService->get('REDIS_HOST', 'redis'),
+                $environmentService->get('REDIS_PORT', 6379)
+            );
 
-           return $redis;
+            return $redis;
         });
 
-        $container->set(SessionService::class, function(ContainerInterface $container){
+        $container->set(SessionService::class, function (ContainerInterface $container) {
             return new SessionService(
                 $container->get(\Redis::class)
             );
         });
 
-        $container->set(Databases::class, function(ContainerInterface $container){
+        $container->set(Databases::class, function (ContainerInterface $container) {
             return new Databases(
                 $container->get(ConfigurationService::class)
             );
-
         });
-        $container->set(Laminator::class, function(ContainerInterface $container){
-           return new Laminator(
-               APP_ROOT,
-               $container->get(ConfigurationService::class),
-               $container->get(Databases::class)
-           );
+        $container->set(Laminator::class, function (ContainerInterface $container) {
+            return new Laminator(
+                APP_ROOT,
+                $container->get(ConfigurationService::class),
+                $container->get(Databases::class)
+            );
         });
 
         /** @var Services\EnvironmentService $environmentService */
@@ -269,15 +269,15 @@ class App
     public function setupMiddlewares(ContainerInterface $container): void
     {
         // Middlewares
-        #$this->app->add($container->get(Middleware\EnvironmentHeadersOnResponse::class));
-        #$this->app->add($container->get(\Middlewares\ContentLength::class));
-        #$this->app->add($container->get(\Middlewares\Debugbar::class));
-        #$this->app->add($container->get(\Middlewares\Geolocation::class));
-        #$this->app->add($container->get(\Middlewares\TrailingSlash::class));
-        #$this->app->add($container->get(Middleware\JSONResponseLinter::class));
-        #$this->app->add($container->get(\Middlewares\Whoops::class));
-        #$this->app->add($container->get(\Middlewares\Minifier::class));
-        #$this->app->add($container->get(\Middlewares\GzipEncoder::class));
+        //$this->app->add($container->get(Middleware\EnvironmentHeadersOnResponse::class));
+        //$this->app->add($container->get(\Middlewares\ContentLength::class));
+        //$this->app->add($container->get(\Middlewares\Debugbar::class));
+        //$this->app->add($container->get(\Middlewares\Geolocation::class));
+        //$this->app->add($container->get(\Middlewares\TrailingSlash::class));
+        //$this->app->add($container->get(Middleware\JSONResponseLinter::class));
+        //$this->app->add($container->get(\Middlewares\Whoops::class));
+        //$this->app->add($container->get(\Middlewares\Minifier::class));
+        //$this->app->add($container->get(\Middlewares\GzipEncoder::class));
     }
 
     /**
@@ -406,7 +406,7 @@ class App
         $this->interrogateControllersComplete = true;
 
         $controllerPaths = [
-            APP_ROOT . '/src/Controllers',
+            APP_ROOT.'/src/Controllers',
         ];
 
         foreach ($controllerPaths as $controllerPath) {

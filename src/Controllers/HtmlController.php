@@ -5,11 +5,9 @@ namespace Benzine\Controllers;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use Slim\Views\Twig;
-use ⌬\Traits\RenderHtmlTrait;
 
 abstract class HtmlController extends Controller
 {
-
     /** @var Twig */
     protected $twig;
 
@@ -35,7 +33,7 @@ abstract class HtmlController extends Controller
         if ('.json' == substr($request->getUri()->getPath(), -5, 5)) {
             return $this->jsonResponse($parameters, $request, $response);
         }
-        
+
         return $this->twig->render(
             $response,
             $template,
