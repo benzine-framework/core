@@ -96,11 +96,6 @@ class ConfigurationService
         return trim($scope);
     }
 
-    public function getDatabases() : Databases
-    {
-        return $this->databases;
-    }
-
     public function getNamespace(): string
     {
         $coreClass = explode("\\", $this->getCore());
