@@ -3,9 +3,9 @@
 namespace Benzine\Middleware;
 
 use Faker\Factory;
-use Slim\Http\Request;
-use Slim\Http\Response;
-use Slim\Route;
+use Slim\Psr7\Request;
+use Slim\Psr7\Response;
+use Benzine\Router\Route;
 
 class AccessRequirements
 {

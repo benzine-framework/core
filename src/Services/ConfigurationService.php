@@ -88,6 +88,7 @@ class ConfigurationService
     {
         define('APP_ROOT', $this->appRoot);
         define('APP_NAME', $this->get('application/name'));
+        define('APP_START', microtime(true));
     }
 
     /**

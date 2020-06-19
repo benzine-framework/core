@@ -2,7 +2,7 @@
 
 namespace Benzine\Services;
 
-use ⌬\UUID\UUID;
+use Gone\UUID\UUID;
 
 class QueueService
 {

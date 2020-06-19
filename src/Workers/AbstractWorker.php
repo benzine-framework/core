@@ -5,7 +5,7 @@ namespace Benzine\Workers;
 use Benzine\Services\EnvironmentService;
 use Monolog\Logger;
 
-abstract class AbstractWorker
+abstract class AbstractWorker implements WorkerInterface
 {
     protected Logger $logger;
     protected EnvironmentService $environmentService;

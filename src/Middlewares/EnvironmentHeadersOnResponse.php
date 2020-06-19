@@ -4,21 +4,20 @@ namespace Benzine\Middleware;
 
 use Benzine\Configuration;
 use Benzine\ORM\Profiler;
+use Benzine\Services\ConfigurationService;
 use Benzine\⌬;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use Slim\Psr7\Response;
 
 class EnvironmentHeadersOnResponse
 {
     protected $apiExplorerEnabled = true;
 
-    /** @var Configuration\Configuration */
-    protected $configuration;
-    /** @var Profiler\Profiler */
-    protected $profiler;
+    protected ConfigurationService $configuration;
+    protected Profiler\Profiler $profiler;
 
     public function __construct(
-        Configuration\Configuration $configuration,
+        ConfigurationService $configuration,
         Profiler\Profiler $profiler
     ) {
         $this->configuration = $configuration;
@@ -38,8 +37,8 @@ class EnvironmentHeadersOnResponse
             $json = json_decode($body->getContents(), true);
 
             $gitVersion = null;
-            if (file_exists($this->configuration->get(Configuration\Configuration::KEY_APP_ROOT).'/version.txt')) {
-                $gitVersion = trim(file_get_contents($this->configuration->get(Configuration\Configuration::KEY_APP_ROOT).'/version.txt'));
+            if (file_exists(APP_ROOT.'/version.txt')) {
+                $gitVersion = trim(file_get_contents(APP_ROOT.'/version.txt'));
                 $gitVersion = explode(' ', $gitVersion, 2);
                 $gitVersion = reset($gitVersion);
             }
@@ -55,7 +54,7 @@ class EnvironmentHeadersOnResponse
                         'Human' => date('Y-m-d H:i:s'),
                         'Epoch' => time(),
                     ],
-                    'Exec' => number_format(microtime(true) - $this->configuration->get(Configuration\Configuration::KEY_APP_START), 4).' sec',
+                    'Exec' => number_format(microtime(true) - APP_START, 4).' sec',
                 ] : null,
                 'Memory' => defined('DEBUG') && DEBUG ? [
                     'Used' => number_format(memory_get_usage(false) / 1024 / 1024, 2).'MB',
@@ -63,7 +62,6 @@ class EnvironmentHeadersOnResponse
                     'Limit' => ini_get('memory_limit'),
                 ] : null,
                 'SQL' => defined('DEBUG') && DEBUG ? $this->profiler->getQueriesArray() : null,
-                'API' => defined('DEBUG') && DEBUG && class_exists('\Gone\SDK\Common\Profiler') ? \Gone\SDK\Common\Profiler::debugArray() : null,
             ]);
 
             if (isset($json['Status'])) {
@@ -88,8 +86,8 @@ class EnvironmentHeadersOnResponse
                     'json' => $json,
                     'json_pretty_printed_rows' => explode("\n", json_encode($json, JSON_PRETTY_PRINT)),
                     'inline_css' => $this->renderInlineCss([
-                        $this->configuration->get(Configuration\Configuration::KEY_APP_ROOT).'/vendor/benzine/benzine-http-assets/css/reset.css',
-                        $this->configuration->get(Configuration\Configuration::KEY_APP_ROOT).'/vendor/benzine/benzine-http-assets/css/api-explorer.css',
+                        APP_ROOT.'/vendor/benzine/benzine-http-assets/css/reset.css',
+                        APP_ROOT.'/vendor/benzine/benzine-http-assets/css/api-explorer.css',
                     ]),
                 ]);
                 $response = $response->withHeader('Content-type', 'text/html');

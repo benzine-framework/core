@@ -2,7 +2,7 @@
 
 namespace Benzine\Workers;
 
-use ⌬\Controllers\Abstracts\Model;
+use Benzine\ORM\Abstracts\Model;
 
 class WorkerWorkItem
 {

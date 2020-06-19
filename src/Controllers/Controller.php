@@ -2,10 +2,10 @@
 
 namespace Benzine\Controllers;
 
-use Slim\Http\Request;
-use Slim\Http\Response;
-use ⌬\Filters\Exceptions\FilterDecodeException;
-use ⌬\Filters\Filter;
+use Benzine\Exceptions\FilterDecodeException;
+use Benzine\Controllers\Filters\Filter;
+use Slim\Psr7\Request;
+use Slim\Psr7\Response;
 
 abstract class Controller
 {

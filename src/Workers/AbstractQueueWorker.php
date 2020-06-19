@@ -3,6 +3,7 @@
 namespace Benzine\Workers;
 
 use Benzine\Services\EnvironmentService;
+use Benzine\Services\QueueService;
 use Monolog\Logger;
 
 abstract class AbstractQueueWorker extends AbstractWorker
@@ -35,7 +36,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
         }
         $this->logger->debug(
             sprintf(
-                'Listening to "%s" and outputting on %d channel(s)',
+                'Worker %s: Listening to "%s" and outputting on %d channel(s)',
                 $this->getClassWithoutNamespace(),
                 $this->inputQueue,
                 count($this->outputQueues)
@@ -128,7 +129,9 @@ abstract class AbstractQueueWorker extends AbstractWorker
         foreach ($items as $item) {
             $processResults = $this->process($item);
             if (is_array($processResults)) {
-                $resultItems[] += $processResults;
+                foreach($processResults as $processResult) {
+                    $resultItems[] = $processResult;
+                }
             } else {
                 $resultItems[] = $processResults;
             }

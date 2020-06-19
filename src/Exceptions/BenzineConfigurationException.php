@@ -2,6 +2,6 @@
 
 namespace Benzine\Exceptions;
 
-class BenzineConfigurationException extends Exception
+class BenzineConfigurationException extends BenzineException
 {
 }

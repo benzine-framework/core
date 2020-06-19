@@ -2,8 +2,8 @@
 
 namespace Benzine\Controllers;
 
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use Slim\Psr7\Response;
 use Slim\Views\Twig;
 
 abstract class HtmlController extends Controller

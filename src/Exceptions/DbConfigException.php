@@ -2,6 +2,6 @@
 
 namespace Benzine\Exceptions;
 
-class DbConfigException extends Exception
+class DbConfigException extends BenzineException
 {
 }

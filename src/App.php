@@ -325,19 +325,11 @@ class App
         return $this;
     }
 
-    public function makeClean(): self
-    {
-        $this->setup();
-        $this->loadAllRoutes();
-
-        return $this;
-    }
-
     public static function Log(int $level = Logger::DEBUG, $message)
     {
         return self::Instance()
             ->getContainer()
-            ->get(Log\Logger::class)
+            ->get(Logger::class)
             ->log($level, ($message instanceof \Exception) ? $message->__toString() : $message)
         ;
     }
@@ -353,44 +345,6 @@ class App
         Router\Router::Instance()->populateRoutes($app);
 
         return $this;
-    }
-
-    public static function waitForMySQLToBeReady($connection = null)
-    {
-        if (!$connection) {
-            /** @var DbConfig $configs */
-            $dbConfig = self::Instance()->getContainer()->get(DatabaseConfig::class);
-            $configs = $dbConfig->__toArray();
-
-            if (isset($configs['Default'])) {
-                $connection = $configs['Default'];
-            } else {
-                foreach ($configs as $option => $connection) {
-                    self::waitForMySQLToBeReady($connection);
-                }
-
-                return;
-            }
-        }
-
-        $ready = false;
-        echo "Waiting for MySQL ({$connection['hostname']}:{$connection['port']}) to come up...";
-        while (false == $ready) {
-            $conn = @fsockopen($connection['hostname'], $connection['port']);
-            if (is_resource($conn)) {
-                fclose($conn);
-                $ready = true;
-            } else {
-                echo '.';
-                usleep(500000);
-            }
-        }
-        echo " [DONE]\n";
-
-        /** @var Services\EnvironmentService $environmentService */
-        $environmentService = self::Container()->get(Services\EnvironmentService::class);
-
-        $environmentService->rebuildEnvironmentVariables();
     }
 
     public function runHttp(): void

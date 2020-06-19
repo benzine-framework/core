@@ -2,6 +2,6 @@
 
 namespace Benzine\Exceptions;
 
-class Exception extends \Exception
+class BenzineException extends \Exception
 {
 }
