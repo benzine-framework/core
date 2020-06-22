@@ -2,7 +2,6 @@
 
 namespace Benzine\Middleware;
 
-use Benzine\Configuration;
 use Benzine\ORM\Profiler;
 use Benzine\Services\ConfigurationService;
 use Benzine\⌬;

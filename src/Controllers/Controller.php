@@ -2,8 +2,8 @@
 
 namespace Benzine\Controllers;
 
-use Benzine\Exceptions\FilterDecodeException;
 use Benzine\Controllers\Filters\Filter;
+use Benzine\Exceptions\FilterDecodeException;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 
@@ -53,14 +53,17 @@ abstract class Controller
 
     public function xmlResponse(\SimpleXMLElement $root, Request $request, Response $response): Response
     {
-        $response = $response->withBody($root->asXML());
+        $response->getBody()->write($root->asXML());
 
         return $response->withHeader('Content-type', 'text/xml');
     }
 
     public function jsonResponse($json, Request $request, Response $response): Response
     {
-        return $response->withJson($json);
+        $content = json_encode($json, JSON_PRETTY_PRINT);
+        $response->getBody()->write($content);
+
+        return $response->withHeader('Content-type', 'application/json');
     }
 
     public function jsonResponseException(\Exception $e, Request $request, Response $response): Response

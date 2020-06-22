@@ -99,10 +99,12 @@ class App
             (new ContainerBuilder())
                 ->useAutowiring(true)
                 ->useAnnotations(true)
-                //->enableCompilation(APP_ROOT . "/cache")
-                //->writeProxiesToFile(true, APP_ROOT . "/cache/injection-proxies")
-                ->build()
             ;
+        if (file_exists('/app/cache')) {
+            //    $container->enableCompilation("/app/cache");
+        //    $container->writeProxiesToFile(true, "/app/cache/injection-proxies");
+        }
+        $container = $container->build();
 
         $container->set(Slim\Views\Twig::class, function (ContainerInterface $container) {
             foreach ($this->viewPaths as $i => $viewLocation) {
@@ -110,7 +112,7 @@ class App
                     unset($this->viewPaths[$i]);
                 }
             }
-            $settings = ['cache' => 'cache/twig'];
+            $settings = ['cache' => APP_ROOT.'/cache/twig'];
             $loader = new FilesystemLoader();
 
             foreach ($this->viewPaths as $path) {
@@ -205,14 +207,14 @@ class App
             return $monolog;
         });
 
-        #$container->set(DebugBar::class, function (ContainerInterface $container) {
-        #    $debugBar = new StandardDebugBar();
-        #    /** @var Logger $logger */
-        #    $logger = $container->get(Logger::class);
-        #    $debugBar->addCollector(new MonologCollector($logger));
-#
-#            return $debugBar;
-#        });
+        //$container->set(DebugBar::class, function (ContainerInterface $container) {
+        //    $debugBar = new StandardDebugBar();
+        //    /** @var Logger $logger */
+        //    $logger = $container->get(Logger::class);
+        //    $debugBar->addCollector(new MonologCollector($logger));
+//
+//            return $debugBar;
+//        });
 
         $container->set(\Middlewares\Debugbar::class, function (ContainerInterface $container) {
             $debugBar = $container->get(DebugBar::class);

@@ -86,6 +86,10 @@ class ConfigurationService
 
     protected function setupDefines(): void
     {
+        if(defined("APP_ROOT")){
+            return;
+        }
+
         define('APP_ROOT', $this->appRoot);
         define('APP_NAME', $this->get('application/name'));
         define('APP_START', microtime(true));

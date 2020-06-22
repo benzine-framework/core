@@ -129,7 +129,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
         foreach ($items as $item) {
             $processResults = $this->process($item);
             if (is_array($processResults)) {
-                foreach($processResults as $processResult) {
+                foreach ($processResults as $processResult) {
                     $resultItems[] = $processResult;
                 }
             } else {
