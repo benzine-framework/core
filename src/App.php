@@ -53,13 +53,13 @@ class App
         $container = $this->setupContainer();
         AppFactory::setContainer($container);
 
+        $this->setup($container);
+
         // Configure Router
         $this->routePaths = [
             APP_ROOT.'/src/Routes.php',
             APP_ROOT.'/src/RoutesExtra.php',
         ];
-
-        $this->setup($container);
 
         // Configure Slim
         $this->app = AppFactory::create();
@@ -205,14 +205,14 @@ class App
             return $monolog;
         });
 
-        $container->set(DebugBar::class, function (ContainerInterface $container) {
-            $debugBar = new StandardDebugBar();
-            /** @var Logger $logger */
-            $logger = $container->get(Logger::class);
-            $debugBar->addCollector(new MonologCollector($logger));
-
-            return $debugBar;
-        });
+        #$container->set(DebugBar::class, function (ContainerInterface $container) {
+        #    $debugBar = new StandardDebugBar();
+        #    /** @var Logger $logger */
+        #    $logger = $container->get(Logger::class);
+        #    $debugBar->addCollector(new MonologCollector($logger));
+#
+#            return $debugBar;
+#        });
 
         $container->set(\Middlewares\Debugbar::class, function (ContainerInterface $container) {
             $debugBar = $container->get(DebugBar::class);
