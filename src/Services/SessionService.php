@@ -11,6 +11,7 @@ class SessionService implements \SessionHandlerInterface
 
     private int $lifetime = 43200;
     private bool $sessionInitialised = false;
+    private array $dirtyCheck = [];
 
     public function __construct(\Redis $redis)
     {
@@ -44,7 +45,7 @@ class SessionService implements \SessionHandlerInterface
 
         // set how long each client should remember their session id
         session_set_cookie_params($this->getLifetime());
-        session_set_save_handler($this, true);
+        session_set_save_handler($this);
 
         // Prevent session from influencing the slim headers sent back to the browser.
         session_cache_limiter(null);
@@ -97,13 +98,13 @@ class SessionService implements \SessionHandlerInterface
             }
             $result = unserialize($serialised);
         } else {
-            $result = null;
+            $result = '';
         }
 
         if ($this->useAPCU()) {
             apcu_store('read-'.$session_id, $result, 30);
         } else {
-            self::$dirtyCheck['read-'.$session_id] = crc32($result);
+            $this->dirtyCheck['read-'.$session_id] = crc32($result);
         }
 
         return $result;
@@ -113,30 +114,34 @@ class SessionService implements \SessionHandlerInterface
     {
         $dirty = false;
         if ($this->useAPCU()) {
-            $dirty = crc32(apcu_fetch('read-'.$session_id)) != crc32($data);
+            $dirty = crc32(apcu_fetch('read-'.$session_id)) != crc32($session_data);
         } else {
-            $dirty = self::$dirtyCheck['read-'.$session_id] != crc32($data);
+            $dirty = $this->dirtyCheck['read-'.$session_id] != crc32($session_data);
         }
         if ($dirty) {
-            $this->redis->set("session:{$session_id}", serialize($data));
-            $this->redis->expire("session:{$session_id}", $this->keyLifeTime);
+            $this->redis->set("session:{$session_id}", serialize($session_data));
+            $this->redis->expire("session:{$session_id}", $this->getLifetime());
         }
-        apcu_store('read-'.$session_id, $data);
+        apcu_store('read-'.$session_id, $session_data);
 
         return true;
     }
 
     public function get(string $key)
     {
+        $this->initSession();
+
         if (isset($_SESSION[$key])) {
             return unserialize($_SESSION[$key]);
         }
 
-        return null;
+        return '';
     }
 
     public function set(string $key, $value): bool
     {
+        $this->initSession();
+
         $_SESSION[$key] = serialize($value);
 
         return true;
@@ -144,6 +149,8 @@ class SessionService implements \SessionHandlerInterface
 
     public function dispose(string $key): bool
     {
+        $this->initSession();
+
         if (isset($_SESSION[$key])) {
             unset($_SESSION[$key]);
 
@@ -155,6 +162,7 @@ class SessionService implements \SessionHandlerInterface
 
     private function useAPCU(): bool
     {
+        return false;
         return function_exists('apcu_store');
     }
 }
