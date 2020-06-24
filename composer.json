@@ -46,6 +46,8 @@
         "twig/extra-bundle": "^3.0",
         "twig/intl-extra": "^3.0",
         "gone.io/inflection": "^2.1",
+        "gone.io/uuid": "^2.3",
+        "jc21/clitable": "^1.2",
         "mattketmo/camel": "^1.1",
         "middlewares/debugbar": "^2.0",
         "middlewares/whoops": "^2.0",
