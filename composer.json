@@ -65,5 +65,9 @@
             "Benzine\\": "src",
             "Benzine\\Tests\\": "tests/"
         }
-    }
+    },
+    "bin": [
+        "bin/queue-status",
+        "bin/worker"
+    ]
 }

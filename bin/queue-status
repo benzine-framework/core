@@ -1,0 +1,44 @@
+#!/usr/bin/php
+<?php
+require_once(__DIR__ . "/../../../../vendor/autoload.php");
+
+use Benzine\App;
+use Benzine\Services\QueueService;
+use jc21\CliTable;
+
+$timeAgo = new Westsworld\TimeAgo();
+
+/** @var QueueService $queueService */
+$queueService = ⌬::Container()->get(QueueService::class);
+
+while(true) {
+    $data = [];
+    foreach($queueService->listLists() as $list){
+        $data[] = [
+            "name" => $list,
+            "length" => $queueService->getQueueLength($list),
+            "peak" => $queueService->getQueueLengthPeak($list),
+            "firstSeen" => $timeAgo->inWords($queueService->getQueueCreatedAgo($list)),
+            "lastSeen" => $timeAgo->inWords($queueService->getQueueUpdatedAgo($list)),
+        ];
+    }
+
+    $rowsCount = count($data) + 4;
+
+    $table = new CliTable;
+    $table->setTableColor('blue');
+    $table->setHeaderColor('cyan');
+    $table->addField("Queue Name", "name", false, "white");
+    $table->addField("Length", "length", false, "blue");
+    $table->addField("Peak", "peak", false, "blue");
+    $table->addField("Queue Existed Since", "firstSeen", false, "red");
+    $table->addField("Queue Updated Last", "lastSeen", false, "green");
+    $table->injectData($data);
+    $table->display();
+    sleep(1);
+    for($i = 0; $i <= $rowsCount; $i++){
+        echo "\033[2K";
+        echo "\033[1A";
+    }
+
+}
