@@ -10,8 +10,6 @@ abstract class LuaExtension {
     public function __construct(\Redis $redis)
     {
         $this->redis = $redis;
-
-        $this->load();
     }
 
     public function getFunctionNames() : array {
@@ -25,7 +23,7 @@ abstract class LuaExtension {
         return $this->hash;
     }
 
-    protected function load(){
+    public function load(){
         if(!$this->hash){
             $exists = $this->redis->script('exists', $this->getScript());
             if(!$exists[0]){
