@@ -172,4 +172,6 @@ abstract class AbstractQueueWorker extends AbstractWorker
     {
         return sprintf('%s:failures', $this->inputQueue);
     }
+
+    abstract public function process(WorkerWorkItem $item): ?WorkerWorkItem;
 }
