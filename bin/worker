@@ -6,7 +6,6 @@ use Benzine\Workers\AbstractQueueWorker;
 use duncan3dc\Forker\Fork;
 use Benzine\App;
 
-
 $args = CommandLine::parseArgs($_SERVER['argv']);
 if(!isset($args['worker'])){
     die("You must pass a --worker= argument with this script\n");

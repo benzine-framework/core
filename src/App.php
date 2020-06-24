@@ -4,6 +4,7 @@ namespace Benzine;
 
 use Benzine\ORM\Connection\Databases;
 use Benzine\ORM\Laminator;
+use Benzine\Redis\Redis;
 use Benzine\Services\ConfigurationService;
 use Benzine\Services\EnvironmentService;
 use Benzine\Services\SessionService;
@@ -30,6 +31,7 @@ use Slim;
 use Slim\Factory\AppFactory;
 use Twig;
 use Twig\Loader\FilesystemLoader;
+use Benzine\Redis\Lua;
 
 class App
 {
@@ -207,14 +209,14 @@ class App
             return $monolog;
         });
 
-        //$container->set(DebugBar::class, function (ContainerInterface $container) {
-        //    $debugBar = new StandardDebugBar();
-        //    /** @var Logger $logger */
-        //    $logger = $container->get(Logger::class);
-        //    $debugBar->addCollector(new MonologCollector($logger));
-//
-//            return $debugBar;
-//        });
+        $container->set(DebugBar::class, function (ContainerInterface $container) {
+            $debugBar = new StandardDebugBar();
+            /** @var Logger $logger */
+            $logger = $container->get(Logger::class);
+            $debugBar->addCollector(new MonologCollector($logger));
+
+            return $debugBar;
+        });
 
         $container->set(\Middlewares\Debugbar::class, function (ContainerInterface $container) {
             $debugBar = $container->get(DebugBar::class);
@@ -225,12 +227,13 @@ class App
         $container->set(\Redis::class, function (ContainerInterface $container) {
             $environmentService = $container->get(EnvironmentService::class);
 
-            $redis = new \Redis();
+            $redis = new Redis();
             $redis->connect(
                 $environmentService->get('REDIS_HOST', 'redis'),
                 $environmentService->get('REDIS_PORT', 6379)
             );
 
+            
             return $redis;
         });
 
