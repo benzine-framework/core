@@ -56,7 +56,7 @@ echo "Starting {$workerClass} with {$threads} threads.\n";
 
 if($threads == 1){
     /** @var AbstractQueueWorker $worker */
-    $worker = ⌬::Container()->get($workerClass);
+    $worker = App::Instance()->get($workerClass);
     $worker->setCliArguments($args);
     $worker->run();
 }else {
@@ -65,7 +65,7 @@ if($threads == 1){
     for ($i = 0; $i < $threads; $i++) {
         $fork->call(function () use ($workerClass, $args) {
             /** @var AbstractQueueWorker $worker */
-            $worker = ⌬::Container()->get($workerClass);
+            $worker = App::Instance()->get($workerClass);
             $worker->setCliArguments($args);
             $worker->run();
         });

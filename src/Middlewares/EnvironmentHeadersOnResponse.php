@@ -78,7 +78,7 @@ class EnvironmentHeadersOnResponse
                 $response = $response->withJson($json, null, JSON_PRETTY_PRINT);
             } else {
                 /** @var Twig $twig */
-                $twig = ⌬::Container()->get('view');
+                $twig = App::Instance()->get('view');
                 $response->getBody()->rewind();
                 $response = $twig->render($response, 'api/explorer.html.twig', [
                     'page_name' => 'API Explorer',

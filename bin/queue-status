@@ -9,7 +9,7 @@ use jc21\CliTable;
 $timeAgo = new Westsworld\TimeAgo();
 
 /** @var QueueService $queueService */
-$queueService = ⌬::Container()->get(QueueService::class);
+$queueService = App::Instance()->get(QueueService::class);
 
 while(true) {
     $data = [];
