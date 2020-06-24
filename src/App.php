@@ -31,7 +31,6 @@ use Slim;
 use Slim\Factory\AppFactory;
 use Twig;
 use Twig\Loader\FilesystemLoader;
-use Benzine\Redis\Lua;
 
 class App
 {
@@ -233,7 +232,6 @@ class App
                 $environmentService->get('REDIS_PORT', 6379)
             );
 
-            
             return $redis;
         });
 

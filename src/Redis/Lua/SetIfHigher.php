@@ -4,7 +4,7 @@ namespace Benzine\Redis\Lua;
 
 class SetIfHigher extends LuaExtension
 {
-    protected function getScript() : string
+    protected function getScript(): string
     {
         return <<<'LUA'
                 local c = tonumber(redis.call('get', KEYS[1])); 

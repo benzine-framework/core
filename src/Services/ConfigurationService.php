@@ -86,7 +86,7 @@ class ConfigurationService
 
     protected function setupDefines(): void
     {
-        if(defined("APP_ROOT")){
+        if (defined('APP_ROOT')) {
             return;
         }
 

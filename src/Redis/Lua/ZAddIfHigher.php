@@ -4,7 +4,7 @@ namespace Benzine\Redis\Lua;
 
 class ZAddIfHigher extends LuaExtension
 {
-    protected function getScript() : string
+    protected function getScript(): string
     {
         return <<<'LUA'
                 local c = tonumber(redis.call('zscore', KEYS[1], ARGV[1])); 

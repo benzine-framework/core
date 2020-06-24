@@ -163,6 +163,7 @@ class SessionService implements \SessionHandlerInterface
     private function useAPCU(): bool
     {
         return false;
+
         return function_exists('apcu_store');
     }
 }

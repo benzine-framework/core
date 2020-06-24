@@ -2,8 +2,8 @@
 
 namespace Benzine\Redis\Lua;
 
-abstract class LuaExtension {
-
+abstract class LuaExtension
+{
     protected \Redis $redis;
     protected ?string $hash = null;
 
@@ -12,27 +12,30 @@ abstract class LuaExtension {
         $this->redis = $redis;
     }
 
-    public function getFunctionNames() : array {
-        $name = explode("\\", get_called_class());
+    public function getFunctionNames(): array
+    {
+        $name = explode('\\', get_called_class());
+
         return [
-            end($name)
+            end($name),
         ];
     }
 
-    public function getHash() : string {
+    public function getHash(): string
+    {
         return $this->hash;
     }
 
-    public function load(){
-        if(!$this->hash){
+    public function load()
+    {
+        if (!$this->hash) {
             $exists = $this->redis->script('exists', $this->getScript());
-            if(!$exists[0]){
+            if (!$exists[0]) {
                 $this->hash = $this->redis->script('load', $this->getScript());
             }
         }
-        #printf("Loaded \"%s\" as \"%s\"\n", $this->getFunctionNames()[0], $this->hash);
+        //printf("Loaded \"%s\" as \"%s\"\n", $this->getFunctionNames()[0], $this->hash);
     }
 
-    abstract protected function getScript() : string;
-
+    abstract protected function getScript(): string;
 }
