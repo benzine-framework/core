@@ -5,6 +5,7 @@ require_once(__DIR__ . "/../../../../vendor/autoload.php");
 use Benzine\Workers\AbstractQueueWorker;
 use duncan3dc\Forker\Fork;
 use Benzine\App;
+use Benzine\Exceptions\BenzineException;
 
 $args = CommandLine::parseArgs($_SERVER['argv']);
 if(!isset($args['worker'])){
@@ -20,13 +21,13 @@ if(class_exists($args['worker'])){
 } else {
     $workerFile = __DIR__ . "/../../../../src/Workers/{$args['worker']}.php";
     if (!file_exists($workerFile)) {
-        throw new \⌬\Exceptions\BenzineException(sprintf("No such worker as \"%s\"", realpath($workerFile)));
+        throw new BenzineException(sprintf("No such worker as \"%s\"", realpath($workerFile)));
     }
     require_once($workerFile);
 
     $acceptedInterfaces = [
-        \⌬\Workers\WorkerInterface::class,
-        \⌬\Workers\QueueWorkerInterface::class,
+        \Benzine\Workers\WorkerInterface::class,
+        \Benzine\Workers\QueueWorkerInterface::class,
     ];
     $workerClass = null;
     foreach (get_declared_classes() as $declaredClass) {

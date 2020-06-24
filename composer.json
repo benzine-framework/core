@@ -57,7 +57,8 @@
         "middlewares/content-length": "^1.1",
         "middlewares/geolocation": "^2.0",
         "middlewares/minifier": "^2.0",
-        "middlewares/encoder": "^2.1"
+        "middlewares/encoder": "^2.1",
+        "duncan3dc/fork-helper": "^2.0"
     },
     "suggest": {
         "benzine/orm" : "Model/Service/Crud generation made easy"
