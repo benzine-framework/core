@@ -29,7 +29,6 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Slim;
 use Slim\Factory\AppFactory;
-use Symfony\Component\Yaml\Yaml;
 use Twig;
 use Twig\Loader\FilesystemLoader;
 
@@ -293,17 +292,18 @@ class App
     {
         if (!self::$isInitialised) {
             $calledClass = get_called_class();
-            /** @var $tempApp App */
+            /** @var App $tempApp */
             $tempApp = new $calledClass($options);
             /** @var ConfigurationService $config */
             $config = $tempApp->get(ConfigurationService::class);
             $configCoreClass = $config->getCore();
-            if($configCoreClass != get_called_class()){
+            if ($configCoreClass != get_called_class()) {
                 self::$instance = new $configCoreClass($options);
-            }else {
+            } else {
                 self::$instance = $tempApp;
             }
         }
+
         return self::$instance;
     }
 
