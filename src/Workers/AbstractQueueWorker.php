@@ -107,7 +107,6 @@ abstract class AbstractQueueWorker extends AbstractWorker
     public function iterate(): bool
     {
         $queueLength = $this->queueService->getQueueLength($this->inputQueue);
-
         $this->logger->debug(sprintf(
             'Queue %s Length: %d',
             $this->inputQueue,
@@ -173,5 +172,5 @@ abstract class AbstractQueueWorker extends AbstractWorker
         return sprintf('%s:failures', $this->inputQueue);
     }
 
-    abstract public function process(WorkerWorkItem $item): ?WorkerWorkItem;
+    abstract protected function process(WorkerWorkItem $item): ?WorkerWorkItem;
 }

@@ -3,16 +3,20 @@
 namespace Benzine\Services;
 
 use Gone\UUID\UUID;
+use Monolog\Logger;
 
 class QueueService
 {
     public const MAX_QUEUE_AGE = 60 * 60 * 24;
     protected \Redis $redis;
+    protected Logger $logger;
 
     public function __construct(
-        \Redis $redis
+        \Redis $redis,
+        Logger $logger
     ) {
         $this->redis = $redis;
+        $this->logger = $logger;
     }
 
     /**
@@ -30,7 +34,7 @@ class QueueService
             // Set the data element itself
             $this->redis->set("queue:data:{$queueName}:{$itemId}", $serialised);
             // Push the element into the index list
-            $this->redis->rpush("queue:index:{$queueName}", [$itemId]);
+            $this->redis->rpush("queue:index:{$queueName}", $itemId);
             // Increment the length count
             $this->redis->incr("queue:length:{$queueName}");
             // Set the queue identifier to the current time, if it doesn't already exist
