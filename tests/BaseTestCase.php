@@ -6,7 +6,6 @@ use Faker\Factory as FakerFactory;
 use Faker\Generator;
 use Faker\Provider;
 use PHPUnit\Framework\TestCase;
-use Benzine\App;
 
 abstract class BaseTestCase extends TestCase
 {
@@ -39,7 +38,6 @@ abstract class BaseTestCase extends TestCase
         // Force Kint into CLI mode.
         \Kint::$mode_default = \Kint::MODE_CLI;
     }
-
 
     /**
      * @return Generator
@@ -104,5 +102,4 @@ abstract class BaseTestCase extends TestCase
         sort($actual);
         $this->assertEquals($expected, $actual);
     }
-
 }
