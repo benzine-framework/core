@@ -307,6 +307,18 @@ class App
         return self::$instance;
     }
 
+    /**
+     * Convenience function to get objects out of the Dependency Injection Container.
+     *
+     * @param string $key
+     *
+     * @return mixed
+     */
+    public static function DI(string $key)
+    {
+        return self::Instance()->get($key);
+    }
+
     public function getApp()
     {
         return $this->app;
