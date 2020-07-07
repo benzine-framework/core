@@ -8,6 +8,12 @@ class WorkerWorkItem
 {
     protected array $data;
 
+    static public function Factory(object $object){
+        $class = get_class($object);
+        return (new WorkerWorkItem())
+            ->setKey($class, $object);
+    }
+
     public function __call($name, $arguments)
     {
         $method = substr(strtolower($name), 0, 3);
