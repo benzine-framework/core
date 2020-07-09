@@ -45,6 +45,7 @@ class App
     protected array $routePaths = [];
     protected array $viewPaths = [];
     protected bool $interrogateControllersComplete = false;
+    private string $cachePath = '/cache';
 
     private static bool $isInitialised = false;
 
@@ -84,6 +85,26 @@ class App
     }
 
     /**
+     * @return string
+     */
+    public function getCachePath(): string
+    {
+        return $this->cachePath;
+    }
+
+    /**
+     * @param string $cachePath
+     *
+     * @return App
+     */
+    public function setCachePath(string $cachePath): App
+    {
+        $this->cachePath = $cachePath;
+
+        return $this;
+    }
+
+    /**
      * Get item from Dependency Injection.
      *
      * @return mixed
@@ -101,9 +122,9 @@ class App
                 ->useAutowiring(true)
                 ->useAnnotations(true)
             ;
-        if (file_exists('/app/cache')) {
-            //    $container->enableCompilation("/app/cache");
-        //    $container->writeProxiesToFile(true, "/app/cache/injection-proxies");
+        if (file_exists($this->getCachePath())) {
+            //    $container->enableCompilation($this->getCachePath());
+            //    $container->writeProxiesToFile(true, "{$this->getCachePath()}/injection-proxies");
         }
         $container = $container->build();
 
@@ -113,14 +134,21 @@ class App
                     unset($this->viewPaths[$i]);
                 }
             }
-            $settings = ['cache' => APP_ROOT.'/cache/twig'];
+
+            $twigCachePath = "{$this->getCachePath()}/twig";
+            $twigSettings = ['cache' => $twigCachePath];
+
+            if (!file_exists($twigCachePath)) {
+                mkdir($twigCachePath, 0777, true);
+            }
+
             $loader = new FilesystemLoader();
 
             foreach ($this->viewPaths as $path) {
                 $loader->addPath($path);
             }
 
-            $twig = new Slim\Views\Twig($loader, $settings);
+            $twig = new Slim\Views\Twig($loader, $twigSettings);
 
             $twig->addExtension(new Extensions\ArrayUniqueTwigExtension());
             $twig->addExtension(new Extensions\FilterAlphanumericOnlyTwigExtension());
