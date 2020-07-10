@@ -139,7 +139,7 @@ class App
             $twigSettings = ['cache' => $twigCachePath];
 
             if (!file_exists($twigCachePath)) {
-                mkdir($twigCachePath, 0777, true);
+                @mkdir($twigCachePath, 0777, true);
             }
 
             $loader = new FilesystemLoader();
