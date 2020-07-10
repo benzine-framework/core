@@ -140,7 +140,7 @@ class App
             $twigCachePath = "{$this->getCachePath()}/twig";
             $twigSettings = [];
 
-            if($environmentService->has('TWIG_CACHE') && strtolower($environmentService->get('TWIG_CACHE')) == "on") {
+            if ($environmentService->has('TWIG_CACHE') && 'on' == strtolower($environmentService->get('TWIG_CACHE'))) {
                 $twigSettings['cache'] = $twigCachePath;
             }
 
