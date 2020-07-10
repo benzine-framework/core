@@ -129,6 +129,8 @@ class App
         $container = $container->build();
 
         $container->set(Slim\Views\Twig::class, function (ContainerInterface $container) {
+            /** @var EnvironmentService $environmentService */
+            $environmentService = $container->get(EnvironmentService::class);
             foreach ($this->viewPaths as $i => $viewLocation) {
                 if (!file_exists($viewLocation) || !is_dir($viewLocation)) {
                     unset($this->viewPaths[$i]);
@@ -136,7 +138,11 @@ class App
             }
 
             $twigCachePath = "{$this->getCachePath()}/twig";
-            $twigSettings = ['cache' => $twigCachePath];
+            $twigSettings = [];
+
+            if($environmentService->has('TWIG_CACHE') && strtolower($environmentService->get('TWIG_CACHE')) == "on") {
+                $twigSettings['cache'] = $twigCachePath;
+            }
 
             if (!file_exists($twigCachePath)) {
                 @mkdir($twigCachePath, 0777, true);
