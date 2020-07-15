@@ -62,6 +62,26 @@ abstract class AbstractWorker implements WorkerInterface
         }
     }
 
+    /**
+     * @return int
+     */
+    public function getTimeBetweenRuns(): int
+    {
+        return $this->timeBetweenRuns;
+    }
+
+    /**
+     * @param int $timeBetweenRuns
+     *
+     * @return AbstractWorker
+     */
+    public function setTimeBetweenRuns(int $timeBetweenRuns): AbstractWorker
+    {
+        $this->timeBetweenRuns = $timeBetweenRuns;
+
+        return $this;
+    }
+
     protected function getClassWithoutNamespace(): string
     {
         $classNameElems = explode('\\', get_called_class());
