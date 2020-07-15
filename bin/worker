@@ -16,12 +16,13 @@ $environment = array_merge($_SERVER, $_ENV);
 ksort($environment);
 
 $threads = $args['threads'] ?? $environment['THREADS'] ?? (int) shell_exec("grep -c processor /proc/cpuinfo");
+
 if(class_exists($args['worker'])){
     $workerClass = $args['worker'];
 } else {
     $workerFile = __DIR__ . "/../../../../src/Workers/{$args['worker']}.php";
     if (!file_exists($workerFile)) {
-        throw new BenzineException(sprintf("No such worker as \"%s\"", realpath($workerFile)));
+        throw new BenzineException(sprintf("No such worker as \"%s\", no such class as \"%s\"", realpath($workerFile), $args['worker']));
     }
     require_once($workerFile);
 
