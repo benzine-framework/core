@@ -131,7 +131,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
 
         foreach ($items as $item) {
             $processResults = $this->process($item);
-            
+
             if (is_array($processResults)) {
                 foreach ($processResults as $processResult) {
                     $this->resultItems[] = $processResult;
@@ -186,5 +186,10 @@ abstract class AbstractQueueWorker extends AbstractWorker
         return sprintf('%s:failures', $this->inputQueue);
     }
 
-    abstract protected function process(WorkerWorkItem $item): ?WorkerWorkItem;
+    /**
+     * @param WorkerWorkItem $item
+     *
+     * @return WorkerWorkItem|WorkerWorkItem[]|null
+     */
+    abstract protected function process(WorkerWorkItem $item);
 }
