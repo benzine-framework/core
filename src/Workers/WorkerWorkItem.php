@@ -4,7 +4,7 @@ namespace Benzine\Workers;
 
 use Benzine\ORM\Abstracts\Model;
 
-class WorkerWorkItem
+class WorkerWorkItem implements \Serializable
 {
     protected array $data;
 
@@ -24,14 +24,14 @@ class WorkerWorkItem
         }
     }
 
-    public function __serialize(): array
+    public function serialize()
     {
-        return $this->data;
+        return serialize($this->data);
     }
 
-    public function __unserialize(array $data): void
+    public function unserialize($serialized)
     {
-        $this->data = $data;
+        $this->data = unserialize($serialized);
     }
 
     public static function Factory(object $object)
