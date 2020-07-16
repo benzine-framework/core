@@ -29,6 +29,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
     protected function setUp(): void
     {
         parent::setUp();
+
         // Set default queues
         if (!isset($this->inputQueue)) {
             $this->inputQueue = sprintf('%s:input', $this->getClassWithoutNamespace());
@@ -36,6 +37,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
         if (!isset($this->outputQueues)) {
             $this->outputQueues[] = sprintf('%s:output', $this->getClassWithoutNamespace());
         }
+
         $this->logger->debug(
             sprintf(
                 'Worker %s: Listening to "%s" and outputting on %d channel(s)',
@@ -126,16 +128,19 @@ abstract class AbstractQueueWorker extends AbstractWorker
 
         $items = $this->queueService->pop($this->inputQueue);
         $this->resultItems = [];
+
         foreach ($items as $item) {
             $processResults = $this->process($item);
+            
             if (is_array($processResults)) {
                 foreach ($processResults as $processResult) {
                     $this->resultItems[] = $processResult;
                 }
-            } else {
+            } else if (null !== $processResults) {
                 $this->resultItems[] = $processResults;
             }
         }
+
         foreach ($this->outputQueues as $outputQueue) {
             $this->queueService->push($outputQueue, $this->resultItems);
         }
