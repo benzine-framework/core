@@ -4,7 +4,6 @@ namespace Benzine\Workers;
 
 use Benzine\Services\EnvironmentService;
 use Benzine\Services\QueueService;
-use Benzine\Services\WorkerWorkItem;
 use Monolog\Logger;
 
 abstract class AbstractQueueWorker extends AbstractWorker

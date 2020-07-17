@@ -2,6 +2,7 @@
 
 namespace Benzine\Services;
 
+use Benzine\Workers\WorkerWorkItem;
 use Gone\UUID\UUID;
 use Monolog\Logger;
 
