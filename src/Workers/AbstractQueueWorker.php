@@ -4,6 +4,7 @@ namespace Benzine\Workers;
 
 use Benzine\Services\EnvironmentService;
 use Benzine\Services\QueueService;
+use Benzine\Services\WorkerWorkItem;
 use Monolog\Logger;
 
 abstract class AbstractQueueWorker extends AbstractWorker
@@ -130,7 +131,22 @@ abstract class AbstractQueueWorker extends AbstractWorker
         $this->resultItems = [];
 
         foreach ($items as $item) {
-            $processResults = $this->process($item);
+            try {
+                $processResults = $this->process($item);
+            } catch (\Exception $e) {
+                $this->returnToInputQueue($item);
+
+                $this->logger->error(
+                    'Exception encountered while processing message queue.',
+                    [
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'code' => $e->getCode(),
+                        'trace' => array_slice($e->getTrace(), 0, 5),
+                    ]
+                );
+                continue;
+            }
 
             if (is_array($processResults)) {
                 foreach ($processResults as $processResult) {
