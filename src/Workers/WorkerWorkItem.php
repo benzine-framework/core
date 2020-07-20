@@ -4,7 +4,7 @@ namespace Benzine\Workers;
 
 use Benzine\ORM\Abstracts\Model;
 
-class WorkerWorkItem implements \Serializable
+class WorkerWorkItem
 {
     protected array $data;
 
