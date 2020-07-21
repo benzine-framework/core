@@ -6,6 +6,7 @@ use Benzine\ORM\Profiler;
 use Benzine\Services\ConfigurationService;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
+use Slim\Views\Twig;
 
 class EnvironmentHeadersOnResponse
 {
@@ -77,7 +78,7 @@ class EnvironmentHeadersOnResponse
                 $response = $response->withJson($json, null, JSON_PRETTY_PRINT);
             } else {
                 /** @var Twig $twig */
-                $twig = App::DI('view');
+                $twig = App::DI(Twig::class);
                 $response->getBody()->rewind();
                 $response = $twig->render($response, 'api/explorer.html.twig', [
                     'page_name' => 'API Explorer',
