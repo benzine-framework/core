@@ -2,15 +2,12 @@
 
 namespace Benzine\Services;
 
-use ⌬\Session\Session;
-
 class SessionService implements \SessionHandlerInterface
 {
     protected \Redis $redis;
     protected $oldID;
 
     private int $lifetime = 43200;
-    private bool $sessionInitialised = false;
     private array $dirtyCheck = [];
 
     public function __construct(\Redis $redis)
@@ -36,13 +33,13 @@ class SessionService implements \SessionHandlerInterface
 
     public function initSession()
     {
-        if ($this->sessionInitialised) {
+        if (session_status() == PHP_SESSION_ACTIVE) {
             return;
         }
 
         // set how long server should keep session data
-        ini_set('session.gc_maxlifetime', $this->getLifetime());
 
+        ini_set('session.gc_maxlifetime', $this->getLifetime());
         // set how long each client should remember their session id
         session_set_cookie_params($this->getLifetime());
         session_set_save_handler($this);
@@ -52,7 +49,6 @@ class SessionService implements \SessionHandlerInterface
 
         // Begin the Session
         session_start();
-        $this->sessionInitialised = true;
     }
 
     public function close()
@@ -127,8 +123,15 @@ class SessionService implements \SessionHandlerInterface
         return true;
     }
 
+    public function __get($name)
+    {
+        return $this->get($name);
+    }
+
     public function has(string $key): bool
     {
+        $this->initSession();
+
         return isset($_SESSION[$key]);
     }
 
@@ -141,6 +144,22 @@ class SessionService implements \SessionHandlerInterface
         }
 
         return '';
+    }
+
+    public function getAll(): array
+    {
+        $this->initSession();
+
+        if (is_array($_SESSION) && count($_SESSION) > 0) {
+            $output = [];
+            foreach ($_SESSION as $k => $v) {
+                $output[$k] = unserialize($v);
+            }
+
+            return $output;
+        }
+
+        return [];
     }
 
     public function set(string $key, $value): bool
@@ -167,6 +186,7 @@ class SessionService implements \SessionHandlerInterface
 
     private function useAPCU(): bool
     {
+        // @todo fix apcu damnit
         return false;
 
         return function_exists('apcu_store');
