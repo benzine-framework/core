@@ -44,9 +44,7 @@ abstract class RoutesTestCase extends BaseTestCase
          * @var \Slim\App           $app
          * @var \Gone\AppCore\App $applicationInstance
          */
-        $this->waypoint('Before App Fetch');
         $applicationInstance = $this->getApp();
-        $this->waypoint('After App Fetch');
         $calledClass = get_called_class();
 
         $app = $applicationInstance->getApp();
@@ -65,7 +63,6 @@ abstract class RoutesTestCase extends BaseTestCase
             require APP_ROOT.'/src/RoutesExtra.php';
         }
         Router::Instance()->populateRoutes($app);
-        $this->waypoint('Loaded Routes');
         $headers = array_merge($this->defaultHeaders, $extraHeaders);
 
         $envArray = array_merge($this->defaultEnvironment, $headers);
@@ -97,7 +94,6 @@ abstract class RoutesTestCase extends BaseTestCase
             $request = $request->withHeader('Content-type', 'application/json');
             $request = $request->withHeader('Accept', 'application/json');
         }
-        $this->waypoint('Before Response');
         $response = new Response();
 
         // Invoke app
@@ -107,7 +103,6 @@ abstract class RoutesTestCase extends BaseTestCase
             ->process($request, $response)
         ;
         $response->getBody()->rewind();
-        $this->waypoint('After Response');
 
         return $response;
     }
