@@ -187,22 +187,21 @@ class App
             return $container->get(Slim\Views\Twig::class);
         });
 
-        $container->set('SelectedLanguage', function (ContainerInterface $container){
+        $container->set('SelectedLanguage', function (ContainerInterface $container) {
             /** @var SessionService $sessionService */
             $sessionService = $container->get(SessionService::class);
 
-            $selectedLanguage = $sessionService->has('Language') ? $sessionService->get('Language') : 'en_US';
-            return $selectedLanguage;
+            return $sessionService->has('Language') ? $sessionService->get('Language') : 'en_US';
         });
 
-        $container->set(Translation\Translator::class, function(ContainerInterface $container){
+        $container->set(Translation\Translator::class, function (ContainerInterface $container) {
             $selectedLanguage = $container->get('SelectedLanguage');
 
             $translator = new Translation\Translator(
                 $container->get('ActiveLanguage'),
                 new Translation\MessageSelector()
             );
-            
+
             // set default locale
             $translator->setFallbackLocale('en');
 
@@ -213,8 +212,8 @@ class App
             $translator->addLoader('yaml', $yamlLoader);
 
             // add some resources to the translator
-            $translator->addResource('yaml', APP_ROOT . "/src/Translations/{$selectedLanguage}.yaml", $selectedLanguage);
-            
+            $translator->addResource('yaml', APP_ROOT."/src/Translations/{$selectedLanguage}.yaml", $selectedLanguage);
+
             return $translator;
         });
 
@@ -394,7 +393,7 @@ class App
         return self::Instance()->get($key);
     }
 
-    public function getApp() : \Slim\App
+    public function getApp(): Slim\App
     {
         return $this->app;
     }

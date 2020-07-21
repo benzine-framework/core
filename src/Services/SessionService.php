@@ -127,7 +127,7 @@ class SessionService implements \SessionHandlerInterface
         return true;
     }
 
-    public function has(string $key) : bool
+    public function has(string $key): bool
     {
         return isset($_SESSION[$key]);
     }

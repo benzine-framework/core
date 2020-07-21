@@ -3,6 +3,7 @@
 namespace Benzine\Tests;
 
 use Benzine\App;
+use Benzine\Router\Router;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Environment;
 use Slim\Http\Headers;
@@ -10,7 +11,6 @@ use Slim\Http\Request;
 use Slim\Http\RequestBody;
 use Slim\Http\Response;
 use Slim\Http\Uri;
-use Benzine\Router\Router;
 
 abstract class RoutesTestCase extends BaseTestCase
 {
