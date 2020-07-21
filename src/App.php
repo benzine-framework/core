@@ -133,6 +133,9 @@ class App
         $container->set(Slim\Views\Twig::class, function (ContainerInterface $container) {
             /** @var EnvironmentService $environmentService */
             $environmentService = $container->get(EnvironmentService::class);
+            /** @var SessionService $sessionService */
+            $sessionService = $container->get(SessionService::class);
+
             foreach ($this->viewPaths as $i => $viewLocation) {
                 if (!file_exists($viewLocation) || !is_dir($viewLocation)) {
                     unset($this->viewPaths[$i]);
@@ -172,7 +175,7 @@ class App
 
             // Add Twig Translate from symfony/twig-bridge
             $translator = $container->get(Translation\Translator::class);
-            $selectedLanguage = $container->get('SelectedLanguage');
+            $selectedLanguage = $sessionService->has('Language') ? $sessionService->get('Language') : 'en_US';
             $twig->addExtension(new SymfonyTwigExtensions\TranslationExtension($translator));
             $twig->offsetSet('language', $translator->trans($selectedLanguage));
 
@@ -187,23 +190,16 @@ class App
             return $container->get(Slim\Views\Twig::class);
         });
 
-        $container->set('SelectedLanguage', function (ContainerInterface $container) {
+        $container->set(Translation\Translator::class, function (ContainerInterface $container) {
             /** @var SessionService $sessionService */
             $sessionService = $container->get(SessionService::class);
 
-            return $sessionService->has('Language') ? $sessionService->get('Language') : 'en_US';
-        });
+            $selectedLanguage = $sessionService->has('Language') ? $sessionService->get('Language') : 'en_US';
 
-        $container->set(Translation\Translator::class, function (ContainerInterface $container) {
-            $selectedLanguage = $container->get('SelectedLanguage');
-
-            $translator = new Translation\Translator(
-                $container->get('ActiveLanguage'),
-                new Translation\MessageSelector()
-            );
+            $translator = new Translation\Translator($selectedLanguage);
 
             // set default locale
-            $translator->setFallbackLocale('en');
+            $translator->setFallbackLocales(['en_US']);
 
             // build the yaml loader
             $yamlLoader = new Translation\Loader\YamlFileLoader();
