@@ -44,10 +44,11 @@ class App
     protected \Slim\App $app;
     protected Logger $logger;
     protected bool $isSessionsEnabled = true;
-    protected array $routePaths = [];
-    protected array $viewPaths = [];
     protected bool $interrogateControllersComplete = false;
+    private array $routePaths = [];
+    private array $viewPaths = [];
     private string $cachePath = '/cache';
+    private array $supportedLanguages = ['en_US'];
 
     private static bool $isInitialised = false;
 
@@ -83,6 +84,7 @@ class App
         $this->setupMiddlewares($container);
         $this->viewPaths[] = APP_ROOT.'/views/';
         $this->viewPaths[] = APP_ROOT.'/src/Views/';
+        $this->interrogateTranslations();
         $this->interrogateControllers();
     }
 
@@ -173,6 +175,9 @@ class App
             // Added Twig_Extension_Debug to enable twig dump() etc.
             $twig->addExtension(new Twig\Extension\DebugExtension());
 
+            // Add Twig extension to integrate Kint
+            $twig->addExtension(new \Kint\Twig\TwigExtension());
+
             // Add Twig Translate from symfony/twig-bridge
             $translator = $container->get(Translation\Translator::class);
             $selectedLanguage = $sessionService->has('Language') ? $sessionService->get('Language') : 'en_US';
@@ -182,10 +187,12 @@ class App
             // Set some default parameters
             $twig->offsetSet('app_name', APP_NAME);
             $twig->offsetSet('year', date('Y'));
-
+            $twig->offsetSet('session', $sessionService);
+            
             return $twig;
         });
 
+        // This is required as some plugins for Slim expect there to be a twig available as "view"
         $container->set('view', function (ContainerInterface $container) {
             return $container->get(Slim\Views\Twig::class);
         });
@@ -238,6 +245,7 @@ class App
 
             return $faker;
         });
+
         $container->set(CachePoolChain::class, function (ContainerInterface $c) {
             $caches = [];
 
@@ -316,6 +324,7 @@ class App
                 $container->get(ConfigurationService::class)
             );
         });
+
         $container->set(Laminator::class, function (ContainerInterface $container) {
             return new Laminator(
                 APP_ROOT,
@@ -446,7 +455,48 @@ class App
         $this->app->run();
     }
 
-    protected function interrogateControllers()
+    /**
+     * @return string[]
+     */
+    public function getSupportedLanguages(): array
+    {
+        return $this->supportedLanguages;
+    }
+
+    /**
+     * @param string[] $supportedLanguages
+     */
+    public function setSupportedLanguages(array $supportedLanguages): self
+    {
+        $this->supportedLanguages = $supportedLanguages;
+
+        return $this;
+    }
+
+    public function addSupportedLanguage(string $supportedLanguage): self
+    {
+        $this->supportedLanguages[] = $supportedLanguage;
+        $this->supportedLanguages = array_unique($this->supportedLanguages);
+
+        return $this;
+    }
+
+    public function isSupportedLanguage(string $supportedLanguage): bool
+    {
+        return in_array($supportedLanguage, $this->supportedLanguages, true);
+    }
+
+    protected function interrogateTranslations(): void
+    {
+        foreach (new \DirectoryIterator(APP_ROOT.'/src/Translations') as $translationFile) {
+            if ('yaml' == $translationFile->getExtension()) {
+                $languageName = substr($translationFile->getBasename(), 0, -5);
+                $this->addSupportedLanguage($languageName);
+            }
+        }
+    }
+
+    protected function interrogateControllers(): void
     {
         if ($this->interrogateControllersComplete) {
             return;

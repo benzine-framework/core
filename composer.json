@@ -34,6 +34,7 @@
         "jc21/clitable": "^1.2",
         "johnkary/phpunit-speedtrap": "^3.0.0",
         "kint-php/kint": "^3.3",
+        "kint-php/kint-twig": "^3.0",
         "mattketmo/camel": "^1.1",
         "maximebf/debugbar": "^1.16",
         "middlewares/content-length": "^1.1",
