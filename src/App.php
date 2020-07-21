@@ -215,7 +215,7 @@ class App
             $translator->addLoader('yaml', $yamlLoader);
 
             // add some resources to the translator
-            $translator->addResource('yaml', APP_ROOT."/src/Translations/{$selectedLanguage}.yaml", $selectedLanguage);
+            $translator->addResource('yaml', APP_ROOT."/src/Strings/{$selectedLanguage}.yaml", $selectedLanguage);
 
             return $translator;
         });
@@ -488,7 +488,7 @@ class App
 
     protected function interrogateTranslations(): void
     {
-        foreach (new \DirectoryIterator(APP_ROOT.'/src/Translations') as $translationFile) {
+        foreach (new \DirectoryIterator(APP_ROOT.'/src/Strings') as $translationFile) {
             if ('yaml' == $translationFile->getExtension()) {
                 $languageName = substr($translationFile->getBasename(), 0, -5);
                 $this->addSupportedLanguage($languageName);
