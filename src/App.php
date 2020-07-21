@@ -353,7 +353,7 @@ class App
         return self::Instance()->get($key);
     }
 
-    public function getApp()
+    public function getApp() : \Slim\App
     {
         return $this->app;
     }

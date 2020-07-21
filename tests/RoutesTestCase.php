@@ -2,6 +2,7 @@
 
 namespace Benzine\Tests;
 
+use Benzine\App;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Environment;
 use Slim\Http\Headers;
@@ -9,7 +10,7 @@ use Slim\Http\Request;
 use Slim\Http\RequestBody;
 use Slim\Http\Response;
 use Slim\Http\Uri;
-use ⌬\Router\Router;
+use Benzine\Router\Router;
 
 abstract class RoutesTestCase extends BaseTestCase
 {
@@ -44,10 +45,10 @@ abstract class RoutesTestCase extends BaseTestCase
          * @var \Slim\App           $app
          * @var \Gone\AppCore\App $applicationInstance
          */
-        $applicationInstance = $this->getApp();
+        $applicationInstance = App::Instance();
         $calledClass = get_called_class();
 
-        $app = $applicationInstance->getApp();
+        $slimApp = $applicationInstance->getApp();
 
         if (defined("{$calledClass}")) {
             $modelName = $calledClass::MODEL_NAME;
@@ -62,7 +63,7 @@ abstract class RoutesTestCase extends BaseTestCase
         if (file_exists(APP_ROOT.'/src/RoutesExtra.php')) {
             require APP_ROOT.'/src/RoutesExtra.php';
         }
-        Router::Instance()->populateRoutes($app);
+        Router::Instance()->populateRoutes($slimApp);
         $headers = array_merge($this->defaultHeaders, $extraHeaders);
 
         $envArray = array_merge($this->defaultEnvironment, $headers);
