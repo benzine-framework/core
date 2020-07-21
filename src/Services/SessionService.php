@@ -15,6 +15,11 @@ class SessionService implements \SessionHandlerInterface
         $this->redis = $redis;
     }
 
+    public function __get($name)
+    {
+        return $this->get($name);
+    }
+
     /**
      * @return int
      */
@@ -33,7 +38,7 @@ class SessionService implements \SessionHandlerInterface
 
     public function initSession()
     {
-        if (session_status() == PHP_SESSION_ACTIVE) {
+        if (PHP_SESSION_ACTIVE == session_status()) {
             return;
         }
 
@@ -121,11 +126,6 @@ class SessionService implements \SessionHandlerInterface
         apcu_store('read-'.$session_id, $session_data);
 
         return true;
-    }
-
-    public function __get($name)
-    {
-        return $this->get($name);
     }
 
     public function has(string $key): bool
