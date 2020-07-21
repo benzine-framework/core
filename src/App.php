@@ -29,6 +29,8 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Slim;
 use Slim\Factory\AppFactory;
+use Symfony\Bridge\Twig\Extension as SymfonyTwigExtensions;
+use Symfony\Component\Translation;
 use Twig;
 use Twig\Loader\FilesystemLoader;
 
@@ -168,13 +170,52 @@ class App
             // Added Twig_Extension_Debug to enable twig dump() etc.
             $twig->addExtension(new Twig\Extension\DebugExtension());
 
+            // Add Twig Translate from symfony/twig-bridge
+            $translator = $container->get(Translation\Translator::class);
+            $selectedLanguage = $container->get('SelectedLanguage');
+            $twig->addExtension(new SymfonyTwigExtensions\TranslationExtension($translator));
+            $twig->offsetSet('language', $translator->trans($selectedLanguage));
+
+            // Set some default parameters
             $twig->offsetSet('app_name', APP_NAME);
             $twig->offsetSet('year', date('Y'));
 
             return $twig;
         });
+
         $container->set('view', function (ContainerInterface $container) {
             return $container->get(Slim\Views\Twig::class);
+        });
+
+        $container->set('SelectedLanguage', function (ContainerInterface $container){
+            /** @var SessionService $sessionService */
+            $sessionService = $container->get(SessionService::class);
+
+            $selectedLanguage = $sessionService->has('Language') ? $sessionService->get('Language') : 'en_US';
+            return $selectedLanguage;
+        });
+
+        $container->set(Translation\Translator::class, function(ContainerInterface $container){
+            $selectedLanguage = $container->get('SelectedLanguage');
+
+            $translator = new Translation\Translator(
+                $container->get('ActiveLanguage'),
+                new Translation\MessageSelector()
+            );
+            
+            // set default locale
+            $translator->setFallbackLocale('en');
+
+            // build the yaml loader
+            $yamlLoader = new Translation\Loader\YamlFileLoader();
+
+            // add the loader to the translator
+            $translator->addLoader('yaml', $yamlLoader);
+
+            // add some resources to the translator
+            $translator->addResource('yaml', APP_ROOT . "/src/Translations/{$selectedLanguage}.yaml", $selectedLanguage);
+            
+            return $translator;
         });
 
         $container->set(EnvironmentService::class, function (ContainerInterface $container) {
