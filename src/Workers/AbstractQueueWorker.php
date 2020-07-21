@@ -147,6 +147,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
                         'trace' => array_slice($e->getTrace(), 0, 5),
                     ]
                 );
+
                 continue;
             }
 
@@ -154,7 +155,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
                 foreach ($processResults as $processResult) {
                     $this->resultItems[] = $processResult;
                 }
-            } else if (null !== $processResults) {
+            } elseif (null !== $processResults) {
                 $this->resultItems[] = $processResults;
             }
         }
@@ -207,7 +208,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
     /**
      * @param WorkerWorkItem $item
      *
-     * @return WorkerWorkItem|WorkerWorkItem[]|null
+     * @return null|WorkerWorkItem|WorkerWorkItem[]
      */
     abstract protected function process(WorkerWorkItem $item);
 }
