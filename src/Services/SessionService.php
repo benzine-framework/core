@@ -38,13 +38,13 @@ class SessionService implements \SessionHandlerInterface
 
     public function initSession()
     {
-        if (PHP_SESSION_ACTIVE == session_status()) {
+        if ('cli' === PHP_SAPI || PHP_SESSION_ACTIVE === session_status()) {
             return;
         }
 
         // set how long server should keep session data
-
         ini_set('session.gc_maxlifetime', $this->getLifetime());
+
         // set how long each client should remember their session id
         session_set_cookie_params($this->getLifetime());
         session_set_save_handler($this);
