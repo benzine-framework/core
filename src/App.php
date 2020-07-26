@@ -188,7 +188,7 @@ class App
             $twig->offsetSet('app_name', APP_NAME);
             $twig->offsetSet('year', date('Y'));
             $twig->offsetSet('session', $sessionService);
-            
+
             return $twig;
         });
 
