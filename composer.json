@@ -21,6 +21,7 @@
         "ext-reflection": "*",
         "ext-sockets": "*",
         "ext-zip": "*",
+        "brianium/paratest": "^4.1",
         "cache/apc-adapter": "^1.0",
         "cache/apcu-adapter": "^1.0",
         "cache/array-adapter": "^1.0",
