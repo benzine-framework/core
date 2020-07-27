@@ -21,6 +21,7 @@ use DI\Container;
 use DI\ContainerBuilder;
 use Faker\Factory as FakerFactory;
 use Faker\Provider;
+use Middlewares\TrailingSlash;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Logger;
@@ -71,6 +72,7 @@ class App
         $this->app->add(Slim\Views\TwigMiddleware::createFromContainer($this->app));
         $this->app->addRoutingMiddleware();
         $errorMiddleware = $this->app->addErrorMiddleware(true, true, true);
+        $this->setupMiddlewares($container);
     }
 
     protected function setup(ContainerInterface $container): void
@@ -81,7 +83,6 @@ class App
             $session = $container->get(SessionService::class);
         }
 
-        $this->setupMiddlewares($container);
         $this->viewPaths[] = APP_ROOT.'/views/';
         $this->viewPaths[] = APP_ROOT.'/src/Views/';
         $this->interrogateTranslations();
@@ -333,6 +334,10 @@ class App
             );
         });
 
+        $container->set(TrailingSlash::class, function(){
+            return (new TrailingSlash())->redirect();
+        });
+
         /** @var Services\EnvironmentService $environmentService */
         $environmentService = $container->get(Services\EnvironmentService::class);
         if ($environmentService->has('TIMEZONE')) {
@@ -351,15 +356,13 @@ class App
     public function setupMiddlewares(ContainerInterface $container): void
     {
         // Middlewares
-        //$this->app->add($container->get(Middleware\EnvironmentHeadersOnResponse::class));
-        //$this->app->add($container->get(\Middlewares\ContentLength::class));
         //$this->app->add($container->get(\Middlewares\Debugbar::class));
         //$this->app->add($container->get(\Middlewares\Geolocation::class));
-        //$this->app->add($container->get(\Middlewares\TrailingSlash::class));
-        //$this->app->add($container->get(Middleware\JSONResponseLinter::class));
+        $this->app->add($container->get(\Middlewares\TrailingSlash::class));
         //$this->app->add($container->get(\Middlewares\Whoops::class));
         //$this->app->add($container->get(\Middlewares\Minifier::class));
-        //$this->app->add($container->get(\Middlewares\GzipEncoder::class));
+        $this->app->add($container->get(\Middlewares\GzipEncoder::class));
+        $this->app->add($container->get(\Middlewares\ContentLength::class));
     }
 
     /**
