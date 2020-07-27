@@ -2,19 +2,25 @@
 
 namespace Benzine\Controllers;
 
+use DebugBar\DebugBar;
+use Monolog\Logger;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 use Slim\Views\Twig;
 
 abstract class HtmlController extends Controller
 {
-    /** @var Twig */
-    protected $twig;
+    protected Twig $twig;
+    protected DebugBar $debugBar;
 
     public function __construct(
-        Twig $twig
+        Twig $twig,
+        Logger $logger,
+        DebugBar $debugBar
     ) {
+        parent::__construct($logger);
         $this->twig = $twig;
+        $this->debugBar = $debugBar;
     }
 
     protected function renderInlineCss(array $files)
@@ -34,10 +40,21 @@ abstract class HtmlController extends Controller
             return $this->jsonResponse($parameters, $request, $response);
         }
 
-        return $this->twig->render(
+        $renderStart = microtime(true);
+        $this->debugBar['time']->startMeasure('render', 'Time for rendering');
+        $response = $this->twig->render(
             $response,
             $template,
             $parameters
         )->withHeader('Content-Type', 'text/html');
+
+        $this->logger->debug(sprintf(
+            'Took %sms to render %s',
+            number_format((microtime(true) - $renderStart) * 1000, 2),
+            $template
+        ));
+        $this->debugBar['time']->stopMeasure('render');
+
+        return $response;
     }
 }

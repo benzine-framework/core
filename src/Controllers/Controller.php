@@ -4,42 +4,35 @@ namespace Benzine\Controllers;
 
 use Benzine\Controllers\Filters\Filter;
 use Benzine\Exceptions\FilterDecodeException;
+use Monolog\Logger;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 
 abstract class Controller
 {
-    /** @var Service */
-    protected $service;
-    /** @var bool */
-    protected $apiExplorerEnabled = true;
+    protected Logger $logger;
+    protected Service $service;
+    protected bool $apiExplorerEnabled = true;
 
-    public function __construct()
+    public function __construct(Logger $logger)
     {
+        $this->logger = $logger;
+        $this->logger->debug(sprintf('Entered Controller in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
     }
 
-    /**
-     * @return Service
-     */
-    public function getService()
+    public function getService(): Service
     {
         return $this->service;
     }
 
-    /**
-     * @param Service $service
-     */
-    public function setService($service): self
+    public function setService(Service $service): self
     {
         $this->service = $service;
 
         return $this;
     }
 
-    /**
-     * @return bool
-     */
-    public function isApiExplorerEnabled(): self
+    public function isApiExplorerEnabled(): bool
     {
         return $this->apiExplorerEnabled;
     }

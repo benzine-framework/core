@@ -17,8 +17,13 @@ use Cache\Adapter\Chain\CachePoolChain;
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\Adapter\Redis\RedisCachePool;
 use DebugBar\Bridge\MonologCollector;
+use DebugBar\DataCollector\ExceptionsCollector;
+use DebugBar\DataCollector\MemoryCollector;
+use DebugBar\DataCollector\MessagesCollector;
+use DebugBar\DataCollector\PhpInfoCollector;
+use DebugBar\DataCollector\RequestDataCollector;
+use DebugBar\DataCollector\TimeDataCollector;
 use DebugBar\DebugBar;
-use DebugBar\StandardDebugBar;
 use DI\Container;
 use DI\ContainerBuilder;
 use Faker\Factory as FakerFactory;
@@ -46,6 +51,7 @@ class App
     protected ConfigurationService $configurationService;
     protected \Slim\App $app;
     protected Logger $logger;
+    protected DebugBar $debugBar;
     protected Router $router;
     protected bool $isSessionsEnabled = true;
     protected bool $interrogateControllersComplete = false;
@@ -60,9 +66,16 @@ class App
     {
         // Configure Dependency Injector
         $container = $this->setupContainer();
+        $this->logger = $container->get(Logger::class);
+        $this->debugBar = $container->get(DebugBar::class);
         AppFactory::setContainer($container);
 
-        $this->setup($container);
+        if ('cli' != php_sapi_name() && $this->isSessionsEnabled) {
+            $session = $container->get(SessionService::class);
+        }
+
+        $this->viewPaths[] = APP_ROOT.'/views/';
+        $this->viewPaths[] = APP_ROOT.'/src/Views/';
 
         // Configure Router
         $this->routePaths = [
@@ -74,22 +87,20 @@ class App
         $this->app = AppFactory::create();
         $this->app->add(Slim\Views\TwigMiddleware::createFromContainer($this->app));
         $this->app->addRoutingMiddleware();
-        $errorMiddleware = $this->app->addErrorMiddleware(true, true, true);
+
         $this->setupMiddlewares($container);
-    }
 
-    protected function setup(ContainerInterface $container): void
-    {
-        $this->logger = $container->get(Logger::class);
+        $errorMiddleware = $this->app->addErrorMiddleware(true, true, true, $this->logger);
 
-        if ('cli' != php_sapi_name() && $this->isSessionsEnabled) {
-            $session = $container->get(SessionService::class);
-        }
-
-        $this->viewPaths[] = APP_ROOT.'/views/';
-        $this->viewPaths[] = APP_ROOT.'/src/Views/';
+        $this->debugBar['time']->startMeasure('interrogateTranslations', 'Time to interrogate translation files');
         $this->interrogateTranslations();
+        $this->debugBar['time']->stopMeasure('interrogateTranslations');
+
+        $this->debugBar['time']->startMeasure('interrogateControllers', 'Time to interrogate controllers for routes');
         $this->interrogateControllers();
+        $this->debugBar['time']->stopMeasure('interrogateControllers');
+
+        $this->logger->debug(sprintf('Bootstrap complete in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
     }
 
     /**
@@ -270,13 +281,6 @@ class App
             return $monolog;
         });
 
-        $container->set(DebugBar::class, function (Logger $logger) {
-            $debugBar = new StandardDebugBar();
-            $debugBar->addCollector(new MonologCollector($logger));
-
-            return $debugBar;
-        });
-
         $container->set(\Redis::class, function (EnvironmentService $environmentService) {
             $redis = new Redis();
             $redis->connect(
@@ -299,6 +303,24 @@ class App
             return (new TrailingSlash())->redirect();
         });
 
+        $container->set(DebugBar::class, function (Logger $logger) {
+            return (new DebugBar())
+                ->addCollector(new PhpInfoCollector())
+                ->addCollector(new MessagesCollector())
+                //->addCollector(new RequestDataCollector())
+                ->addCollector(new TimeDataCollector())
+                ->addCollector(new MemoryCollector())
+                ->addCollector(new ExceptionsCollector())
+                ->addCollector(new MonologCollector($logger, Logger::DEBUG))
+            ;
+        });
+
+        $container->set(\Middlewares\Debugbar::class, function (DebugBar $debugBar) {
+            return new \Middlewares\Debugbar(
+                $debugBar
+            );
+        });
+
         /** @var Services\EnvironmentService $environmentService */
         $environmentService = $container->get(Services\EnvironmentService::class);
         if ($environmentService->has('TIMEZONE')) {
@@ -317,7 +339,6 @@ class App
     public function setupMiddlewares(ContainerInterface $container): void
     {
         // Middlewares
-        //$this->app->add($container->get(\Middlewares\Debugbar::class));
         //$this->app->add($container->get(\Middlewares\Geolocation::class));
         $this->app->add($container->get(\Middlewares\TrailingSlash::class));
         //$this->app->add($container->get(\Middlewares\Whoops::class));
@@ -395,8 +416,7 @@ class App
     public static function Log(int $level = Logger::DEBUG, $message)
     {
         return self::Instance()
-            ->getContainer()
-            ->get(Logger::class)
+            ->getLogger()
             ->log($level, ($message instanceof \Exception) ? $message->__toString() : $message)
         ;
     }
@@ -416,7 +436,11 @@ class App
 
     public function runHttp(): void
     {
+        $this->debugBar['time']->startMeasure('runHTTP', "HTTP runtime");
         $this->app->run();
+        if($this->debugBar['time']->hasStartedMeasure('runHTTP')) {
+            $this->debugBar['time']->stopMeasure('runHTTP');
+        }
     }
 
     /**
@@ -470,6 +494,11 @@ class App
         return $this;
     }
 
+    public function getLogger(): Logger
+    {
+        return $this->logger;
+    }
+
     protected function interrogateTranslations(): void
     {
         foreach (new \DirectoryIterator(APP_ROOT.'/src/Strings') as $translationFile) {
@@ -492,7 +521,7 @@ class App
         }
 
         $controllerPaths = [
-            APP_ROOT . '/src/Controllers',
+            APP_ROOT.'/src/Controllers',
         ];
 
         foreach ($controllerPaths as $controllerPath) {
@@ -541,7 +570,6 @@ class App
                                                 }
                                                 $options = array_merge($defaultOptions, $options);
                                                 foreach ($httpMethods as $httpMethod) {
-
                                                     $newRoute = Route::Factory()
                                                         ->setHttpMethod($httpMethod)
                                                         ->setRouterPattern('/'.ltrim($path, '/'))
@@ -572,6 +600,7 @@ class App
 
         $this->router
             ->weighRoutes()
-            ->cache();
+            ->cache()
+        ;
     }
 }
