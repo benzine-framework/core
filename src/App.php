@@ -5,6 +5,8 @@ namespace Benzine;
 use Benzine\ORM\Connection\Databases;
 use Benzine\ORM\Laminator;
 use Benzine\Redis\Redis;
+use Benzine\Router\Route;
+use Benzine\Router\Router;
 use Benzine\Services\ConfigurationService;
 use Benzine\Services\EnvironmentService;
 use Benzine\Services\SessionService;
@@ -44,6 +46,7 @@ class App
     protected ConfigurationService $configurationService;
     protected \Slim\App $app;
     protected Logger $logger;
+    protected Router $router;
     protected bool $isSessionsEnabled = true;
     protected bool $interrogateControllersComplete = false;
     private array $routePaths = [];
@@ -212,10 +215,6 @@ class App
             return $translator;
         });
 
-        $container->set(EnvironmentService::class, function () {
-            return new EnvironmentService();
-        });
-
         $container->set(ConfigurationService::class, function (EnvironmentService $environmentService) use ($app) {
             return new ConfigurationService(
                 $app,
@@ -278,10 +277,6 @@ class App
             return $debugBar;
         });
 
-        $container->set(\Middlewares\Debugbar::class, function (DebugBar $debugBar) {
-            return new \Middlewares\Debugbar($debugBar);
-        });
-
         $container->set(\Redis::class, function (EnvironmentService $environmentService) {
             $redis = new Redis();
             $redis->connect(
@@ -290,14 +285,6 @@ class App
             );
 
             return $redis;
-        });
-
-        $container->set(SessionService::class, function (\Redis $redis) {
-            return new SessionService($redis);
-        });
-
-        $container->set(Databases::class, function (ConfigurationService $configurationService) {
-            return new Databases($configurationService);
         });
 
         $container->set(Laminator::class, function (ConfigurationService $configurationService, Databases $databases) {
@@ -322,7 +309,7 @@ class App
             date_default_timezone_set(self::DEFAULT_TIMEZONE);
         }
 
-        $debugBar = $container->get(DebugBar::class);
+        $this->router = $container->get(Router::class);
 
         return $container;
     }
@@ -335,7 +322,7 @@ class App
         $this->app->add($container->get(\Middlewares\TrailingSlash::class));
         //$this->app->add($container->get(\Middlewares\Whoops::class));
         //$this->app->add($container->get(\Middlewares\Minifier::class));
-        $this->app->add($container->get(\Middlewares\GzipEncoder::class));
+        //$this->app->add($container->get(\Middlewares\GzipEncoder::class));
         $this->app->add($container->get(\Middlewares\ContentLength::class));
     }
 
@@ -422,7 +409,7 @@ class App
                 include $path;
             }
         }
-        Router\Router::Instance()->populateRoutes($app);
+        $this->router->populateRoutes($app);
 
         return $this;
     }
@@ -463,6 +450,26 @@ class App
         return in_array($supportedLanguage, $this->supportedLanguages, true);
     }
 
+    /**
+     * @return mixed|Router
+     */
+    public function getRouter()
+    {
+        return $this->router;
+    }
+
+    /**
+     * @param mixed|Router $router
+     *
+     * @return App
+     */
+    public function setRouter($router)
+    {
+        $this->router = $router;
+
+        return $this;
+    }
+
     protected function interrogateTranslations(): void
     {
         foreach (new \DirectoryIterator(APP_ROOT.'/src/Strings') as $translationFile) {
@@ -480,23 +487,24 @@ class App
         }
         $this->interrogateControllersComplete = true;
 
+        if ($this->router->loadCache()) {
+            return;
+        }
+
         $controllerPaths = [
-            APP_ROOT.'/src/Controllers',
+            APP_ROOT . '/src/Controllers',
         ];
 
         foreach ($controllerPaths as $controllerPath) {
-            //$this->logger->debug("Route Discovery - {$controllerPath}");
             if (file_exists($controllerPath)) {
                 foreach (new \DirectoryIterator($controllerPath) as $controllerFile) {
                     if (!$controllerFile->isDot() && $controllerFile->isFile() && $controllerFile->isReadable()) {
-                        //$this->logger->debug(" >  {$controllerFile->getPathname()}");
                         $appClass = new \ReflectionClass(get_called_class());
                         $expectedClasses = [
                             $appClass->getNamespaceName().'\\Controllers\\'.str_replace('.php', '', $controllerFile->getFilename()),
                             '⌬\\Controllers\\'.str_replace('.php', '', $controllerFile->getFilename()),
                         ];
                         foreach ($expectedClasses as $expectedClass) {
-                            //$this->logger->debug("  > {$expectedClass}");
                             if (class_exists($expectedClass)) {
                                 $rc = new \ReflectionClass($expectedClass);
                                 if (!$rc->isAbstract()) {
@@ -508,23 +516,18 @@ class App
                                                 if (false === stripos($docBlockRow, '@route')) {
                                                     continue;
                                                 }
-                                                //$this->logger->debug("   > fff {$docBlockRow}");
 
                                                 $route = trim(substr(
                                                     $docBlockRow,
                                                     (stripos($docBlockRow, '@route') + strlen('@route'))
                                                 ));
-                                                //$this->logger->debug("   > Route {$route}");
-
-                                                //\Kint::dump($route);
 
                                                 @list($httpMethods, $path, $extra) = explode(' ', $route, 3);
-                                                //\Kint::dump($httpMethods, $path, $extra);exit;
                                                 $httpMethods = explode(',', strtoupper($httpMethods));
 
                                                 $options = [];
                                                 $defaultOptions = [
-                                                    'access' => Router\Route::ACCESS_PUBLIC,
+                                                    'access' => Route::ACCESS_PUBLIC,
                                                     'weight' => 100,
                                                 ];
                                                 if (isset($extra)) {
@@ -538,9 +541,8 @@ class App
                                                 }
                                                 $options = array_merge($defaultOptions, $options);
                                                 foreach ($httpMethods as $httpMethod) {
-                                                    //$this->logger->debug("    > Adding {$path} to router");
 
-                                                    $newRoute = Router\Route::Factory()
+                                                    $newRoute = Route::Factory()
                                                         ->setHttpMethod($httpMethod)
                                                         ->setRouterPattern('/'.ltrim($path, '/'))
                                                         ->setCallback($method->class.':'.$method->name)
@@ -555,7 +557,7 @@ class App
                                                         }
                                                     }
 
-                                                    Router\Router::Instance()->addRoute($newRoute);
+                                                    $this->router->addRoute($newRoute);
                                                 }
                                             }
                                         }
@@ -568,6 +570,8 @@ class App
             }
         }
 
-        Router\Router::Instance()->weighRoutes();
+        $this->router
+            ->weighRoutes()
+            ->cache();
     }
 }
