@@ -38,6 +38,6 @@ abstract class HtmlController extends Controller
             $response,
             $template,
             $parameters
-        );
+        )->withHeader('Content-Type', 'text/html');
     }
 }
