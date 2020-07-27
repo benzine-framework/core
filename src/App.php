@@ -334,7 +334,7 @@ class App
             );
         });
 
-        $container->set(TrailingSlash::class, function(){
+        $container->set(TrailingSlash::class, function () {
             return (new TrailingSlash())->redirect();
         });
 
