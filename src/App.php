@@ -133,12 +133,7 @@ class App
         }
         $container = $container->build();
 
-        $container->set(Slim\Views\Twig::class, function (ContainerInterface $container) {
-            /** @var EnvironmentService $environmentService */
-            $environmentService = $container->get(EnvironmentService::class);
-            /** @var SessionService $sessionService */
-            $sessionService = $container->get(SessionService::class);
-
+        $container->set(Slim\Views\Twig::class, function (EnvironmentService $environmentService, SessionService $sessionService, Translation\Translator $translator) {
             foreach ($this->viewPaths as $i => $viewLocation) {
                 if (!file_exists($viewLocation) || !is_dir($viewLocation)) {
                     unset($this->viewPaths[$i]);
@@ -180,7 +175,6 @@ class App
             $twig->addExtension(new \Kint\Twig\TwigExtension());
 
             // Add Twig Translate from symfony/twig-bridge
-            $translator = $container->get(Translation\Translator::class);
             $selectedLanguage = $sessionService->has('Language') ? $sessionService->get('Language') : 'en_US';
             $twig->addExtension(new SymfonyTwigExtensions\TranslationExtension($translator));
             $twig->offsetSet('language', $translator->trans($selectedLanguage));
@@ -194,14 +188,11 @@ class App
         });
 
         // This is required as some plugins for Slim expect there to be a twig available as "view"
-        $container->set('view', function (ContainerInterface $container) {
-            return $container->get(Slim\Views\Twig::class);
+        $container->set('view', function (Slim\Views\Twig $twig) {
+            return $twig;
         });
 
-        $container->set(Translation\Translator::class, function (ContainerInterface $container) {
-            /** @var SessionService $sessionService */
-            $sessionService = $container->get(SessionService::class);
-
+        $container->set(Translation\Translator::class, function (SessionService $sessionService) {
             $selectedLanguage = $sessionService->has('Language') ? $sessionService->get('Language') : 'en_US';
 
             $translator = new Translation\Translator($selectedLanguage);
@@ -221,18 +212,18 @@ class App
             return $translator;
         });
 
-        $container->set(EnvironmentService::class, function (ContainerInterface $container) {
+        $container->set(EnvironmentService::class, function () {
             return new EnvironmentService();
         });
 
-        $container->set(ConfigurationService::class, function (ContainerInterface $container) use ($app) {
+        $container->set(ConfigurationService::class, function (EnvironmentService $environmentService) use ($app) {
             return new ConfigurationService(
                 $app,
-                $container->get(EnvironmentService::class)
+                $environmentService
             );
         });
 
-        $container->set(\Faker\Generator::class, function (ContainerInterface $c) {
+        $container->set(\Faker\Generator::class, function () {
             $faker = FakerFactory::create();
             $faker->addProvider(new Provider\Base($faker));
             $faker->addProvider(new Provider\DateTime($faker));
@@ -247,7 +238,7 @@ class App
             return $faker;
         });
 
-        $container->set(CachePoolChain::class, function (ContainerInterface $c) {
+        $container->set(CachePoolChain::class, function (\Redis $redis) {
             $caches = [];
 
             // If apc/apcu present, add it to the pool
@@ -258,53 +249,40 @@ class App
             }
 
             // If Redis is configured, add it to the pool.
-            $caches[] = new RedisCachePool($c->get(\Redis::class));
+            $caches[] = new RedisCachePool($redis);
             $caches[] = new ArrayCachePool();
 
             return new CachePoolChain($caches);
         });
 
-        $container->set('MonologFormatter', function (ContainerInterface $c) {
-            /** @var Services\EnvironmentService $environment */
-            $environment = $c->get(Services\EnvironmentService::class);
-
-            return
-            new LineFormatter(
+        $container->set('MonologFormatter', function (EnvironmentService $environmentService) {
+            return new LineFormatter(
             // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%"
-                $environment->get('MONOLOG_FORMAT', '[%datetime%] %channel%.%level_name%: %message% %context% %extra%')."\n",
+                $environmentService->get('MONOLOG_FORMAT', '[%datetime%] %channel%.%level_name%: %message% %context% %extra%')."\n",
                 'Y n j, g:i a'
             );
         });
 
-        $container->set(Logger::class, function (ContainerInterface $c) {
-            /** @var ConfigurationService $configuration */
-            $configuration = $c->get(ConfigurationService::class);
-
-            $monolog = new Logger($configuration->get(ConfigurationService::KEY_APP_NAME));
+        $container->set(Logger::class, function (ConfigurationService $configurationService) {
+            $monolog = new Logger($configurationService->get(ConfigurationService::KEY_APP_NAME));
             $monolog->pushHandler(new ErrorLogHandler(), Logger::DEBUG);
             $monolog->pushProcessor(new PsrLogMessageProcessor());
 
             return $monolog;
         });
 
-        $container->set(DebugBar::class, function (ContainerInterface $container) {
+        $container->set(DebugBar::class, function (Logger $logger) {
             $debugBar = new StandardDebugBar();
-            /** @var Logger $logger */
-            $logger = $container->get(Logger::class);
             $debugBar->addCollector(new MonologCollector($logger));
 
             return $debugBar;
         });
 
-        $container->set(\Middlewares\Debugbar::class, function (ContainerInterface $container) {
-            $debugBar = $container->get(DebugBar::class);
-
+        $container->set(\Middlewares\Debugbar::class, function (DebugBar $debugBar) {
             return new \Middlewares\Debugbar($debugBar);
         });
 
-        $container->set(\Redis::class, function (ContainerInterface $container) {
-            $environmentService = $container->get(EnvironmentService::class);
-
+        $container->set(\Redis::class, function (EnvironmentService $environmentService) {
             $redis = new Redis();
             $redis->connect(
                 $environmentService->get('REDIS_HOST', 'redis'),
@@ -314,23 +292,19 @@ class App
             return $redis;
         });
 
-        $container->set(SessionService::class, function (ContainerInterface $container) {
-            return new SessionService(
-                $container->get(\Redis::class)
-            );
+        $container->set(SessionService::class, function (\Redis $redis) {
+            return new SessionService($redis);
         });
 
-        $container->set(Databases::class, function (ContainerInterface $container) {
-            return new Databases(
-                $container->get(ConfigurationService::class)
-            );
+        $container->set(Databases::class, function (ConfigurationService $configurationService) {
+            return new Databases($configurationService);
         });
 
-        $container->set(Laminator::class, function (ContainerInterface $container) {
+        $container->set(Laminator::class, function (ConfigurationService $configurationService, Databases $databases) {
             return new Laminator(
                 APP_ROOT,
-                $container->get(ConfigurationService::class),
-                $container->get(Databases::class)
+                $configurationService,
+                $databases
             );
         });
 
