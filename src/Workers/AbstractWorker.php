@@ -53,7 +53,7 @@ abstract class AbstractWorker implements WorkerInterface
 
     public function run(): void
     {
-        $this->logger->debug("Running with an interval of {$this->timeBetweenRuns}");
+        $this->logger->debug("Running with an interval of {$this->timeBetweenRuns} seconds.");
         while (true) {
             $didWork = $this->iterate();
             if (!$didWork) {

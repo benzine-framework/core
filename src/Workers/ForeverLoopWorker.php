@@ -6,7 +6,7 @@ abstract class ForeverLoopWorker extends AbstractWorker implements WorkerInterfa
 {
     public function run(): void
     {
-        $this->logger->debug("Running with an interval of {$this->timeBetweenRuns}");
+        $this->logger->debug("Running with an interval of {$this->timeBetweenRuns} seconds.");
         while (true) {
             $didWork = $this->iterate();
             sleep($this->timeBetweenRuns);
