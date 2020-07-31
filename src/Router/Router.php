@@ -9,7 +9,7 @@ use Slim\App;
 class Router
 {
     /** @var Route[] */
-    private $routes = [];
+    private array $routes = [];
     private Logger $logger;
     private CachePoolChain $cachePoolChain;
     private int $cacheTTL = 60;
@@ -29,7 +29,8 @@ class Router
             });
 
             foreach ($this->routes as $index => $route) {
-                if (!isset($allocatedRoutes[$route->getHttpMethod().$route->getRouterPattern()])) {
+                if (($route->isInContainedInValidDomains() || !$route->hasValidDomains())
+                    && !isset($allocatedRoutes[$route->getHttpMethod().$route->getRouterPattern()])) {
                     $allocatedRoutes[$route->getHttpMethod().$route->getRouterPattern()] = true;
                 } else {
                     unset($this->routes[$index]);
@@ -44,7 +45,7 @@ class Router
     {
         $this->weighRoutes();
         if (count($this->routes) > 0) {
-            foreach ($this->routes as $route) {
+            foreach ($this->getRoutes() as $route) {
                 $app = $route->populateRoute($app);
             }
         }
@@ -64,8 +65,6 @@ class Router
      */
     public function getRoutes()
     {
-        ksort($this->routes);
-
         return $this->routes;
     }
 

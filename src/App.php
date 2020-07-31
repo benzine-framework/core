@@ -147,7 +147,11 @@ class App
         }
         $container = $container->build();
 
-        $container->set(Slim\Views\Twig::class, function (EnvironmentService $environmentService, SessionService $sessionService, Translation\Translator $translator) {
+        $container->set(Slim\Views\Twig::class, function (
+            EnvironmentService $environmentService,
+            SessionService $sessionService,
+            Translation\Translator $translator
+        ) {
             foreach ($this->viewPaths as $i => $viewLocation) {
                 if (!file_exists($viewLocation) || !is_dir($viewLocation)) {
                     unset($this->viewPaths[$i]);
@@ -321,10 +325,9 @@ class App
             );
         });
 
-        /** @var Services\EnvironmentService $environmentService */
-        $environmentService = $container->get(Services\EnvironmentService::class);
-        if ($environmentService->has('TIMEZONE')) {
-            date_default_timezone_set($environmentService->get('TIMEZONE'));
+        $this->environmentService = $container->get(Services\EnvironmentService::class);
+        if ($this->environmentService->has('TIMEZONE')) {
+            date_default_timezone_set($this->environmentService->get('TIMEZONE'));
         } elseif (file_exists('/etc/timezone')) {
             date_default_timezone_set(trim(file_get_contents('/etc/timezone')));
         } else {
@@ -516,7 +519,10 @@ class App
         }
         $this->interrogateControllersComplete = true;
 
-        if ($this->router->loadCache()) {
+        if ($this->environmentService->has('USE_ROUTE_CACHE')
+            && 'yes' == strtolower($this->environmentService->get('USE_ROUTE_CACHE'))
+            && $this->router->loadCache()
+        ) {
             return;
         }
 
@@ -531,7 +537,7 @@ class App
                         $appClass = new \ReflectionClass(get_called_class());
                         $expectedClasses = [
                             $appClass->getNamespaceName().'\\Controllers\\'.str_replace('.php', '', $controllerFile->getFilename()),
-                            '⌬\\Controllers\\'.str_replace('.php', '', $controllerFile->getFilename()),
+                            'Benzine\\Controllers\\'.str_replace('.php', '', $controllerFile->getFilename()),
                         ];
                         foreach ($expectedClasses as $expectedClass) {
                             if (class_exists($expectedClass)) {
@@ -541,51 +547,59 @@ class App
                                         /** @var \ReflectionMethod $method */
                                         if (true || ResponseInterface::class == ($method->getReturnType() instanceof \ReflectionType ? $method->getReturnType()->getName() : null)) {
                                             $docBlock = $method->getDocComment();
+                                            $newRoute = new Route($this->logger);
                                             foreach (explode("\n", $docBlock) as $docBlockRow) {
-                                                if (false === stripos($docBlockRow, '@route')) {
-                                                    continue;
-                                                }
+                                                if (false !== stripos($docBlockRow, '@route')) {
+                                                    $route = trim(substr(
+                                                        $docBlockRow,
+                                                        (stripos($docBlockRow, '@route') + strlen('@route'))
+                                                    ));
 
-                                                $route = trim(substr(
-                                                    $docBlockRow,
-                                                    (stripos($docBlockRow, '@route') + strlen('@route'))
-                                                ));
+                                                    @list($httpMethods, $path, $extra) = explode(' ', $route, 3);
+                                                    $httpMethods = explode(',', strtoupper($httpMethods));
 
-                                                @list($httpMethods, $path, $extra) = explode(' ', $route, 3);
-                                                $httpMethods = explode(',', strtoupper($httpMethods));
-
-                                                $options = [];
-                                                $defaultOptions = [
-                                                    'access' => Route::ACCESS_PUBLIC,
-                                                    'weight' => 100,
-                                                ];
-                                                if (isset($extra)) {
-                                                    foreach (explode(' ', $extra) as $item) {
-                                                        @list($extraK, $extraV) = explode('=', $item, 2);
-                                                        if (!isset($extraV)) {
-                                                            $extraV = true;
-                                                        }
-                                                        $options[$extraK] = $extraV;
-                                                    }
-                                                }
-                                                $options = array_merge($defaultOptions, $options);
-                                                foreach ($httpMethods as $httpMethod) {
-                                                    $newRoute = Route::Factory()
-                                                        ->setHttpMethod($httpMethod)
-                                                        ->setRouterPattern('/'.ltrim($path, '/'))
-                                                        ->setCallback($method->class.':'.$method->name)
-                                                    ;
-
-                                                    foreach ($options as $key => $value) {
-                                                        $keyMethod = 'set'.ucfirst($key);
-                                                        if (method_exists($newRoute, $keyMethod)) {
-                                                            $newRoute->{$keyMethod}($value);
-                                                        } else {
-                                                            $newRoute->setArgument($key, $value);
+                                                    $options = [];
+                                                    $defaultOptions = [
+                                                        'access' => Route::ACCESS_PUBLIC,
+                                                        'weight' => 100,
+                                                    ];
+                                                    if (isset($extra)) {
+                                                        foreach (explode(' ', $extra) as $item) {
+                                                            @list($extraK, $extraV) = explode('=', $item, 2);
+                                                            if (!isset($extraV)) {
+                                                                $extraV = true;
+                                                            }
+                                                            $options[$extraK] = $extraV;
                                                         }
                                                     }
+                                                    $options = array_merge($defaultOptions, $options);
+                                                    foreach ($httpMethods as $httpMethod) {
+                                                        $newRoute
+                                                            ->setHttpMethod($httpMethod)
+                                                            ->setRouterPattern('/'.ltrim($path, '/'))
+                                                            ->setCallback($method->class.':'.$method->name)
+                                                        ;
 
-                                                    $this->router->addRoute($newRoute);
+                                                        foreach ($options as $key => $value) {
+                                                            $keyMethod = 'set'.ucfirst($key);
+                                                            if (method_exists($newRoute, $keyMethod)) {
+                                                                $newRoute->{$keyMethod}($value);
+                                                            } else {
+                                                                $newRoute->setArgument($key, $value);
+                                                            }
+                                                        }
+
+                                                        $this->router->addRoute($newRoute);
+                                                    }
+                                                } elseif (false !== stripos($docBlockRow, '@domains')) {
+                                                    $domains = explode(' ', trim(substr(
+                                                        $docBlockRow,
+                                                        (stripos($docBlockRow, '@domains') + strlen('@domains'))
+                                                    )));
+                                                    foreach ($domains as $domain) {
+                                                        $newRoute->addValidDomain($domain);
+                                                    }
+                                                    $newRoute->setWeight($newRoute->getWeight() - 10);
                                                 }
                                             }
                                         }

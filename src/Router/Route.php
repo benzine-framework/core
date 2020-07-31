@@ -2,6 +2,7 @@
 
 namespace Benzine\Router;
 
+use Monolog\Logger;
 use Slim\App;
 
 class Route
@@ -27,14 +28,17 @@ class Route
     protected $propertyOptions;
     protected $exampleEntity;
     protected $exampleEntityFinderFunction;
-    protected $callbackProperties = [];
-    protected $arguments = [
+    protected array $callbackProperties = [];
+    protected array $arguments = [
         self::ARGUMENT_ACCESS => self::ACCESS_PUBLIC,
     ];
+    protected array $validDomains = [];
 
-    public static function Factory(): Route
+    private Logger $logger;
+
+    public function __construct(Logger $logger)
     {
-        return new Route();
+        $this->logger = $logger;
     }
 
     public function getCallbackProperties(): array
@@ -84,18 +88,6 @@ class Route
         return $this;
     }
 
-    public function getSDKTemplate(): string
-    {
-        return $this->SDKTemplate;
-    }
-
-    public function setSDKTemplate(string $SDKTemplate): Route
-    {
-        $this->SDKTemplate = $SDKTemplate;
-
-        return $this;
-    }
-
     public function getUniqueIdentifier()
     {
         return implode(
@@ -104,194 +96,11 @@ class Route
                 $this->getRouterPattern(),
                 $this->getHttpMethod(),
                 "Weight={$this->getWeight()}",
+                $this->callback,
             ]
         );
     }
 
-    /**
-     * @return mixed
-     */
-    public function getHttpMethod()
-    {
-        return $this->httpMethod;
-    }
-
-    /**
-     * @param mixed $httpMethod
-     */
-    public function setHttpMethod($httpMethod): Route
-    {
-        $this->httpMethod = $httpMethod;
-
-        return $this;
-    }
-
-    public function getWeight(): int
-    {
-        return $this->weight;
-    }
-
-    public function setWeight(int $weight): Route
-    {
-        $this->weight = $weight;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getRouterPattern()
-    {
-        return $this->routerPattern;
-    }
-
-    /**
-     * @param mixed $routerPattern
-     */
-    public function setRouterPattern($routerPattern): Route
-    {
-        $this->routerPattern = $routerPattern;
-
-        return $this;
-    }
-
-    public function setExampleEntityFindFunction(callable $finderFunction): Route
-    {
-        $this->exampleEntityFinderFunction = $finderFunction;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getExampleEntity()
-    {
-        if (!$this->exampleEntity && $this->exampleEntityFinderFunction) {
-            $function = $this->exampleEntityFinderFunction;
-            $this->exampleEntity = $function();
-        }
-
-        return $this->exampleEntity;
-    }
-
-    /**
-     * @param mixed $exampleEntity
-     */
-    public function setExampleEntity($exampleEntity): Route
-    {
-        $this->exampleEntity = $exampleEntity;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * @param mixed $name
-     */
-    public function setName($name): Route
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSDKClass()
-    {
-        return $this->SDKClass;
-    }
-
-    /**
-     * @param mixed $SDKClass
-     */
-    public function setSDKClass($SDKClass): Route
-    {
-        $this->SDKClass = $SDKClass;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSDKFunction()
-    {
-        return $this->SDKFunction;
-    }
-
-    /**
-     * @param mixed $function
-     */
-    public function setSDKFunction($function): Route
-    {
-        $this->SDKFunction = $function;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSingular()
-    {
-        return $this->singular;
-    }
-
-    /**
-     * @param mixed $singular
-     */
-    public function setSingular($singular): Route
-    {
-        $this->singular = $singular;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPlural()
-    {
-        return $this->plural;
-    }
-
-    /**
-     * @param mixed $plural
-     */
-    public function setPlural($plural): Route
-    {
-        $this->plural = $plural;
-
-        return $this;
-    }
-
-    public function getPropertyData()
-    {
-        return $this->propertyData;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getProperties()
-    {
-        return $this->properties;
-    }
-
-    /**
-     * @param mixed $properties
-     */
     public function setProperties($properties): Route
     {
         $this->properties = [];
@@ -305,14 +114,6 @@ class Route
         }
 
         return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPropertyOptions()
-    {
-        return $this->propertyOptions;
     }
 
     /**
@@ -333,7 +134,16 @@ class Route
 
     public function populateRoute(App $app): App
     {
-        //echo "Populating: {$this->getHttpMethod()} {$this->getRouterPattern()}\n";
+        $this->logger->debug(sprintf(
+            'Router Populating: %s %s',
+            $this->getHttpMethod(),
+            $this->getRouterPattern()
+        ));
+
+        if ($this->hasValidDomains() && !$this->isInContainedInValidDomains()) {
+            return $app;
+        }
+
         $mapping = $app->map(
             [$this->getHttpMethod()],
             $this->getRouterPattern(),
@@ -347,42 +157,6 @@ class Route
         }
 
         return $app;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCallback()
-    {
-        return $this->callback;
-    }
-
-    /**
-     * @param mixed $callback
-     */
-    public function setCallback($callback): Route
-    {
-        $this->callback = $callback;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getHttpEndpoint()
-    {
-        return $this->httpEndpoint;
-    }
-
-    /**
-     * @param mixed $httpEndpoint
-     */
-    public function setHttpEndpoint($httpEndpoint): Route
-    {
-        $this->httpEndpoint = $httpEndpoint;
-
-        return $this;
     }
 
     /**
@@ -412,6 +186,241 @@ class Route
     {
         $argument = $this->prefixArgumentKey($argument);
         $this->arguments[$argument] = $value;
+
+        return $this;
+    }
+
+    public function getName(): string
+    {
+        return $this->name ?? 'Unnamed Route';
+    }
+
+    public function setName(string $name): Route
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getCallback(): string
+    {
+        return $this->callback;
+    }
+
+    public function setCallback(string $callback): Route
+    {
+        $this->callback = $callback;
+
+        return $this;
+    }
+
+    public function getSDKClass(): string
+    {
+        return $this->SDKClass;
+    }
+
+    public function setSDKClass(string $SDKClass): Route
+    {
+        $this->SDKClass = $SDKClass;
+
+        return $this;
+    }
+
+    public function getSDKFunction(): string
+    {
+        return $this->SDKFunction;
+    }
+
+    public function setSDKFunction(string $SDKFunction): Route
+    {
+        $this->SDKFunction = $SDKFunction;
+
+        return $this;
+    }
+
+    public function getSDKTemplate(): string
+    {
+        return $this->SDKTemplate;
+    }
+
+    public function setSDKTemplate(string $SDKTemplate): Route
+    {
+        $this->SDKTemplate = $SDKTemplate;
+
+        return $this;
+    }
+
+    public function getRouterPattern(): string
+    {
+        return $this->routerPattern;
+    }
+
+    public function setRouterPattern(string $routerPattern): Route
+    {
+        $this->routerPattern = $routerPattern;
+
+        return $this;
+    }
+
+    public function getHttpEndpoint(): string
+    {
+        return $this->httpEndpoint;
+    }
+
+    public function setHttpEndpoint(string $httpEndpoint): Route
+    {
+        $this->httpEndpoint = $httpEndpoint;
+
+        return $this;
+    }
+
+    public function getHttpMethod(): string
+    {
+        return $this->httpMethod;
+    }
+
+    public function setHttpMethod(string $httpMethod): Route
+    {
+        $this->httpMethod = $httpMethod;
+
+        return $this;
+    }
+
+    public function getWeight(): int
+    {
+        return $this->weight;
+    }
+
+    public function setWeight(int $weight): Route
+    {
+        $this->weight = $weight;
+
+        return $this;
+    }
+
+    public function getSingular(): string
+    {
+        return $this->singular;
+    }
+
+    public function setSingular(string $singular): Route
+    {
+        $this->singular = $singular;
+
+        return $this;
+    }
+
+    public function getPlural(): string
+    {
+        return $this->plural;
+    }
+
+    public function setPlural(string $plural): Route
+    {
+        $this->plural = $plural;
+
+        return $this;
+    }
+
+    public function getPropertyData(): array
+    {
+        return $this->propertyData;
+    }
+
+    public function setPropertyData(array $propertyData): Route
+    {
+        $this->propertyData = $propertyData;
+
+        return $this;
+    }
+
+    public function getExampleEntity()
+    {
+        return $this->exampleEntity;
+    }
+
+    /**
+     * @param mixed $exampleEntity
+     *
+     * @return Route
+     */
+    public function setExampleEntity($exampleEntity)
+    {
+        $this->exampleEntity = $exampleEntity;
+
+        return $this;
+    }
+
+    public function getExampleEntityFinderFunction()
+    {
+        return $this->exampleEntityFinderFunction;
+    }
+
+    /**
+     * @param mixed $exampleEntityFinderFunction
+     *
+     * @return Route
+     */
+    public function setExampleEntityFinderFunction($exampleEntityFinderFunction)
+    {
+        $this->exampleEntityFinderFunction = $exampleEntityFinderFunction;
+
+        return $this;
+    }
+
+    /**
+     * @return array|string[]
+     */
+    public function getArguments()
+    {
+        return $this->arguments;
+    }
+
+    /**
+     * @param array|string[] $arguments
+     *
+     * @return Route
+     */
+    public function setArguments($arguments)
+    {
+        $this->arguments = $arguments;
+
+        return $this;
+    }
+
+    public function addValidDomain(string $validDomain): Route
+    {
+        $this->validDomains[] = $validDomain;
+
+        return $this;
+    }
+
+    public function getValidDomains(): array
+    {
+        $this->validDomains = array_unique($this->validDomains);
+
+        return $this->validDomains;
+    }
+
+    public function hasValidDomains(): bool
+    {
+        return count($this->validDomains) > 0;
+    }
+
+    public function isInContainedInValidDomains(): bool
+    {
+        foreach ($this->validDomains as $validDomain) {
+            if (fnmatch($validDomain, $_SERVER['HTTP_HOST'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function setValidDomains(array $validDomains): Route
+    {
+        $this->validDomains = $validDomains;
 
         return $this;
     }
