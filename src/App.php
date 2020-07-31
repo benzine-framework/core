@@ -103,19 +103,11 @@ class App
         $this->logger->debug(sprintf('Bootstrap complete in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
     }
 
-    /**
-     * @return string
-     */
     public function getCachePath(): string
     {
         return $this->cachePath;
     }
 
-    /**
-     * @param string $cachePath
-     *
-     * @return App
-     */
     public function setCachePath(string $cachePath): App
     {
         $this->cachePath = $cachePath;
@@ -125,8 +117,6 @@ class App
 
     /**
      * Get item from Dependency Injection.
-     *
-     * @return mixed
      */
     public function get(string $id)
     {
@@ -351,8 +341,6 @@ class App
     }
 
     /**
-     * @param mixed $doNotUseStaticInstance
-     *
      * @return self
      */
     public static function Instance(array $options = [])
@@ -376,10 +364,6 @@ class App
 
     /**
      * Convenience function to get objects out of the Dependency Injection Container.
-     *
-     * @param string $key
-     *
-     * @return mixed
      */
     public static function DI(string $key)
     {
@@ -439,9 +423,9 @@ class App
 
     public function runHttp(): void
     {
-        $this->debugBar['time']->startMeasure('runHTTP', "HTTP runtime");
+        $this->debugBar['time']->startMeasure('runHTTP', 'HTTP runtime');
         $this->app->run();
-        if($this->debugBar['time']->hasStartedMeasure('runHTTP')) {
+        if ($this->debugBar['time']->hasStartedMeasure('runHTTP')) {
             $this->debugBar['time']->stopMeasure('runHTTP');
         }
     }

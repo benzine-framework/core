@@ -31,19 +31,11 @@ abstract class AbstractWorker implements WorkerInterface
     {
     }
 
-    /**
-     * @return array
-     */
     public function getCliArguments(): array
     {
         return $this->cliArguments;
     }
 
-    /**
-     * @param array $cliArguments
-     *
-     * @return AbstractWorker
-     */
     public function setCliArguments(array $cliArguments): AbstractWorker
     {
         $this->cliArguments = $cliArguments;
@@ -62,19 +54,11 @@ abstract class AbstractWorker implements WorkerInterface
         }
     }
 
-    /**
-     * @return int
-     */
     public function getTimeBetweenRuns(): int
     {
         return $this->timeBetweenRuns;
     }
 
-    /**
-     * @param int $timeBetweenRuns
-     *
-     * @return AbstractWorker
-     */
     public function setTimeBetweenRuns(int $timeBetweenRuns): AbstractWorker
     {
         $this->timeBetweenRuns = $timeBetweenRuns;

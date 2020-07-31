@@ -36,9 +36,6 @@ class ConfigurationService
     }
 
     /**
-     * @param string      $key
-     * @param null|string $defaultValue
-     *
      * @return null|array|string
      */
     public function get(string $key, string $defaultValue = null)
@@ -97,8 +94,6 @@ class ConfigurationService
 
     /**
      * Locate .benzine.yml.
-     *
-     * @param null|string $path
      */
     protected function findConfig(string $path = null): bool
     {
@@ -120,7 +115,7 @@ class ConfigurationService
         return true;
     }
 
-    protected function parseFile(string $file)
+    protected function parseFile(string $file): void
     {
         $yaml = file_get_contents($file);
         foreach ($this->environmentService->all() as $key => $value) {

@@ -48,19 +48,11 @@ abstract class AbstractQueueWorker extends AbstractWorker
         );
     }
 
-    /**
-     * @return QueueService
-     */
     public function getQueueService(): QueueService
     {
         return $this->queueService;
     }
 
-    /**
-     * @param QueueService $queueService
-     *
-     * @return AbstractQueueWorker
-     */
     public function setQueueService(QueueService $queueService): AbstractQueueWorker
     {
         $this->queueService = $queueService;
@@ -68,19 +60,11 @@ abstract class AbstractQueueWorker extends AbstractWorker
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getInputQueue(): string
     {
         return $this->inputQueue;
     }
 
-    /**
-     * @param string $inputQueue
-     *
-     * @return AbstractQueueWorker
-     */
     public function setInputQueue(string $inputQueue): AbstractQueueWorker
     {
         $this->inputQueue = $inputQueue;
@@ -98,8 +82,6 @@ abstract class AbstractQueueWorker extends AbstractWorker
 
     /**
      * @param string[] $outputQueues
-     *
-     * @return AbstractQueueWorker
      */
     public function setOutputQueues(array $outputQueues): AbstractQueueWorker
     {
@@ -167,9 +149,6 @@ abstract class AbstractQueueWorker extends AbstractWorker
         return true;
     }
 
-    /**
-     * @return null|array
-     */
     public function getResultItems(): ?array
     {
         return $this->resultItems;
@@ -177,8 +156,6 @@ abstract class AbstractQueueWorker extends AbstractWorker
 
     /**
      * Send work item back to the queue it came from.
-     *
-     * @param WorkerWorkItem $item
      */
     protected function returnToInputQueue(WorkerWorkItem $item): void
     {
@@ -206,8 +183,6 @@ abstract class AbstractQueueWorker extends AbstractWorker
     }
 
     /**
-     * @param WorkerWorkItem $item
-     *
      * @return null|WorkerWorkItem|WorkerWorkItem[]
      */
     abstract protected function process(WorkerWorkItem $item);

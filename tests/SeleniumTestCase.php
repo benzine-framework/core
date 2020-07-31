@@ -40,7 +40,7 @@ abstract class SeleniumTestCase extends BaseTestCase
         parent::tearDownAfterClass();
     }
 
-    protected function takeScreenshot($name)
+    protected function takeScreenshot($name): void
     {
         self::$webDriver->takeScreenshot(self::$screenshotsDir.self::$screenshotIndex."_{$name}.jpg");
         ++self::$screenshotIndex;

@@ -20,23 +20,17 @@ class SessionService implements \SessionHandlerInterface
         return $this->get($name);
     }
 
-    /**
-     * @return int
-     */
     public function getLifetime(): int
     {
         return $this->lifetime;
     }
 
-    /**
-     * @param int $lifetime
-     */
     public function setLifetime(int $lifetime): void
     {
         $this->lifetime = $lifetime;
     }
 
-    public function initSession()
+    public function initSession(): void
     {
         if ('cli' === PHP_SAPI || PHP_SESSION_ACTIVE === session_status()) {
             return;

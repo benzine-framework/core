@@ -28,7 +28,7 @@ class Redis extends \Redis
         $this->scripts[] = new Lua\ZAddIfLower($this);
     }
 
-    public function connect($host, $port = 6379, $timeout = 0.0, $reserved = null, $retryInterval = 0, $readTimeout = 0.0)
+    public function connect($host, $port = 6379, $timeout = 0.0, $reserved = null, $retryInterval = 0, $readTimeout = 0.0): void
     {
         parent::connect($host, $port, $timeout, $reserved, $retryInterval, $readTimeout);
         $this->initialiseExtensions();

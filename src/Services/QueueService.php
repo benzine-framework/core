@@ -21,7 +21,6 @@ class QueueService
     }
 
     /**
-     * @param string          $queueName
      * @param \Serializable[] $queueItems
      *
      * @return int the number of items successfully added
@@ -51,10 +50,6 @@ class QueueService
 
     /**
      * Get the length of the queue.
-     *
-     * @param string $queueName
-     *
-     * @return int
      */
     public function getQueueLength(string $queueName): int
     {
@@ -63,10 +58,6 @@ class QueueService
 
     /**
      * Get the peak/maximum length of the queue.
-     *
-     * @param string $queueName
-     *
-     * @return int
      */
     public function getQueueLengthPeak(string $queueName): int
     {
@@ -75,10 +66,6 @@ class QueueService
 
     /**
      * Number of seconds that the queue was created ago.
-     *
-     * @param string $queueName
-     *
-     * @return \DateTime
      */
     public function getQueueCreatedAgo(string $queueName): \DateTime
     {
@@ -89,10 +76,6 @@ class QueueService
 
     /**
      * Number of seconds ago that the queue was updated.
-     *
-     * @param string $queueName
-     *
-     * @return \DateTime
      */
     public function getQueueUpdatedAgo(string $queueName): \DateTime
     {
@@ -104,8 +87,6 @@ class QueueService
     /**
      * Number of seconds until a given queue will expire.
      *
-     * @param string $queueName
-     *
      * @return \DateTime
      */
     public function getQueueExpiresIn(string $queueName): int
@@ -114,9 +95,6 @@ class QueueService
     }
 
     /**
-     * @param string $queueName
-     * @param int    $count
-     *
      * @return WorkerWorkItem[]
      */
     public function pop(string $queueName, int $count = 1): array
@@ -144,10 +122,6 @@ class QueueService
     /**
      * Destroy a queue and all data inside it.
      * Returns number of redis keys deleted.
-     *
-     * @param string $queueName
-     *
-     * @return int
      */
     public function destroyQueue(string $queueName): int
     {
@@ -172,8 +146,6 @@ class QueueService
 
     /**
      * Return an key->value array of queue lengths.
-     *
-     * @return array
      */
     public function allQueueLengths(): array
     {

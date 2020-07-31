@@ -117,8 +117,6 @@ class Route
     }
 
     /**
-     * @param mixed $propertyOptions
-     *
      * @return Route
      */
     public function setPropertyOptions($propertyOptions)
@@ -340,8 +338,6 @@ class Route
     }
 
     /**
-     * @param mixed $exampleEntity
-     *
      * @return Route
      */
     public function setExampleEntity($exampleEntity)
@@ -357,8 +353,6 @@ class Route
     }
 
     /**
-     * @param mixed $exampleEntityFinderFunction
-     *
      * @return Route
      */
     public function setExampleEntityFinderFunction($exampleEntityFinderFunction)

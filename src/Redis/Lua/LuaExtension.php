@@ -26,7 +26,7 @@ abstract class LuaExtension
         return $this->hash;
     }
 
-    public function load()
+    public function load(): void
     {
         if (!$this->hash) {
             $exists = $this->redis->script('exists', $this->getScript());

@@ -13,17 +13,12 @@ class Filter
     protected $order;
     protected $orderDirection;
 
-    /**
-     * @return mixed
-     */
     public function getOrderDirection()
     {
         return $this->orderDirection;
     }
 
     /**
-     * @param mixed $orderDirection
-     *
      * @throws FilterDecodeException
      *
      * @return Filter
@@ -71,17 +66,12 @@ class Filter
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
     public function getLimit()
     {
         return $this->limit;
     }
 
     /**
-     * @param mixed $limit
-     *
      * @return Filter
      */
     public function setLimit($limit): self
@@ -91,17 +81,12 @@ class Filter
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
     public function getOffset()
     {
         return $this->offset;
     }
 
     /**
-     * @param mixed $offset
-     *
      * @return Filter
      */
     public function setOffset($offset): self
@@ -111,17 +96,12 @@ class Filter
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
     public function getWheres()
     {
         return $this->wheres;
     }
 
     /**
-     * @param mixed $wheres
-     *
      * @return Filter
      */
     public function setWheres($wheres): self
@@ -131,17 +111,12 @@ class Filter
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
     public function getOrder()
     {
         return $this->order;
     }
 
     /**
-     * @param mixed $order
-     *
      * @return Filter
      */
     public function setOrder($order): self

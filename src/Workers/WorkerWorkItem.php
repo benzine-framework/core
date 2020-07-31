@@ -29,7 +29,7 @@ class WorkerWorkItem
         return serialize($this->data);
     }
 
-    public function unserialize($serialized)
+    public function unserialize($serialized): void
     {
         $this->data = unserialize($serialized);
     }
@@ -43,17 +43,12 @@ class WorkerWorkItem
         ;
     }
 
-    /**
-     * @return array
-     */
     public function getData(): array
     {
         return $this->data;
     }
 
     /**
-     * @param array $data
-     *
      * @return WorkerWorkItem
      */
     public function setData(array $data): self
