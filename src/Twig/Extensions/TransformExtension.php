@@ -5,6 +5,7 @@ namespace Benzine\Twig\Extensions;
 use Camel\CaseTransformer;
 use Camel\Format;
 use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 
 class TransformExtension extends AbstractExtension
 {
@@ -24,7 +25,7 @@ class TransformExtension extends AbstractExtension
                 $name = 'transform_'.strtolower($fromTransformer).'_to_'.strtolower($toTransformer);
                 $context = $this;
                 $filters[$name] =
-                    new \Twig_SimpleFilter($name, function ($word) use ($context, $fromTransformer, $toTransformer) {
+                    new TwigFilter($name, function ($word) use ($context, $fromTransformer, $toTransformer) {
                         return $context->transform($word, $fromTransformer, $toTransformer);
                     });
             }

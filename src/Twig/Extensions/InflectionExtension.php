@@ -4,16 +4,17 @@ namespace Benzine\Twig\Extensions;
 
 use Gone\Inflection\Inflect;
 use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 
 class InflectionExtension extends AbstractExtension
 {
     public function getFilters()
     {
         $filters = [];
-        $filters['pluralize'] = new \Twig_SimpleFilter('pluralize', function ($word) {
+        $filters['pluralize'] = new TwigFilter('pluralize', function ($word) {
             return Inflect::pluralize($word);
         });
-        $filters['singularize'] = new \Twig_SimpleFilter('singularize', function ($word) {
+        $filters['singularize'] = new TwigFilter('singularize', function ($word) {
             return Inflect::singularize($word);
         });
 

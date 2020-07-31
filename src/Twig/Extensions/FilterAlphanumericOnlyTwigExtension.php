@@ -3,6 +3,7 @@
 namespace Benzine\Twig\Extensions;
 
 use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 
 class FilterAlphanumericOnlyTwigExtension extends AbstractExtension
 {
@@ -16,7 +17,7 @@ class FilterAlphanumericOnlyTwigExtension extends AbstractExtension
         $filters = [];
         $methods = ['filteralphaonly'];
         foreach ($methods as $method) {
-            $filters[$method] = new \Twig_Filter($method, [$this, $method]);
+            $filters[$method] = new TwigFilter($method, [$this, $method]);
         }
 
         return $filters;
