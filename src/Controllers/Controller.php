@@ -4,6 +4,7 @@ namespace Benzine\Controllers;
 
 use Benzine\Controllers\Filters\Filter;
 use Benzine\Exceptions\FilterDecodeException;
+use Benzine\ORM\Abstracts\Service;
 use Monolog\Logger;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
