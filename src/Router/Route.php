@@ -404,7 +404,7 @@ class Route
     public function isInContainedInValidDomains(): bool
     {
         foreach ($this->validDomains as $validDomain) {
-            if (fnmatch($validDomain, $_SERVER['HTTP_HOST'])) {
+            if (isset($_SERVER['HTTP_HOST']) && fnmatch($validDomain, $_SERVER['HTTP_HOST'])) {
                 return true;
             }
         }
