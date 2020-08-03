@@ -132,11 +132,11 @@ class Route
 
     public function populateRoute(App $app): App
     {
-        $this->logger->debug(sprintf(
+        /*$this->logger->debug(sprintf(
             'Router Populating: %s %s',
             $this->getHttpMethod(),
             $this->getRouterPattern()
-        ));
+        ));*/
 
         if ($this->hasValidDomains() && !$this->isInContainedInValidDomains()) {
             return $app;
