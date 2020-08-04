@@ -34,7 +34,7 @@ class QueueService
             // Set the data element itself
             $this->redis->set("queue:data:{$queueName}:{$itemId}", $serialised);
             // Push the element into the index list
-            $this->redis->rpush("queue:index:{$queueName}", $itemId);
+            $this->redis->rPush("queue:index:{$queueName}", $itemId);
             // Increment the length count
             $this->redis->incr("queue:length:{$queueName}");
             // Set the queue identifier to the current time, if it doesn't already exist
@@ -101,7 +101,7 @@ class QueueService
     {
         $workerWorkItems = [];
         for ($i = 0; $i < $count; ++$i) {
-            $itemId = $this->redis->rpop("queue:index:{$queueName}");
+            $itemId = $this->redis->lPop("queue:index:{$queueName}");
             if (!$itemId) {
                 continue;
             }
