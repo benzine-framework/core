@@ -55,7 +55,6 @@ class App
     protected Router $router;
     protected bool $isSessionsEnabled = true;
     protected bool $interrogateControllersComplete = false;
-    private array $routePaths = [];
     private array $viewPaths = [];
     private string $cachePath = '/cache';
     private array $supportedLanguages = ['en_US'];
@@ -64,6 +63,10 @@ class App
 
     public function __construct()
     {
+        if (!ini_get('auto_detect_line_endings')) {
+            ini_set('auto_detect_line_endings', '1');
+        }
+
         // Configure Dependency Injector
         $container = $this->setupContainer();
         $this->logger = $container->get(Logger::class);
@@ -77,12 +80,6 @@ class App
         $this->viewPaths[] = APP_ROOT.'/views/';
         $this->viewPaths[] = APP_ROOT.'/src/Views/';
 
-        // Configure Router
-        $this->routePaths = [
-            APP_ROOT.'/src/Routes.php',
-            APP_ROOT.'/src/RoutesExtra.php',
-        ];
-
         // Configure Slim
         $this->app = AppFactory::create();
         $this->app->add(Slim\Views\TwigMiddleware::createFromContainer($this->app));
@@ -95,12 +92,6 @@ class App
         $this->debugBar['time']->startMeasure('interrogateTranslations', 'Time to interrogate translation files');
         $this->interrogateTranslations();
         $this->debugBar['time']->stopMeasure('interrogateTranslations');
-
-        $this->debugBar['time']->startMeasure('interrogateControllers', 'Time to interrogate controllers for routes');
-        $this->interrogateControllers();
-        $this->debugBar['time']->stopMeasure('interrogateControllers');
-
-        $this->logger->debug(sprintf('Bootstrap complete in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
     }
 
     public function getCachePath(): string
@@ -357,6 +348,9 @@ class App
             } else {
                 self::$instance = $tempApp;
             }
+            if (!defined('APP_CORE_NAME')) {
+                define('APP_CORE_NAME', get_class(self::$instance));
+            }
         }
 
         return self::$instance;
@@ -373,22 +367,6 @@ class App
     public function getApp(): Slim\App
     {
         return $this->app;
-    }
-
-    public function addRoutePath($path): self
-    {
-        if (file_exists($path)) {
-            $this->routePaths[] = $path;
-        }
-
-        return $this;
-    }
-
-    public function clearRoutePaths(): self
-    {
-        $this->routePaths = [];
-
-        return $this;
     }
 
     public function addViewPath($path)
@@ -410,21 +388,23 @@ class App
 
     public function loadAllRoutes()
     {
-        $app = $this->getApp();
-        foreach ($this->routePaths as $path) {
-            if (file_exists($path)) {
-                include $path;
-            }
-        }
-        $this->router->populateRoutes($app);
+        $this->debugBar['time']->startMeasure('interrogateControllers', 'Time to interrogate controllers for routes');
+        $this->interrogateControllers();
+        $this->debugBar['time']->stopMeasure('interrogateControllers');
+
+        $this->logger->debug(sprintf('Bootstrap complete in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
+
+        $this->router->populateRoutes($this->getApp());
 
         return $this;
     }
 
     public function runHttp(): void
     {
+        $this->loadAllRoutes();
         $this->debugBar['time']->startMeasure('runHTTP', 'HTTP runtime');
         $this->app->run();
+
         if ($this->debugBar['time']->hasStartedMeasure('runHTTP')) {
             $this->debugBar['time']->stopMeasure('runHTTP');
         }
@@ -503,8 +483,8 @@ class App
         }
         $this->interrogateControllersComplete = true;
 
-        if ($this->environmentService->has('USE_ROUTE_CACHE')
-            && 'yes' == strtolower($this->environmentService->get('USE_ROUTE_CACHE'))
+        if ($this->environmentService->has('ROUTE_CACHE')
+            && 'on' == strtolower($this->environmentService->get('ROUTE_CACHE'))
             && $this->router->loadCache()
         ) {
             return;
@@ -600,5 +580,9 @@ class App
             ->weighRoutes()
             ->cache()
         ;
+
+        $this->logger->debug(sprintf(
+            'ROUTE_CACHE miss. Perhaps enable ROUTE_CACHE envvar.'
+        ));
     }
 }

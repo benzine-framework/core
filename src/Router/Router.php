@@ -14,6 +14,8 @@ class Router
     private CachePoolChain $cachePoolChain;
     private int $cacheTTL = 60;
 
+    private bool $routesArePopulated = false;
+
     public function __construct(\Redis $redis, Logger $logger, CachePoolChain $cachePoolChain)
     {
         $this->logger = $logger;
@@ -43,12 +45,18 @@ class Router
 
     public function populateRoutes(App $app)
     {
+        if ($this->routesArePopulated) {
+            return $app;
+        }
+
         $this->weighRoutes();
         if (count($this->routes) > 0) {
             foreach ($this->getRoutes() as $route) {
                 $app = $route->populateRoute($app);
             }
         }
+
+        $this->routesArePopulated = true;
 
         return $app;
     }
