@@ -65,9 +65,7 @@ trait DatabaseAccessTrait
      */
     private static function getAppObject()
     {
-        $coreAppName = APP_CORE_NAME;
-
-        return $coreAppName::Instance(false);
+        return \Benzine\App::Instance(false);
     }
 
     /**

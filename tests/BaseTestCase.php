@@ -31,9 +31,6 @@ abstract class BaseTestCase extends TestCase
     {
         parent::__construct($name, $data, $dataName);
         // @var \Slim\App $app
-        if (!defined('APP_CORE_NAME')) {
-            throw new \Exception('You must define APP_CORE_NAME in bootstrap.php. This must be the same as the core app container in /src');
-        }
 
         // Force Kint into CLI mode.
         \Kint::$mode_default = \Kint::MODE_CLI;

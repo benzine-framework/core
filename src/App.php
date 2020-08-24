@@ -348,9 +348,6 @@ class App
             } else {
                 self::$instance = $tempApp;
             }
-            if (!defined('APP_CORE_NAME')) {
-                define('APP_CORE_NAME', get_class(self::$instance));
-            }
         }
 
         return self::$instance;
@@ -468,7 +465,11 @@ class App
 
     protected function interrogateTranslations(): void
     {
-        foreach (new \DirectoryIterator(APP_ROOT.'/src/Strings') as $translationFile) {
+        $stringPath = APP_ROOT.'/src/Strings';
+        if(!file_exists($stringPath)){
+            return;
+        }
+        foreach (new \DirectoryIterator($stringPath) as $translationFile) {
             if ('yaml' == $translationFile->getExtension()) {
                 $languageName = substr($translationFile->getBasename(), 0, -5);
                 $this->addSupportedLanguage($languageName);
