@@ -466,7 +466,7 @@ class App
     protected function interrogateTranslations(): void
     {
         $stringPath = APP_ROOT.'/src/Strings';
-        if(!file_exists($stringPath)){
+        if (!file_exists($stringPath)) {
             return;
         }
         foreach (new \DirectoryIterator($stringPath) as $translationFile) {
