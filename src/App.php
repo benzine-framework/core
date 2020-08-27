@@ -173,6 +173,9 @@ class App
             // Add Twig extension to integrate Kint
             $twig->addExtension(new \Kint\Twig\TwigExtension());
 
+            // Add Twig extension to check if something is an instance of a known class or entity
+            $twig->addExtension(new Extensions\InstanceOfExtension());
+
             // Add Twig Translate from symfony/twig-bridge
             $selectedLanguage = $sessionService->has('Language') ? $sessionService->get('Language') : 'en_US';
             $twig->addExtension(new SymfonyTwigExtensions\TranslationExtension($translator));
