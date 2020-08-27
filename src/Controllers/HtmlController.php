@@ -12,6 +12,7 @@ abstract class HtmlController extends Controller
 {
     protected Twig $twig;
     protected DebugBar $debugBar;
+    protected string $pageNotFoundTemplate = "404.html.twig";
 
     public function __construct(
         Twig $twig,
@@ -55,6 +56,15 @@ abstract class HtmlController extends Controller
         ));
         $this->debugBar['time']->stopMeasure('render');
 
+        return $response;
+    }
+
+    protected function pageNotFound(): Response
+    {
+        $response = (parent::pageNotFound());
+        $response->withHeader('Content-Type', 'text/html');
+        $response->getBody()
+                    ->write($this->twig->fetch($this->pageNotFoundTemplate));
         return $response;
     }
 }

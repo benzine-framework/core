@@ -104,4 +104,9 @@ abstract class Controller
 
         return $filter;
     }
+
+    protected function pageNotFound() : Response {
+        return (new Response())
+            ->withStatus(404);
+    }
 }
