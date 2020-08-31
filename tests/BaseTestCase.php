@@ -11,26 +11,12 @@ abstract class BaseTestCase extends TestCase
 {
     // Set this to true if you want to see whats going on inside some unit tests..
     public const DEBUG_MODE = false;
-    /**
-     * @see https://github.com/fzaninotto/Faker
-     *
-     * @var Generator
-     */
-    private static $faker;
 
-    private $app;
-
-    private $container;
-
-    private $singleTestTime;
-
-    private $waypoint_count;
-    private $waypoint_last_time;
+    private static Generator $faker;
 
     public function __construct($name = null, array $data = [], $dataName = '')
     {
         parent::__construct($name, $data, $dataName);
-        // @var \Slim\App $app
 
         // Force Kint into CLI mode.
         \Kint::$mode_default = \Kint::MODE_CLI;

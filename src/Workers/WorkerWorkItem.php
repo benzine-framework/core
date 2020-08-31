@@ -2,7 +2,7 @@
 
 namespace Benzine\Workers;
 
-use Benzine\ORM\Abstracts\Model;
+use Benzine\ORM\Abstracts\AbstractModel;
 
 class WorkerWorkItem
 {
@@ -67,7 +67,7 @@ class WorkerWorkItem
 
     public function getKey(string $key)
     {
-        if ($this->data[$key] instanceof Model) {
+        if ($this->data[$key] instanceof AbstractModel) {
             $this->data[$key]->__setUp();
         }
 
