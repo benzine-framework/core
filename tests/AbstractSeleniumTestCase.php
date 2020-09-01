@@ -4,6 +4,7 @@ namespace Benzine\Tests;
 
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Remote\WebDriverCapabilityType;
+use Symfony\Component\Filesystem\Filesystem;
 
 abstract class AbstractSeleniumTestCase extends AbstractBaseTestCase
 {
@@ -29,8 +30,8 @@ abstract class AbstractSeleniumTestCase extends AbstractBaseTestCase
         self::$webDriver->manage()->timeouts()->implicitlyWait(3);
 
         self::$screenshotsDir = APP_ROOT.'/build/Screenshots/'.date('Y-m-d H-i-s').'/';
-        if (!file_exists(self::$screenshotsDir)) {
-            mkdir(self::$screenshotsDir, 0777, true);
+        if (!(new Filesystem())->exists(self::$screenshotsDir)) {
+            (new Filesystem())->mkdir(self::$screenshotsDir, 0777);
         }
     }
 
