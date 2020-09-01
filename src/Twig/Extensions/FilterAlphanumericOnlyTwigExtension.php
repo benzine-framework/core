@@ -7,12 +7,12 @@ use Twig\TwigFilter;
 
 class FilterAlphanumericOnlyTwigExtension extends AbstractExtension
 {
-    public function getName()
+    public function getName(): string
     {
         return 'Filter Alphanumeric Only Twig Extension';
     }
 
-    public function getFilters()
+    public function getFilters(): array
     {
         $filters = [];
         $methods = ['filteralphaonly'];
@@ -23,7 +23,7 @@ class FilterAlphanumericOnlyTwigExtension extends AbstractExtension
         return $filters;
     }
 
-    public function filteralphaonly($string)
+    public function filteralphaonly($string): string
     {
         return preg_replace('/[^a-z0-9_]+/i', '', $string);
     }

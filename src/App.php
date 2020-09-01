@@ -38,6 +38,7 @@ use Psr\Http\Message\ResponseInterface;
 use Slim;
 use Slim\Factory\AppFactory;
 use Symfony\Bridge\Twig\Extension as SymfonyTwigExtensions;
+use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Translation;
 use Twig;
@@ -126,10 +127,10 @@ class App
                 ->useAutowiring(true)
                 ->useAnnotations(true)
             ;
-        #if ((new Filesystem())->exists($this->getCachePath())) {
-        #   $container->enableCompilation($this->getCachePath());
-        #   $container->writeProxiesToFile(true, "{$this->getCachePath()}/injection-proxies");
-        #}
+        //if ((new Filesystem())->exists($this->getCachePath())) {
+        //   $container->enableCompilation($this->getCachePath());
+        //   $container->writeProxiesToFile(true, "{$this->getCachePath()}/injection-proxies");
+        //}
         $container = $container->build();
 
         $container->set(Slim\Views\Twig::class, function (
@@ -151,7 +152,12 @@ class App
             }
 
             if (!(new Filesystem())->exists($twigCachePath)) {
-                (new Filesystem())->mkdir($twigCachePath, 0777);
+                try {
+                    (new Filesystem())->mkdir($twigCachePath, 0777);
+                } catch (IOException $IOException) {
+                    unset($twigSettings['cache']);
+                    $this->getLogger()->warning(sprintf('Could not create Twig cache (%s), Twig cache disabled ', $twigCachePath));
+                }
             }
 
             $loader = new FilesystemLoader();
@@ -186,7 +192,7 @@ class App
             $twig->offsetSet('language', $translator->trans($selectedLanguage));
 
             // Set some default parameters
-            $twig->offsetSet('app_name', defined('APP_NAME') ? APP_NAME : "APP_NAME not set");
+            $twig->offsetSet('app_name', defined('APP_NAME') ? APP_NAME : 'APP_NAME not set');
             $twig->offsetSet('year', date('Y'));
             $twig->offsetSet('session', $sessionService);
 

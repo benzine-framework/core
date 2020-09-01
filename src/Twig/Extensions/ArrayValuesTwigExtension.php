@@ -7,12 +7,12 @@ use Twig\TwigFilter;
 
 class ArrayValuesTwigExtension extends AbstractExtension
 {
-    public function getName()
+    public function getName(): string
     {
         return 'Array_Values Twig Extension';
     }
 
-    public function getFilters()
+    public function getFilters(): array
     {
         $filters = [];
         $methods = ['values'];
@@ -23,7 +23,7 @@ class ArrayValuesTwigExtension extends AbstractExtension
         return $filters;
     }
 
-    public function values($array)
+    public function values($array): string
     {
         return array_values($array);
     }
