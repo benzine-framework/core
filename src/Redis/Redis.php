@@ -4,7 +4,7 @@ namespace Benzine\Redis;
 
 class Redis extends \Redis
 {
-    /** @var Lua\LuaExtension[] */
+    /** @var Lua\AbstractLuaExtension[] */
     private array $scripts;
 
     public function __call($name, $arguments)

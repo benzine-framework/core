@@ -2,6 +2,7 @@
 
 namespace Benzine\Workers;
 
+use Benzine\Exceptions\WorkerException;
 use Benzine\ORM\Abstracts\AbstractModel;
 
 class WorkerWorkItem
@@ -20,7 +21,7 @@ class WorkerWorkItem
             case 'get':
                 return $this->data[$field];
             default:
-                throw new \Exception("Method {$name} doesn't exist");
+                throw new WorkerException("Method {$name} doesn't exist");
         }
     }
 

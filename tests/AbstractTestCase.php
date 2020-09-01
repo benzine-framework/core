@@ -2,7 +2,9 @@
 
 namespace Benzine\Tests;
 
-abstract class TestCase extends \PHPUnit\Framework\TestCase
+use PHPUnit\Framework\TestCase;
+
+abstract class AbstractTestCase extends TestCase
 {
     use Traits\OverrideProtectionTrait;
     use Traits\ArrayEquitabilityTrait;

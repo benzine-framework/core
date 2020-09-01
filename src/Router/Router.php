@@ -16,7 +16,7 @@ class Router
 
     private bool $routesArePopulated = false;
 
-    public function __construct(\Redis $redis, Logger $logger, CachePoolChain $cachePoolChain)
+    public function __construct(Logger $logger, CachePoolChain $cachePoolChain)
     {
         $this->logger = $logger;
         $this->cachePoolChain = $cachePoolChain;

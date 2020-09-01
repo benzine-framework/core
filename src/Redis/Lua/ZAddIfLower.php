@@ -2,7 +2,7 @@
 
 namespace Benzine\Redis\Lua;
 
-class ZAddIfLower extends LuaExtension
+class ZAddIfLower extends AbstractLuaExtension
 {
     protected function getScript(): string
     {

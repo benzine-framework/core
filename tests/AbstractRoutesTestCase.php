@@ -6,7 +6,7 @@ use Benzine\Tests\Traits\AppTestTrait;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Request;
 
-abstract class RoutesTestCase extends BaseTestCase
+abstract class AbstractRoutesTestCase extends AbstractBaseTestCase
 {
     use AppTestTrait;
 

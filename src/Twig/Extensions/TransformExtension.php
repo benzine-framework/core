@@ -25,7 +25,7 @@ class TransformExtension extends AbstractExtension
                 $name = 'transform_'.strtolower($fromTransformer).'_to_'.strtolower($toTransformer);
                 $context = $this;
                 $filters[$name] =
-                    new TwigFilter($name, function ($word) use ($context, $fromTransformer, $toTransformer) {
+                    new TwigFilter($name, function (string $word) use ($context, $fromTransformer, $toTransformer): string {
                         return $context->transform($word, $fromTransformer, $toTransformer);
                     });
             }

@@ -5,9 +5,8 @@ namespace Benzine\Tests;
 use Faker\Factory as FakerFactory;
 use Faker\Generator;
 use Faker\Provider;
-use PHPUnit\Framework\TestCase;
 
-abstract class BaseTestCase extends TestCase
+abstract class AbstractBaseTestCase extends AbstractTestCase
 {
     // Set this to true if you want to see whats going on inside some unit tests..
     public const DEBUG_MODE = false;

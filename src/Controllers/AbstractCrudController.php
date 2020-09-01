@@ -7,7 +7,7 @@ use Laminas\Db\Adapter\Exception\InvalidQueryException;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 
-abstract class CrudController extends Controller
+abstract class AbstractCrudController extends AbstractController
 {
     public function listRequest(Request $request, Response $response): Response
     {

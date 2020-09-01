@@ -9,7 +9,7 @@ use Monolog\Logger;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 
-abstract class Controller
+abstract class AbstractController
 {
     protected Logger $logger;
     protected AbstractService $service;

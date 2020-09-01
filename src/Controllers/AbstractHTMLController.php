@@ -8,7 +8,7 @@ use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 use Slim\Views\Twig;
 
-abstract class HtmlController extends Controller
+abstract class AbstractHTMLController extends AbstractController
 {
     protected Twig $twig;
     protected DebugBar $debugBar;

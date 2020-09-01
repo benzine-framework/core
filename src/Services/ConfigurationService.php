@@ -3,6 +3,7 @@
 namespace Benzine\Services;
 
 use Benzine\App;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
 class ConfigurationService
@@ -103,7 +104,8 @@ class ConfigurationService
             $path = getcwd();
             //$path = dirname($this->environmentService->get('SCRIPT_FILENAME'));
         }
-        if (!file_exists($path.'/.benzine.yml')) {
+
+        if (!(new Filesystem())->exists($path.'/.benzine.yml')) {
             $currentDirElem = explode(DIRECTORY_SEPARATOR, $path);
             array_pop($currentDirElem);
             $parentPath = implode(DIRECTORY_SEPARATOR, $currentDirElem);

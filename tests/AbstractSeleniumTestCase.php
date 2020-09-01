@@ -5,7 +5,7 @@ namespace Benzine\Tests;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Remote\WebDriverCapabilityType;
 
-abstract class SeleniumTestCase extends BaseTestCase
+abstract class AbstractSeleniumTestCase extends AbstractBaseTestCase
 {
     /** @var RemoteWebDriver */
     protected static $webDriver;

@@ -2,7 +2,7 @@
 
 namespace Benzine\Redis\Lua;
 
-abstract class LuaExtension
+abstract class AbstractLuaExtension
 {
     protected \Redis $redis;
     protected ?string $hash = null;

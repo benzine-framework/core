@@ -11,10 +11,10 @@ class InflectionExtension extends AbstractExtension
     public function getFilters()
     {
         $filters = [];
-        $filters['pluralize'] = new TwigFilter('pluralize', function ($word) {
+        $filters['pluralize'] = new TwigFilter('pluralize', function ($word): string {
             return Inflect::pluralize($word);
         });
-        $filters['singularize'] = new TwigFilter('singularize', function ($word) {
+        $filters['singularize'] = new TwigFilter('singularize', function ($word): string {
             return Inflect::singularize($word);
         });
 
