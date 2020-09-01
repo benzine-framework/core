@@ -38,6 +38,7 @@ use Psr\Http\Message\ResponseInterface;
 use Slim;
 use Slim\Factory\AppFactory;
 use Symfony\Bridge\Twig\Extension as SymfonyTwigExtensions;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Translation;
 use Twig;
 use Twig\Loader\FilesystemLoader;
@@ -73,10 +74,13 @@ class App
         $this->debugBar = $container->get(DebugBar::class);
         AppFactory::setContainer($container);
 
+        // If we're not on the CLI and Sessions ARE enabled...
         if ('cli' != php_sapi_name() && $this->isSessionsEnabled) {
-            $session = $container->get(SessionService::class);
+            // Call SessionService out of the container to force initialise it
+            $container->get(SessionService::class);
         }
 
+        // Configure default expected views paths
         $this->viewPaths[] = APP_ROOT.'/views/';
         $this->viewPaths[] = APP_ROOT.'/src/Views/';
 
@@ -87,7 +91,7 @@ class App
 
         $this->setupMiddlewares($container);
 
-        $errorMiddleware = $this->app->addErrorMiddleware(true, true, true, $this->logger);
+        $this->app->addErrorMiddleware(true, true, true, $this->logger);
 
         $this->debugBar['time']->startMeasure('interrogateTranslations', 'Time to interrogate translation files');
         $this->interrogateTranslations();
@@ -122,10 +126,10 @@ class App
                 ->useAutowiring(true)
                 ->useAnnotations(true)
             ;
-        if (file_exists($this->getCachePath())) {
-            //    $container->enableCompilation($this->getCachePath());
-            //    $container->writeProxiesToFile(true, "{$this->getCachePath()}/injection-proxies");
-        }
+        #if ((new Filesystem())->exists($this->getCachePath())) {
+        #   $container->enableCompilation($this->getCachePath());
+        #   $container->writeProxiesToFile(true, "{$this->getCachePath()}/injection-proxies");
+        #}
         $container = $container->build();
 
         $container->set(Slim\Views\Twig::class, function (
@@ -134,7 +138,7 @@ class App
             Translation\Translator $translator
         ) {
             foreach ($this->viewPaths as $i => $viewLocation) {
-                if (!file_exists($viewLocation) || !is_dir($viewLocation)) {
+                if (!(new Filesystem())->exists($viewLocation) || !is_dir($viewLocation)) {
                     unset($this->viewPaths[$i]);
                 }
             }
@@ -146,8 +150,8 @@ class App
                 $twigSettings['cache'] = $twigCachePath;
             }
 
-            if (!file_exists($twigCachePath)) {
-                @mkdir($twigCachePath, 0777, true);
+            if (!(new Filesystem())->exists($twigCachePath)) {
+                (new Filesystem())->mkdir($twigCachePath, 0777);
             }
 
             $loader = new FilesystemLoader();
@@ -182,7 +186,7 @@ class App
             $twig->offsetSet('language', $translator->trans($selectedLanguage));
 
             // Set some default parameters
-            $twig->offsetSet('app_name', APP_NAME);
+            $twig->offsetSet('app_name', defined('APP_NAME') ? APP_NAME : "APP_NAME not set");
             $twig->offsetSet('year', date('Y'));
             $twig->offsetSet('session', $sessionService);
 
@@ -312,7 +316,7 @@ class App
         $this->environmentService = $container->get(Services\EnvironmentService::class);
         if ($this->environmentService->has('TIMEZONE')) {
             date_default_timezone_set($this->environmentService->get('TIMEZONE'));
-        } elseif (file_exists('/etc/timezone')) {
+        } elseif ((new Filesystem())->exists('/etc/timezone')) {
             date_default_timezone_set(trim(file_get_contents('/etc/timezone')));
         } else {
             date_default_timezone_set(self::DEFAULT_TIMEZONE);
@@ -337,17 +341,17 @@ class App
     /**
      * @return self
      */
-    public static function Instance(array $options = [])
+    public static function Instance()
     {
         if (!self::$isInitialised) {
             $calledClass = get_called_class();
             /** @var App $tempApp */
-            $tempApp = new $calledClass($options);
+            $tempApp = new $calledClass();
             /** @var ConfigurationService $config */
             $config = $tempApp->get(ConfigurationService::class);
             $configCoreClass = $config->getCore();
             if ($configCoreClass != get_called_class()) {
-                self::$instance = new $configCoreClass($options);
+                self::$instance = new $configCoreClass();
             } else {
                 self::$instance = $tempApp;
             }
@@ -371,7 +375,7 @@ class App
 
     public function addViewPath($path)
     {
-        if (file_exists($path)) {
+        if ((new Filesystem())->exists($path)) {
             $this->viewPaths[] = $path;
         }
 
@@ -469,7 +473,7 @@ class App
     protected function interrogateTranslations(): void
     {
         $stringPath = APP_ROOT.'/src/Strings';
-        if (!file_exists($stringPath)) {
+        if (!(new Filesystem())->exists($stringPath)) {
             return;
         }
         foreach (new \DirectoryIterator($stringPath) as $translationFile) {
@@ -480,6 +484,7 @@ class App
         }
     }
 
+    // @todo MB: This entire function is refactor-bait.
     protected function interrogateControllers(): void
     {
         if ($this->interrogateControllersComplete) {
@@ -499,7 +504,7 @@ class App
         ];
 
         foreach ($controllerPaths as $controllerPath) {
-            if (file_exists($controllerPath)) {
+            if ((new Filesystem())->exists($controllerPath)) {
                 foreach (new \DirectoryIterator($controllerPath) as $controllerFile) {
                     if (!$controllerFile->isDot() && $controllerFile->isFile() && $controllerFile->isReadable()) {
                         $appClass = new \ReflectionClass(get_called_class());
@@ -531,6 +536,10 @@ class App
                                                         'access' => Route::ACCESS_PUBLIC,
                                                         'weight' => 100,
                                                     ];
+
+                                                    // @todo MB: The following if-statement in its entirity needs rewriting
+                                                    // because only god and me knew what I was thinking when I wrote it.
+                                                    // And now god only knows.
                                                     if (isset($extra)) {
                                                         foreach (explode(' ', $extra) as $item) {
                                                             @list($extraK, $extraV) = explode('=', $item, 2);
@@ -540,6 +549,7 @@ class App
                                                             $options[$extraK] = $extraV;
                                                         }
                                                     }
+
                                                     $options = array_merge($defaultOptions, $options);
                                                     foreach ($httpMethods as $httpMethod) {
                                                         $newRoute
