@@ -5,7 +5,7 @@ namespace Benzine\Workers;
 use Benzine\Exceptions\WorkerException;
 use Benzine\ORM\Abstracts\AbstractModel;
 
-class WorkerWorkItem
+class WorkerWorkItem implements \Serializable
 {
     protected array $data;
 
