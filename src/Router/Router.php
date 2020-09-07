@@ -3,6 +3,8 @@
 namespace Benzine\Router;
 
 use Cache\Adapter\Chain\CachePoolChain;
+use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\AnnotationRegistry;
 use Monolog\Logger;
 use Slim\App;
 
@@ -20,6 +22,67 @@ class Router
     {
         $this->logger = $logger;
         $this->cachePoolChain = $cachePoolChain;
+    }
+
+    public function loadRoutesFromAnnotations(
+        array $controllerPaths,
+        string $baseNamespace = null
+    ): void {
+        AnnotationRegistry::registerLoader('class_exists');
+
+        $reader = new AnnotationReader();
+
+        foreach ($controllerPaths as $controllerPath) {
+            foreach (new \RecursiveDirectoryIterator($controllerPath) as $controllerFile) {
+                if ($controllerFile->isDot() || !$controllerFile->isFile() || !$controllerFile->isReadable()) {
+                    continue;
+                }
+
+                $fileClassName = str_replace('.php', '', $controllerFile->getFilename());
+                $expectedClasses = [
+                    $baseNamespace . '\\Controllers\\' . $fileClassName,
+                    'Benzine\\Controllers\\' . $fileClassName,
+                ];
+
+                foreach ($expectedClasses as $expectedClass) {
+                    if (!class_exists($expectedClass)) {
+                        continue;
+                    }
+
+                    $rc = new \ReflectionClass($expectedClass);
+                    if ($rc->isAbstract()) {
+                        continue;
+                    }
+
+                    foreach ($rc->getMethods() as $method) {
+                        if (!$method->isPublic()) {
+                            continue;
+                        }
+
+                        $routeAnnotation = $reader->getMethodAnnotation($method, \Benzine\Annotations\Route::class);
+                        if (!($routeAnnotation instanceof \Benzine\Annotations\Route)) {
+                            continue;
+                        }
+
+                        foreach($routeAnnotation->methods as $httpMethod) {
+                            $newRoute = new Route($this->logger);
+
+                            $newRoute
+                                ->setHttpMethod($httpMethod)
+                                ->setRouterPattern('/' . ltrim($routeAnnotation->path, '/'))
+                                ->setCallback($method->class . ':' . $method->name)
+                                ->setWeight($routeAnnotation->weight);
+
+                            foreach ($routeAnnotation->domains as $domain) {
+                                $newRoute->addValidDomain($domain);
+                            }
+
+                            $this->addRoute($newRoute);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public function weighRoutes(): Router

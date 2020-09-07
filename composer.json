@@ -27,6 +27,7 @@
         "cache/array-adapter": "^1.0",
         "cache/chain-adapter": "^1.0",
         "cache/redis-adapter": "^1.0",
+        "doctrine/annotations": "^1.10",
         "duncan3dc/fork-helper": "^2.0",
         "friendsofphp/php-cs-fixer": "^2.0",
         "fzaninotto/faker": "^1.9",
