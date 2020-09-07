@@ -42,8 +42,7 @@ class Router
             $phpFiles = new \RegexIterator($iteratorIterator, '/^.+\.php$/i', \RecursiveRegexIterator::GET_MATCH);
 
             foreach ($phpFiles as $controllerFile) {
-                /** @var \SplFileInfo $controllerFile */
-                $fileClassName = str_replace('.php', '', $controllerFile->getFilename());
+                $fileClassName = ltrim(str_replace([$controllerPath, '/', '.php'], ['', '\\', ''], $controllerFile[0]), '\\');
                 $expectedClasses = [
                     $baseNamespace . '\\Controllers\\' . $fileClassName,
                     'Benzine\\Controllers\\' . $fileClassName,
@@ -85,6 +84,8 @@ class Router
                             $this->addRoute($newRoute);
                         }
                     }
+
+                    break;
                 }
             }
         }
