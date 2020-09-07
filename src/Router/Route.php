@@ -3,6 +3,7 @@
 namespace Benzine\Router;
 
 use Monolog\Logger;
+use Psr\Http\Message\ServerRequestInterface;
 use Slim\App;
 
 class Route
@@ -401,10 +402,14 @@ class Route
         return count($this->validDomains) > 0;
     }
 
-    public function isInContainedInValidDomains(): bool
+    public function isInContainedInValidDomains(string $host = null): bool
     {
+        if (null === $host) {
+            return false;
+        }
+
         foreach ($this->validDomains as $validDomain) {
-            if (isset($_SERVER['HTTP_HOST']) && fnmatch($validDomain, $_SERVER['HTTP_HOST'])) {
+            if (fnmatch($validDomain, $host)) {
                 return true;
             }
         }

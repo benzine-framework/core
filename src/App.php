@@ -35,8 +35,10 @@ use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Slim;
 use Slim\Factory\AppFactory;
+use Slim\Factory\ServerRequestCreatorFactory;
 use Symfony\Bridge\Twig\Extension as SymfonyTwigExtensions;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -76,7 +78,7 @@ class App
         AppFactory::setContainer($container);
 
         // If we're not on the CLI and Sessions ARE enabled...
-        if ('cli' != php_sapi_name() && $this->isSessionsEnabled) {
+        if ('cli' !== php_sapi_name() && $this->isSessionsEnabled) {
             // Call SessionService out of the container to force initialise it
             $container->get(SessionService::class);
         }
@@ -396,7 +398,22 @@ class App
         ;
     }
 
-    public function loadAllRoutes()
+    public function runHttp(): void
+    {
+        $serverRequestCreator = ServerRequestCreatorFactory::create();
+        $request = $serverRequestCreator->createServerRequestFromGlobals();
+
+        $this->loadAllRoutes($request);
+
+        $this->debugBar['time']->startMeasure('runHTTP', 'HTTP runtime');
+        $this->app->run($request);
+
+        if ($this->debugBar['time']->hasStartedMeasure('runHTTP')) {
+            $this->debugBar['time']->stopMeasure('runHTTP');
+        }
+    }
+
+    protected function loadAllRoutes(ServerRequestInterface $request): self
     {
         $this->debugBar['time']->startMeasure('interrogateControllers', 'Time to interrogate controllers for routes');
         $this->interrogateControllers();
@@ -404,20 +421,9 @@ class App
 
         $this->logger->debug(sprintf('Bootstrap complete in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
 
-        $this->router->populateRoutes($this->getApp());
+        $this->router->populateRoutes($this->getApp(), $request);
 
         return $this;
-    }
-
-    public function runHttp(): void
-    {
-        $this->loadAllRoutes();
-        $this->debugBar['time']->startMeasure('runHTTP', 'HTTP runtime');
-        $this->app->run();
-
-        if ($this->debugBar['time']->hasStartedMeasure('runHTTP')) {
-            $this->debugBar['time']->stopMeasure('runHTTP');
-        }
     }
 
     /**
@@ -483,7 +489,7 @@ class App
             return;
         }
         foreach (new \DirectoryIterator($stringPath) as $translationFile) {
-            if ('yaml' == $translationFile->getExtension()) {
+            if ('yaml' === $translationFile->getExtension()) {
                 $languageName = substr($translationFile->getBasename(), 0, -5);
                 $this->addSupportedLanguage($languageName);
             }
@@ -498,13 +504,13 @@ class App
         $this->interrogateControllersComplete = true;
 
         if ($this->environmentService->has('ROUTE_CACHE')
-            && 'on' == strtolower($this->environmentService->get('ROUTE_CACHE'))
+            && 'on' === strtolower($this->environmentService->get('ROUTE_CACHE'))
             && $this->router->loadCache()
         ) {
             return;
         }
 
-        $appClass = new \ReflectionClass(get_called_class());
+        $appClass = new \ReflectionClass(static::class);
         $this->router->loadRoutesFromAnnotations(
             [
                 APP_ROOT.'/src/Controllers',
@@ -512,10 +518,8 @@ class App
             $appClass->getNamespaceName()
         );
 
-        $this->router
-            ->weighRoutes()
-            ->cache()
-        ;
+        // Cache routes before weighing.
+        $this->router->cache();
 
         $this->logger->debug(sprintf(
             'ROUTE_CACHE miss. Perhaps enable ROUTE_CACHE envvar.'

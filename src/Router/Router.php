@@ -6,6 +6,7 @@ use Cache\Adapter\Chain\CachePoolChain;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Monolog\Logger;
+use Psr\Http\Message\ServerRequestInterface;
 use Slim\App;
 
 class Router
@@ -91,34 +92,18 @@ class Router
         }
     }
 
-    public function weighRoutes(): Router
-    {
-        $allocatedRoutes = [];
-        if (is_array($this->routes) && count($this->routes) > 0) {
-            uasort($this->routes, function (Route $a, Route $b) {
-                return $a->getWeight() > $b->getWeight();
-            });
-
-            foreach ($this->routes as $index => $route) {
-                if (($route->isInContainedInValidDomains() || !$route->hasValidDomains())
-                    && !isset($allocatedRoutes[$route->getHttpMethod().$route->getRouterPattern()])) {
-                    $allocatedRoutes[$route->getHttpMethod().$route->getRouterPattern()] = true;
-                } else {
-                    unset($this->routes[$index]);
-                }
-            }
-        }
-
-        return $this;
-    }
-
-    public function populateRoutes(App $app)
+    public function populateRoutes(App $app, ServerRequestInterface $request = null): App
     {
         if ($this->routesArePopulated) {
             return $app;
         }
 
-        $this->weighRoutes();
+        $host = (null !== $request)
+            ? $request->getUri()->getHost()
+            : null;
+
+        $this->weighRoutes($host);
+
         if (count($this->routes) > 0) {
             foreach ($this->getRoutes() as $route) {
                 $app = $route->populateRoute($app);
@@ -128,6 +113,27 @@ class Router
         $this->routesArePopulated = true;
 
         return $app;
+    }
+
+    protected function weighRoutes(string $host = null): self
+    {
+        $allocatedRoutes = [];
+        if (is_array($this->routes) && count($this->routes) > 0) {
+            uasort($this->routes, function (Route $a, Route $b) {
+                return $a->getWeight() > $b->getWeight();
+            });
+
+            foreach ($this->routes as $index => $route) {
+                $routeKey = $route->getHttpMethod().$route->getRouterPattern();
+                if (!isset($allocatedRoutes[$routeKey]) && ($route->isInContainedInValidDomains($host) || !$route->hasValidDomains())) {
+                    $allocatedRoutes[$routeKey] = true;
+                } else {
+                    unset($this->routes[$index]);
+                }
+            }
+        }
+
+        return $this;
     }
 
     public function addRoute(Route $route)
@@ -152,6 +158,7 @@ class Router
         if (!$cacheItem || null === $cacheItem->get()) {
             return false;
         }
+
         $this->routes = $cacheItem->get();
         $this->logger->debug(sprintf('Loaded routes from Cache in %sms', number_format((microtime(true) - $time) * 1000, 2)));
 
