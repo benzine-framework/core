@@ -518,7 +518,6 @@ class App
             $appClass->getNamespaceName()
         );
 
-        // Cache routes before weighing.
         $this->router->cache();
 
         $this->logger->debug(sprintf(

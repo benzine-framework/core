@@ -120,7 +120,12 @@ class Router
         $allocatedRoutes = [];
         if (is_array($this->routes) && count($this->routes) > 0) {
             uasort($this->routes, function (Route $a, Route $b) {
-                return $a->getWeight() > $b->getWeight();
+                $a1 = $a->getWeight();
+                $b1 = $b->getWeight();
+                if ($a1 === $b1) {
+                    return 0;
+                }
+                return ($a1 > $b1) ? +1 : -1;
             });
 
             foreach ($this->routes as $index => $route) {
