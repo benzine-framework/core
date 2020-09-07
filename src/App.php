@@ -490,7 +490,6 @@ class App
         }
     }
 
-    // @todo MB: This entire function is refactor-bait.
     protected function interrogateControllers(): void
     {
         if ($this->interrogateControllersComplete) {
@@ -505,96 +504,13 @@ class App
             return;
         }
 
-        $controllerPaths = [
-            APP_ROOT.'/src/Controllers',
-        ];
-
-        foreach ($controllerPaths as $controllerPath) {
-            if ((new Filesystem())->exists($controllerPath)) {
-                foreach (new \DirectoryIterator($controllerPath) as $controllerFile) {
-                    if (!$controllerFile->isDot() && $controllerFile->isFile() && $controllerFile->isReadable()) {
-                        $appClass = new \ReflectionClass(get_called_class());
-                        $expectedClasses = [
-                            $appClass->getNamespaceName().'\\Controllers\\'.str_replace('.php', '', $controllerFile->getFilename()),
-                            'Benzine\\Controllers\\'.str_replace('.php', '', $controllerFile->getFilename()),
-                        ];
-                        foreach ($expectedClasses as $expectedClass) {
-                            if (class_exists($expectedClass)) {
-                                $rc = new \ReflectionClass($expectedClass);
-                                if (!$rc->isAbstract()) {
-                                    foreach ($rc->getMethods() as $method) {
-                                        /** @var \ReflectionMethod $method */
-                                        if (true || ResponseInterface::class == ($method->getReturnType() instanceof \ReflectionType ? $method->getReturnType()->getName() : null)) {
-                                            $docBlock = $method->getDocComment();
-                                            $newRoute = new Route($this->logger);
-                                            foreach (explode("\n", $docBlock) as $docBlockRow) {
-                                                if (false !== stripos($docBlockRow, '@route')) {
-                                                    $route = trim(substr(
-                                                        $docBlockRow,
-                                                        (stripos($docBlockRow, '@route') + strlen('@route'))
-                                                    ));
-
-                                                    @list($httpMethods, $path, $extra) = explode(' ', $route, 3);
-                                                    $httpMethods = explode(',', strtoupper($httpMethods));
-
-                                                    $options = [];
-                                                    $defaultOptions = [
-                                                        'access' => Route::ACCESS_PUBLIC,
-                                                        'weight' => 100,
-                                                    ];
-
-                                                    // @todo MB: The following if-statement in its entirity needs rewriting
-                                                    // because only god and me knew what I was thinking when I wrote it.
-                                                    // And now god only knows.
-                                                    if (isset($extra)) {
-                                                        foreach (explode(' ', $extra) as $item) {
-                                                            @list($extraK, $extraV) = explode('=', $item, 2);
-                                                            if (!isset($extraV)) {
-                                                                $extraV = true;
-                                                            }
-                                                            $options[$extraK] = $extraV;
-                                                        }
-                                                    }
-
-                                                    $options = array_merge($defaultOptions, $options);
-                                                    foreach ($httpMethods as $httpMethod) {
-                                                        $newRoute
-                                                            ->setHttpMethod($httpMethod)
-                                                            ->setRouterPattern('/'.ltrim($path, '/'))
-                                                            ->setCallback($method->class.':'.$method->name)
-                                                        ;
-
-                                                        foreach ($options as $key => $value) {
-                                                            $keyMethod = 'set'.ucfirst($key);
-                                                            if (method_exists($newRoute, $keyMethod)) {
-                                                                $newRoute->{$keyMethod}($value);
-                                                            } else {
-                                                                $newRoute->setArgument($key, $value);
-                                                            }
-                                                        }
-
-                                                        $this->router->addRoute($newRoute);
-                                                    }
-                                                } elseif (false !== stripos($docBlockRow, '@domains')) {
-                                                    $domains = explode(' ', trim(substr(
-                                                        $docBlockRow,
-                                                        (stripos($docBlockRow, '@domains') + strlen('@domains'))
-                                                    )));
-                                                    foreach ($domains as $domain) {
-                                                        $newRoute->addValidDomain($domain);
-                                                    }
-                                                    $newRoute->setWeight($newRoute->getWeight() - 10);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        $appClass = new \ReflectionClass(get_called_class());
+        $this->router->loadRoutesFromAnnotations(
+            [
+                APP_ROOT.'/src/Controllers',
+            ],
+            $appClass->getNamespaceName()
+        );
 
         $this->router
             ->weighRoutes()

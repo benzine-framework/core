@@ -33,11 +33,16 @@ class Router
         $reader = new AnnotationReader();
 
         foreach ($controllerPaths as $controllerPath) {
-            foreach (new \RecursiveDirectoryIterator($controllerPath) as $controllerFile) {
-                if ($controllerFile->isDot() || !$controllerFile->isFile() || !$controllerFile->isReadable()) {
-                    continue;
-                }
+            if (!is_dir($controllerPath)) {
+                continue;
+            }
 
+            $dirIterator = new \RecursiveDirectoryIterator($controllerPath);
+            $iteratorIterator = new \RecursiveIteratorIterator($dirIterator);
+            $phpFiles = new \RegexIterator($iteratorIterator, '/^.+\.php$/i', \RecursiveRegexIterator::GET_MATCH);
+
+            foreach ($phpFiles as $controllerFile) {
+                /** @var \SplFileInfo $controllerFile */
                 $fileClassName = str_replace('.php', '', $controllerFile->getFilename());
                 $expectedClasses = [
                     $baseNamespace . '\\Controllers\\' . $fileClassName,
