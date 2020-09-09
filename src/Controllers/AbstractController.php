@@ -5,6 +5,7 @@ namespace Benzine\Controllers;
 use Benzine\Controllers\Filters\Filter;
 use Benzine\Exceptions\FilterDecodeException;
 use Benzine\ORM\Abstracts\AbstractService;
+use League\Flysystem\Filesystem;
 use Monolog\Logger;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
@@ -110,5 +111,20 @@ abstract class AbstractController
         return (new Response())
             ->withStatus(404)
         ;
+    }
+
+    protected function returnFile(Filesystem $filesystem, string $filename) : Response{
+        $response = new Response();
+        if(!$filesystem->has($filename)){
+            return $this->pageNotFound();
+        }
+
+        //\Kint::dump($filesystem->getMimetype($assetName));exit;
+
+        $response->getBody()
+            ->write($filesystem->read($filename));
+        ;
+
+        return $response->withHeader("Content-type", $filesystem->getMimetype($filename));
     }
 }
