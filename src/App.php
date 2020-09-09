@@ -193,6 +193,9 @@ class App
             $twig->addExtension(new SymfonyTwigExtensions\TranslationExtension($translator));
             $twig->offsetSet('language', $translator->trans($selectedLanguage));
 
+            // Add Twig Intl Extension
+            $twig->addExtension(new Twig\Extensions\IntlExtension());
+
             // Set some default parameters
             $twig->offsetSet('app_name', defined('APP_NAME') ? APP_NAME : 'APP_NAME not set');
             $twig->offsetSet('year', date('Y'));
