@@ -19,6 +19,7 @@
         "ext-openssl": "*",
         "ext-redis": "*",
         "ext-reflection": "*",
+        "ext-simplexml": "*",
         "ext-sockets": "*",
         "ext-zip": "*",
         "brianium/paratest": "^4.1",
