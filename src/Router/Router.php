@@ -45,8 +45,8 @@ class Router
             foreach ($phpFiles as $controllerFile) {
                 $fileClassName = ltrim(str_replace([$controllerPath, '/', '.php'], ['', '\\', ''], $controllerFile[0]), '\\');
                 $expectedClasses = [
-                    $baseNamespace . '\\Controllers\\' . $fileClassName,
-                    'Benzine\\Controllers\\' . $fileClassName,
+                    $baseNamespace.'\\Controllers\\'.$fileClassName,
+                    'Benzine\\Controllers\\'.$fileClassName,
                 ];
 
                 foreach ($expectedClasses as $expectedClass) {
@@ -69,14 +69,15 @@ class Router
                             continue;
                         }
 
-                        foreach($routeAnnotation->methods as $httpMethod) {
+                        foreach ($routeAnnotation->methods as $httpMethod) {
                             $newRoute = new Route($this->logger);
 
                             $newRoute
                                 ->setHttpMethod($httpMethod)
-                                ->setRouterPattern('/' . ltrim($routeAnnotation->path, '/'))
-                                ->setCallback($method->class . ':' . $method->name)
-                                ->setWeight($routeAnnotation->weight);
+                                ->setRouterPattern('/'.ltrim($routeAnnotation->path, '/'))
+                                ->setCallback($method->class.':'.$method->name)
+                                ->setWeight($routeAnnotation->weight)
+                            ;
 
                             foreach ($routeAnnotation->domains as $domain) {
                                 $newRoute->addValidDomain($domain);
@@ -113,32 +114,6 @@ class Router
         $this->routesArePopulated = true;
 
         return $app;
-    }
-
-    protected function weighRoutes(string $host = null): self
-    {
-        $allocatedRoutes = [];
-        if (is_array($this->routes) && count($this->routes) > 0) {
-            uasort($this->routes, function (Route $a, Route $b) {
-                $a1 = $a->getWeight();
-                $b1 = $b->getWeight();
-                if ($a1 === $b1) {
-                    return 0;
-                }
-                return ($a1 > $b1) ? +1 : -1;
-            });
-
-            foreach ($this->routes as $index => $route) {
-                $routeKey = $route->getHttpMethod().$route->getRouterPattern();
-                if (!isset($allocatedRoutes[$routeKey]) && ($route->isInContainedInValidDomains($host) || !$route->hasValidDomains())) {
-                    $allocatedRoutes[$routeKey] = true;
-                } else {
-                    unset($this->routes[$index]);
-                }
-            }
-        }
-
-        return $this;
     }
 
     public function addRoute(Route $route)
@@ -178,6 +153,33 @@ class Router
             ->expiresAfter($this->cacheTTL)
         ;
         $this->cachePoolChain->save($routeItem);
+
+        return $this;
+    }
+
+    protected function weighRoutes(string $host = null): self
+    {
+        $allocatedRoutes = [];
+        if (is_array($this->routes) && count($this->routes) > 0) {
+            uasort($this->routes, function (Route $a, Route $b) {
+                $a1 = $a->getWeight();
+                $b1 = $b->getWeight();
+                if ($a1 === $b1) {
+                    return 0;
+                }
+
+                return ($a1 > $b1) ? +1 : -1;
+            });
+
+            foreach ($this->routes as $index => $route) {
+                $routeKey = $route->getHttpMethod().$route->getRouterPattern();
+                if (!isset($allocatedRoutes[$routeKey]) && ($route->isInContainedInValidDomains($host) || !$route->hasValidDomains())) {
+                    $allocatedRoutes[$routeKey] = true;
+                } else {
+                    unset($this->routes[$index]);
+                }
+            }
+        }
 
         return $this;
     }

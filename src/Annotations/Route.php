@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Benzine\Annotations;
 
@@ -16,11 +18,10 @@ class Route
 
     /**
      * @Required
-     * @var string
      */
     public string $path;
 
-    /** @var string  */
+    /** @var string */
     public string $access = \Benzine\Router\Route::ACCESS_PUBLIC;
 
     /** @var int */

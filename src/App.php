@@ -5,7 +5,6 @@ namespace Benzine;
 use Benzine\ORM\Connection\Databases;
 use Benzine\ORM\Laminator;
 use Benzine\Redis\Redis;
-use Benzine\Router\Route;
 use Benzine\Router\Router;
 use Benzine\Services\ConfigurationService;
 use Benzine\Services\EnvironmentService;
@@ -34,7 +33,6 @@ use Monolog\Handler\ErrorLogHandler;
 use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
 use Psr\Container\ContainerInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim;
 use Slim\Factory\AppFactory;
@@ -416,19 +414,6 @@ class App
         }
     }
 
-    protected function loadAllRoutes(ServerRequestInterface $request): self
-    {
-        $this->debugBar['time']->startMeasure('interrogateControllers', 'Time to interrogate controllers for routes');
-        $this->interrogateControllers();
-        $this->debugBar['time']->stopMeasure('interrogateControllers');
-
-        $this->logger->debug(sprintf('Bootstrap complete in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
-
-        $this->router->populateRoutes($this->getApp(), $request);
-
-        return $this;
-    }
-
     /**
      * @return string[]
      */
@@ -483,6 +468,19 @@ class App
     public function getLogger(): Logger
     {
         return $this->logger;
+    }
+
+    protected function loadAllRoutes(ServerRequestInterface $request): self
+    {
+        $this->debugBar['time']->startMeasure('interrogateControllers', 'Time to interrogate controllers for routes');
+        $this->interrogateControllers();
+        $this->debugBar['time']->stopMeasure('interrogateControllers');
+
+        $this->logger->debug(sprintf('Bootstrap complete in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
+
+        $this->router->populateRoutes($this->getApp(), $request);
+
+        return $this;
     }
 
     protected function interrogateTranslations(): void

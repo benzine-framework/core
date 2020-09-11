@@ -3,7 +3,6 @@
 namespace Benzine\Router;
 
 use Monolog\Logger;
-use Psr\Http\Message\ServerRequestInterface;
 use Slim\App;
 
 class Route

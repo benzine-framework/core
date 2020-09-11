@@ -113,18 +113,19 @@ abstract class AbstractController
         ;
     }
 
-    protected function returnFile(Filesystem $filesystem, string $filename) : Response{
+    protected function returnFile(Filesystem $filesystem, string $filename): Response
+    {
         $response = new Response();
-        if(!$filesystem->has($filename)){
+        if (!$filesystem->has($filename)) {
             return $this->pageNotFound();
         }
 
         //\Kint::dump($filesystem->getMimetype($assetName));exit;
 
         $response->getBody()
-            ->write($filesystem->read($filename));
+            ->write($filesystem->read($filename))
         ;
 
-        return $response->withHeader("Content-type", $filesystem->getMimetype($filename));
+        return $response->withHeader('Content-type', $filesystem->getMimetype($filename));
     }
 }
