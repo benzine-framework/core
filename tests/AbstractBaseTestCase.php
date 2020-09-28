@@ -21,24 +21,26 @@ abstract class AbstractBaseTestCase extends AbstractTestCase
         \Kint::$mode_default = \Kint::MODE_CLI;
     }
 
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+        self::$faker = FakerFactory::create();
+        self::$faker->addProvider(new Provider\Base(self::$faker));
+        self::$faker->addProvider(new Provider\DateTime(self::$faker));
+        self::$faker->addProvider(new Provider\Lorem(self::$faker));
+        self::$faker->addProvider(new Provider\Internet(self::$faker));
+        self::$faker->addProvider(new Provider\Payment(self::$faker));
+        self::$faker->addProvider(new Provider\en_US\Person(self::$faker));
+        self::$faker->addProvider(new Provider\en_US\Address(self::$faker));
+        self::$faker->addProvider(new Provider\en_US\PhoneNumber(self::$faker));
+        self::$faker->addProvider(new Provider\en_US\Company(self::$faker));
+    }
+
     /**
      * @return Generator
      */
     public static function getFaker()
     {
-        if (!self::$faker) {
-            self::$faker = FakerFactory::create();
-            self::$faker->addProvider(new Provider\Base(self::$faker));
-            self::$faker->addProvider(new Provider\DateTime(self::$faker));
-            self::$faker->addProvider(new Provider\Lorem(self::$faker));
-            self::$faker->addProvider(new Provider\Internet(self::$faker));
-            self::$faker->addProvider(new Provider\Payment(self::$faker));
-            self::$faker->addProvider(new Provider\en_US\Person(self::$faker));
-            self::$faker->addProvider(new Provider\en_US\Address(self::$faker));
-            self::$faker->addProvider(new Provider\en_US\PhoneNumber(self::$faker));
-            self::$faker->addProvider(new Provider\en_US\Company(self::$faker));
-        }
-
         return self::$faker;
     }
 
