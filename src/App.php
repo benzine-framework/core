@@ -156,7 +156,9 @@ class App
                     (new Filesystem())->mkdir($twigCachePath, 0777);
                 } catch (IOException $IOException) {
                     unset($twigSettings['cache']);
-                    $this->getLogger()->warning(sprintf('Could not create Twig cache (%s), Twig cache disabled ', $twigCachePath));
+                    if (!in_array(PHP_SAPI, ['cli', 'phpdbg'], true)) {
+                        $this->getLogger()->warning(sprintf('Could not create Twig cache (%s), Twig cache disabled ', $twigCachePath));
+                    }
                 }
             }
 
