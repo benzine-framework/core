@@ -32,7 +32,7 @@ class SessionService implements \SessionHandlerInterface
 
     public function initSession(): void
     {
-        if ('cli' === PHP_SAPI || PHP_SESSION_ACTIVE === session_status()) {
+        if ('cli' === PHP_SAPI || 'phpdbg' == PHP_SAPI || PHP_SESSION_ACTIVE === session_status()) {
             return;
         }
 
