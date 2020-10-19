@@ -472,7 +472,7 @@ class App
         return $this->logger;
     }
 
-    protected function loadAllRoutes(ServerRequestInterface $request): self
+    public function loadAllRoutes(ServerRequestInterface $request): self
     {
         $this->debugBar['time']->startMeasure('interrogateControllers', 'Time to interrogate controllers for routes');
         $this->interrogateControllers();

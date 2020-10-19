@@ -10,6 +10,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use Slim\App as SlimApp;
+use Slim\Factory\ServerRequestCreatorFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
 use UnexpectedValueException;
 
@@ -41,7 +42,10 @@ trait AppTestTrait
 
         $this->container = $container;
 
-        $this->benzineApp->loadAllRoutes();
+        $serverRequestCreator = ServerRequestCreatorFactory::create();
+        $request = $serverRequestCreator->createServerRequestFromGlobals();
+
+        $this->benzineApp->loadAllRoutes($request);
     }
 
     /**
@@ -67,6 +71,14 @@ trait AppTestTrait
         return $mock;
     }
 
+    protected function getResponse(ServerRequestInterface $request): ResponseInterface
+    {
+        $response = $this->slimApp->handle($request);
+        $response->getBody()->rewind();
+
+        return $response;
+    }
+
     /**
      * Create a server request.
      *
@@ -76,6 +88,8 @@ trait AppTestTrait
      */
     protected function createRequest(string $method, $uri, array $serverParams = []): ServerRequestInterface
     {
+
+        $this->setupContainer();
         return (new ServerRequestFactory())->createServerRequest($method, $uri, $serverParams);
     }
 
