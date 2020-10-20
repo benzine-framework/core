@@ -88,8 +88,8 @@ trait AppTestTrait
      */
     protected function createRequest(string $method, $uri, array $serverParams = []): ServerRequestInterface
     {
-
         $this->setupContainer();
+
         return (new ServerRequestFactory())->createServerRequest($method, $uri, $serverParams);
     }
 
