@@ -71,6 +71,7 @@
         "symfony/twig-bridge": "^5.1",
         "symfony/yaml": "^5.1",
         "thecodingmachine/phpstan-strict-rules": "^0.12",
+        "tuupola/server-timing-middleware": "^0.8.2",
         "twig/intl-extra": "^3.0"
     },
     "suggest": {

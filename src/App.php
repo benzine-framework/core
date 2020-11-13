@@ -41,6 +41,7 @@ use Symfony\Bridge\Twig\Extension as SymfonyTwigExtensions;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Translation;
+use Tuupola\Middleware\ServerTimingMiddleware;
 use Twig;
 use Twig\Loader\FilesystemLoader;
 
@@ -97,6 +98,8 @@ class App
         $this->debugBar['time']->startMeasure('interrogateTranslations', 'Time to interrogate translation files');
         $this->interrogateTranslations();
         $this->debugBar['time']->stopMeasure('interrogateTranslations');
+
+        $this->app->add(new ServerTimingMiddleware());
     }
 
     public function getCachePath(): string
