@@ -121,8 +121,6 @@ abstract class AbstractController
     {
         $response = new Response();
 
-
-
         if (!$filesystem->has($filename)) {
             !\Kint::dump($filesystem->listContents(), $filesystem->has($filename));
             exit;
@@ -136,7 +134,8 @@ abstract class AbstractController
 
         // Detect mimetype for content-type header
         $mimetype = (new ExtensionMimeTypeDetector())
-            ->detectMimeTypeFromPath($meta['path']);
+            ->detectMimeTypeFromPath($meta['path'])
+        ;
         $response = $response->withHeader('Content-Type', $mimetype);
 
         // Attach ETag

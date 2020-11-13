@@ -59,7 +59,7 @@ class App
     protected bool $isSessionsEnabled = true;
     protected bool $interrogateControllersComplete = false;
     private array $viewPaths = [];
-    private string $cachePath = APP_ROOT . '/cache';
+    private string $cachePath = APP_ROOT.'/cache';
     private array $supportedLanguages = ['en_US'];
 
     private static bool $isInitialised = false;
