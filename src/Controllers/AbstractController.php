@@ -116,16 +116,32 @@ abstract class AbstractController
     protected function returnFile(Filesystem $filesystem, string $filename): Response
     {
         $response = new Response();
+
         if (!$filesystem->has($filename)) {
+            !\Kint::dump($filesystem->listContents(), $filesystem->has($filename));
+            exit;
+
             return $this->pageNotFound();
         }
 
-        //\Kint::dump($filesystem->getMimetype($assetName));exit;
+        // Crappy detection of content-type
+        $path = $filesystem->getMetadata($filename)['path'];
+        if (str_ends_with($path, '.css')) {
+            $response = $response->withHeader('Content-Type', 'text/css');
+        } elseif (str_ends_with($path, '.js')) {
+            $response = $response->withHeader('Content-Type', 'text/javascript');
+        } elseif (str_ends_with($path, '.png')) {
+            $response = $response->withHeader('Content-Type', 'image/png');
+        } elseif (str_ends_with($path, '.jpg')) {
+            $response = $response->withHeader('Content-Type', 'image/jpeg');
+        } elseif (str_ends_with($path, '.svg')) {
+            $response = $response->withHeader('Content-Type', 'image/svg+xml');
+        }
 
         $response->getBody()
             ->write($filesystem->read($filename))
         ;
 
-        return $response->withHeader('Content-type', $filesystem->getMimetype($filename));
+        return $response;
     }
 }
