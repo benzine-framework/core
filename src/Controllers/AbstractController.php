@@ -6,6 +6,7 @@ use Benzine\Controllers\Filters\Filter;
 use Benzine\Exceptions\FilterDecodeException;
 use Benzine\ORM\Abstracts\AbstractService;
 use League\Flysystem\Filesystem;
+use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 use Monolog\Logger;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
@@ -124,19 +125,10 @@ abstract class AbstractController
             return $this->pageNotFound();
         }
 
-        // Crappy detection of content-type
-        $path = $filesystem->getMetadata($filename)['path'];
-        if (str_ends_with($path, '.css')) {
-            $response = $response->withHeader('Content-Type', 'text/css');
-        } elseif (str_ends_with($path, '.js')) {
-            $response = $response->withHeader('Content-Type', 'text/javascript');
-        } elseif (str_ends_with($path, '.png')) {
-            $response = $response->withHeader('Content-Type', 'image/png');
-        } elseif (str_ends_with($path, '.jpg')) {
-            $response = $response->withHeader('Content-Type', 'image/jpeg');
-        } elseif (str_ends_with($path, '.svg')) {
-            $response = $response->withHeader('Content-Type', 'image/svg+xml');
-        }
+        // Detect mimetype for content-type header
+        $mimetype = (new ExtensionMimeTypeDetector())
+            ->detectMimeTypeFromPath($filesystem->getMetadata($filename)['path']);
+        $response = $response->withHeader('Content-Type', $mimetype);
 
         $response->getBody()
             ->write($filesystem->read($filename))
