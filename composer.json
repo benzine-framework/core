@@ -34,7 +34,6 @@
         "gone.io/inflection": "^2.1",
         "gone.io/uuid": "^2.3",
         "jc21/clitable": "^1.2",
-        "johnkary/phpunit-speedtrap": "^3.0.0",
         "kint-php/kint": "^3.3",
         "kint-php/kint-twig": "^3.0",
         "mattketmo/camel": "^1.1",
@@ -74,7 +73,8 @@
         "phpstan/phpstan-symfony": "^0.12",
         "phpunit/phpcov": "^7.0",
         "phpunit/phpunit": "^9.2",
-        "slam/phpstan-extensions": "^4.0"
+        "slam/phpstan-extensions": "^4.0",
+        "johnkary/phpunit-speedtrap": "^3.0.0"
     },
     "suggest": {
         "benzine/orm" : "Model/Service/Crud generation made easy"
