@@ -8,6 +8,7 @@ use Benzine\ORM\Abstracts\AbstractService;
 use League\Flysystem\Filesystem;
 use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 use Monolog\Logger;
+use Slim\HttpCache\CacheProvider;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 
@@ -16,11 +17,13 @@ abstract class AbstractController
     protected Logger $logger;
     protected AbstractService $service;
     protected bool $apiExplorerEnabled = true;
+    protected CacheProvider $cacheProvider;
 
-    public function __construct(Logger $logger)
+    public function __construct(Logger $logger, CacheProvider $cacheProvider)
     {
         $this->logger = $logger;
         $this->logger->debug(sprintf('Entered Controller in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
+        $this->cacheProvider = $cacheProvider;
     }
 
     public function getService(): AbstractService
@@ -118,6 +121,8 @@ abstract class AbstractController
     {
         $response = new Response();
 
+
+
         if (!$filesystem->has($filename)) {
             !\Kint::dump($filesystem->listContents(), $filesystem->has($filename));
             exit;
@@ -125,10 +130,17 @@ abstract class AbstractController
             return $this->pageNotFound();
         }
 
+        // Get file metadata from flysystem
+        $meta = $filesystem->getMetadata($filename);
+        $etag = md5(implode($meta));
+
         // Detect mimetype for content-type header
         $mimetype = (new ExtensionMimeTypeDetector())
-            ->detectMimeTypeFromPath($filesystem->getMetadata($filename)['path']);
+            ->detectMimeTypeFromPath($meta['path']);
         $response = $response->withHeader('Content-Type', $mimetype);
+
+        // Attach ETag
+        $response = $this->cacheProvider->withEtag($response, $etag);
 
         $response->getBody()
             ->write($filesystem->read($filename))

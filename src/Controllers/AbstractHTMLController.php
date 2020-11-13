@@ -4,6 +4,7 @@ namespace Benzine\Controllers;
 
 use DebugBar\DebugBar;
 use Monolog\Logger;
+use Slim\HttpCache\CacheProvider;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 use Slim\Views\Twig;
@@ -17,9 +18,10 @@ abstract class AbstractHTMLController extends AbstractController
     public function __construct(
         Twig $twig,
         Logger $logger,
-        DebugBar $debugBar
+        DebugBar $debugBar,
+        CacheProvider $cacheProvider
     ) {
-        parent::__construct($logger);
+        parent::__construct($logger, $cacheProvider);
         $this->twig = $twig;
         $this->debugBar = $debugBar;
     }
