@@ -65,6 +65,13 @@ abstract class AbstractController
         return $response->withHeader('Content-type', 'application/json');
     }
 
+    public function redirect(Response $response, string $url = "/", int $code = 302) : Response
+    {
+        $response = $response->withStatus($code);
+
+        return $response->withHeader("Location", $url);
+    }
+
     public function jsonResponseException(\Exception $e, Request $request, Response $response): Response
     {
         return $this->jsonResponse(
