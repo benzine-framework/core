@@ -3,6 +3,7 @@
 namespace Benzine\Router;
 
 use Cache\Adapter\Chain\CachePoolChain;
+use Cache\Adapter\Common\Exception\CachePoolException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Monolog\Logger;
@@ -152,7 +153,12 @@ class Router
             ->set($this->getRoutes())
             ->expiresAfter($this->cacheTTL)
         ;
-        $this->cachePoolChain->save($routeItem);
+
+        try {
+            $this->cachePoolChain->save($routeItem);
+        }catch(CachePoolException $cachePoolException){
+            $this->logger->critical($cachePoolException->getMessage());
+        }
 
         return $this;
     }
