@@ -1,6 +1,10 @@
 #!/usr/bin/php
 <?php
-require_once(__DIR__ . "/../../../../vendor/autoload.php");
+$projRoot = __DIR__ . "/../../../..";
+if(file_exists("{$projRoot}/bootstrap.php")){
+    require_once("{$projRoot}/bootstrap.php");
+}
+require_once("{$projRoot}/vendor/autoload.php");
 
 use Benzine\Workers\AbstractQueueWorker;
 use duncan3dc\Forker\Fork;
