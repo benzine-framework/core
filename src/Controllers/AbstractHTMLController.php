@@ -16,10 +16,10 @@ abstract class AbstractHTMLController extends AbstractController
     protected string $pageNotFoundTemplate = '404.html.twig';
 
     public function __construct(
-        Twig $twig,
         Logger $logger,
-        DebugBar $debugBar,
-        CacheProvider $cacheProvider
+        CacheProvider $cacheProvider,
+        Twig $twig,
+        DebugBar $debugBar
     ) {
         parent::__construct($logger, $cacheProvider);
         $this->twig = $twig;
