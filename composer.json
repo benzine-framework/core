@@ -33,7 +33,6 @@
         "fzaninotto/faker": "^1.9",
         "gone.io/inflection": "^2.1",
         "gone.io/uuid": "^2.3",
-        "jc21/clitable": "^1.2",
         "kint-php/kint": "^3.3",
         "kint-php/kint-twig": "^3.0",
         "mattketmo/camel": "^1.1",
@@ -67,6 +66,7 @@
     "require-dev": {
         "brianium/paratest": "^4.1",
         "clue/commander": "^v1.3.0",
+        "jc21/clitable": "^1.2",
         "johnkary/phpunit-speedtrap": "^3.0.0",
         "php-coveralls/php-coveralls": "^2.1",
         "phpstan/phpstan": "^0.12",
