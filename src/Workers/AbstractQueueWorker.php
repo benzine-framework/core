@@ -112,7 +112,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
         $this->resultItems = [];
 
         // If there are no items popped, return fast.
-        if(count($items) == 0){
+        if (count($items) == 0) {
             return false;
         }
 
