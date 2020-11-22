@@ -10,7 +10,7 @@ abstract class AbstractWorker implements WorkerInterface
     protected Logger $logger;
     protected EnvironmentService $environmentService;
     protected array $cliArguments;
-    protected int $timeBetweenRuns = 1;
+    protected int $timeBetweenRuns = 5;
 
     public function __construct(
         Logger $logger,
