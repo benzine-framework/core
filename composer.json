@@ -89,6 +89,7 @@
     },
     "bin": [
         "bin/queue-status",
+        "bin/queue-view-item",
         "bin/worker"
     ]
 }
