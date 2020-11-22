@@ -66,6 +66,7 @@
         "twig/intl-extra": "^3.0"
     },
     "require-dev": {
+        "clue/commander": "^v1.3.0",
         "php-coveralls/php-coveralls": "^2.1",
         "brianium/paratest": "^4.1",
         "phpstan/phpstan": "^0.12",
