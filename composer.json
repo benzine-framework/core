@@ -61,14 +61,14 @@
         "symfony/translation": "^5.1",
         "symfony/twig-bridge": "^5.1",
         "symfony/yaml": "^5.1",
-        "thecodingmachine/phpstan-strict-rules": "^0.12",
         "tuupola/server-timing-middleware": "^0.8.2",
         "twig/intl-extra": "^3.0"
     },
     "require-dev": {
-        "clue/commander": "^v1.3.0",
-        "php-coveralls/php-coveralls": "^2.1",
         "brianium/paratest": "^4.1",
+        "clue/commander": "^v1.3.0",
+        "johnkary/phpunit-speedtrap": "^3.0.0",
+        "php-coveralls/php-coveralls": "^2.1",
         "phpstan/phpstan": "^0.12",
         "phpstan/phpstan-deprecation-rules": "^0.12",
         "phpstan/phpstan-phpunit": "^0.12.16",
@@ -76,7 +76,7 @@
         "phpunit/phpcov": "^7.0",
         "phpunit/phpunit": "^9.2",
         "slam/phpstan-extensions": "^4.0",
-        "johnkary/phpunit-speedtrap": "^3.0.0"
+        "thecodingmachine/phpstan-strict-rules": "^0.12"
     },
     "suggest": {
         "benzine/orm" : "Model/Service/Crud generation made easy"
