@@ -111,6 +111,11 @@ abstract class AbstractQueueWorker extends AbstractWorker
         $items = $this->queueService->pop($this->inputQueue);
         $this->resultItems = [];
 
+        // If there are no items popped, return fast.
+        if(count($items) == 0){
+            return false;
+        }
+
         foreach ($items as $item) {
             try {
                 $processResults = $this->process($item);
