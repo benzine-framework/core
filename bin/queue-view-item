@@ -1,4 +1,77 @@
 #!/usr/bin/php
 <?php
+
+use Benzine\App;
+use Benzine\ORM\Abstracts\AbstractModel;
+use Benzine\Services\QueueService;
+use Benzine\Workers\WorkerWorkItem;
+use jc21\CliTable;
+
 require_once(__DIR__ . "/find-autoloader.php");
 
+$router = new Clue\Commander\Router();
+/** @var QueueService $queueService */
+$queueService = App::Instance()->get(QueueService::class);
+
+$router->add('list', function () use ($queueService){
+    $table = new CliTable();
+    $table->setTableColor('blue');
+    $table->setHeaderColor('cyan');
+    $table->addField('Queue Name', 'name', false, 'white');
+    $table->addField('Length', 'length', false, 'white');
+    $tableData = [];
+    foreach($queueService->allQueueLengths() as $name => $length){
+        $tableData[] = ['name' => $name, 'length' => $length];
+    }
+    $table->injectData($tableData);
+    $table->display();
+    exit;
+});
+
+$router->add('read <name>', function (array $args) use ($queueService){
+    /**
+     * @var $popped WorkerWorkItem
+     */
+
+    echo "Popping item off of {$args['name']}\n";
+    // Grab an item.
+
+    $popped = $queueService->pop($args['name'])[0];
+
+    foreach($popped->getKeys() as $key){
+        $table = new CliTable();
+        $table->setTableColor('blue');
+        $table->setHeaderColor('cyan');
+
+        $table->addField('Key', 'key');
+        $table->addField('Value', 'value');
+
+        $tableData = [];
+        /** @var AbstractModel $data */
+        $data = $popped->getKey($key);
+
+        $tableData[] = ['key' => 'Type', 'value' => get_class($data)];
+
+        foreach($data->__toArray() as $k => $v){
+            $tableData[] = ['key' => $k, 'value' => $v];
+        }
+
+        $table->injectData($tableData);
+        //\Kint::dump($key, $data, $tableData);
+        $table->display();
+    }
+
+    // Since we didn't do anything with it, put it back in the queue.
+    echo "Putting item back in {$args['name']}!\n";
+    $queueService->push($args['name'], [$popped]);
+    exit;
+});
+
+$router->add('[--help | -h]', function () use ($router) {
+    echo 'Usage:' . PHP_EOL;
+    foreach ($router->getRoutes() as $route) {
+        echo '  ' .$route . PHP_EOL;
+    }
+});
+
+$router->execArgv();
