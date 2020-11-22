@@ -119,6 +119,13 @@ abstract class AbstractQueueWorker extends AbstractWorker
         foreach ($items as $item) {
             try {
                 $processResults = $this->process($item);
+                if (is_array($processResults)) {
+                    foreach ($processResults as $processResult) {
+                        $this->resultItems[] = $processResult;
+                    }
+                } elseif (null !== $processResults) {
+                    $this->resultItems[] = $processResults;
+                }
             } catch (\Exception $e) {
                 $this->returnToInputQueue($item);
 
@@ -134,16 +141,6 @@ abstract class AbstractQueueWorker extends AbstractWorker
                         'trace' => array_slice($e->getTrace(), 0, 5),
                     ]
                 );
-
-                continue;
-            }
-
-            if (is_array($processResults)) {
-                foreach ($processResults as $processResult) {
-                    $this->resultItems[] = $processResult;
-                }
-            } elseif (null !== $processResults) {
-                $this->resultItems[] = $processResults;
             }
         }
 
