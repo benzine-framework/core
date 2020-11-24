@@ -36,7 +36,7 @@ while(true) {
     $table->injectData($data);
     $table->display();
     sleep(1);
-    for($i = 0; $i <= $rowsCount; $i++){
+    for($i = 0; $i < $rowsCount; $i++){
         echo "\033[2K";
         echo "\033[1A";
     }
