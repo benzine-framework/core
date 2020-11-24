@@ -95,7 +95,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
     public function iterate(): bool
     {
         $queueLength = $this->queueService->getQueueLength($this->inputQueue);
-        if($this->showRemainingQueueLength) {
+        if ($this->showRemainingQueueLength) {
             $this->logger->debug(sprintf(
                 'Queue %s Length: %d',
                 $this->inputQueue,
