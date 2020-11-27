@@ -7,6 +7,7 @@ use Benzine\Exceptions\FilterDecodeException;
 use Benzine\ORM\Abstracts\AbstractService;
 use League\Flysystem\Filesystem;
 use League\MimeTypeDetection\ExtensionMimeTypeDetector;
+use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use Monolog\Logger;
 use Slim\HttpCache\CacheProvider;
 use Slim\Psr7\Request;
@@ -129,9 +130,6 @@ abstract class AbstractController
         $response = new Response();
 
         if (!$filesystem->has($filename)) {
-            !\Kint::dump($filesystem->listContents(), $filesystem->has($filename));
-            exit;
-
             return $this->pageNotFound();
         }
 
@@ -139,17 +137,29 @@ abstract class AbstractController
         $meta = $filesystem->getMetadata($filename);
         $etag = md5(implode($meta));
 
-        // Detect mimetype for content-type header
+        // Detect mimetype for content-type header from file meta
         $mimetype = (new ExtensionMimeTypeDetector())
             ->detectMimeTypeFromPath($meta['path'])
         ;
-        $response = $response->withHeader('Content-Type', $mimetype);
+
+        // No dice? Early-load the data and interrogate that for mimetype then I GUESS.
+        if (!$mimetype) {
+            $data = $filesystem->read($filename);
+            $mimetype = (new FinfoMimeTypeDetector())
+                ->detectMimeTypeFromBuffer($data)
+            ;
+        }
+
+        // If we have mimetype by this point, send the contenttype
+        if ($mimetype) {
+            $response = $response->withHeader('Content-Type', $mimetype);
+        }
 
         // Attach ETag
         $response = $this->cacheProvider->withEtag($response, $etag);
 
         $response->getBody()
-            ->write($filesystem->read($filename))
+            ->write($data ?? $filesystem->read($filename))
         ;
 
         return $response;
