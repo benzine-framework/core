@@ -2,15 +2,18 @@
 
 namespace Benzine\Services;
 
+use Benzine\Redis\Redis;
+
 class SessionService implements \SessionHandlerInterface
 {
-    protected \Redis $redis;
+    protected Redis $redis;
+    private ?bool $redisIsAvailable = null;
     protected $oldID;
 
     private int $lifetime = 43200;
     private array $dirtyCheck = [];
 
-    public function __construct(\Redis $redis)
+    public function __construct(Redis $redis)
     {
         $this->redis = $redis;
     }
@@ -72,6 +75,13 @@ class SessionService implements \SessionHandlerInterface
         return true;
     }
 
+    public function useRedis() : bool {
+        if($this->redisIsAvailable === null){
+            $this->redisIsAvailable = $this->redis->isAvailable();
+        }
+        return $this->redisIsAvailable;
+    }
+
     public function read($session_id)
     {
         if ($this->useAPCU()) {
@@ -84,16 +94,17 @@ class SessionService implements \SessionHandlerInterface
             $session_id = $this->oldID ? $this->oldID : $session_id;
         }
 
-        $serialised = $this->redis->get("session:{$session_id}");
-        if (null != $serialised) {
-            if (!empty($this->oldID)) {
-                // clean up old session after regenerate
-                $this->redis->del("session:{$session_id}");
-                $this->oldID = null;
+        $result = '';
+        if($this->useRedis()) {
+            $serialised = $this->redis->get("session:{$session_id}");
+            if (null != $serialised) {
+                if (!empty($this->oldID)) {
+                    // clean up old session after regenerate
+                    $this->redis->del("session:{$session_id}");
+                    $this->oldID = null;
+                }
+                $result = unserialize($serialised);
             }
-            $result = unserialize($serialised);
-        } else {
-            $result = '';
         }
 
         if ($this->useAPCU()) {
@@ -105,19 +116,27 @@ class SessionService implements \SessionHandlerInterface
         return $result;
     }
 
-    public function write($session_id, $session_data)
+    /**
+     * @param string $session_id
+     * @param string $session_data
+     * @return bool Always returns true.
+     */
+    public function write($session_id, $session_data) : bool
     {
-        $dirty = false;
         if ($this->useAPCU()) {
             $dirty = crc32(apcu_fetch('read-'.$session_id)) != crc32($session_data);
         } else {
             $dirty = $this->dirtyCheck['read-'.$session_id] != crc32($session_data);
         }
-        if ($dirty) {
+
+        if ($this->useRedis() && $dirty) {
             $this->redis->set("session:{$session_id}", serialize($session_data));
             $this->redis->expire("session:{$session_id}", $this->getLifetime());
         }
-        apcu_store('read-'.$session_id, $session_data);
+
+        if($this->useAPCU()) {
+            apcu_store('read-' . $session_id, $session_data);
+        }
 
         return true;
     }
@@ -180,9 +199,6 @@ class SessionService implements \SessionHandlerInterface
 
     private function useAPCU(): bool
     {
-        // @todo fix apcu damnit
-        return false;
-
         return function_exists('apcu_store');
     }
 }

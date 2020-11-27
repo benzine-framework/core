@@ -254,7 +254,7 @@ class App
             return $faker;
         });
 
-        $container->set(CachePoolChain::class, function (\Redis $redis) {
+        $container->set(CachePoolChain::class, function (Redis $redis) {
             $caches = [];
 
             // If apc/apcu present, add it to the pool
@@ -265,7 +265,9 @@ class App
             }
 
             // If Redis is configured, add it to the pool.
-            $caches[] = new RedisCachePool($redis);
+            if($redis->isAvailable()) {
+                $caches[] = new RedisCachePool($redis);
+            }
             $caches[] = new ArrayCachePool();
 
             return new CachePoolChain($caches);
@@ -287,13 +289,15 @@ class App
             return $monolog;
         });
 
-        $container->set(\Redis::class, function (EnvironmentService $environmentService) {
-            $redis = new Redis();
-            $redis->connect(
+        $container->set(Redis::class, function (EnvironmentService $environmentService) {
+            return (new Redis(
                 $environmentService->get('REDIS_HOST', 'redis'),
-                $environmentService->get('REDIS_PORT', 6379)
-            );
+                $environmentService->get('REDIS_PORT', 6379),
+                $environmentService->get('REDIS_TIMEOUT', 0.0)
+            ));
+        });
 
+        $container->set(\Redis::class, function(Redis $redis){
             return $redis;
         });
 
