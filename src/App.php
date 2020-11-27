@@ -265,7 +265,7 @@ class App
             }
 
             // If Redis is configured, add it to the pool.
-            if($redis->isAvailable()) {
+            if ($redis->isAvailable()) {
                 $caches[] = new RedisCachePool($redis);
             }
             $caches[] = new ArrayCachePool();
@@ -290,14 +290,14 @@ class App
         });
 
         $container->set(Redis::class, function (EnvironmentService $environmentService) {
-            return (new Redis(
+            return new Redis(
                 $environmentService->get('REDIS_HOST', 'redis'),
                 $environmentService->get('REDIS_PORT', 6379),
                 $environmentService->get('REDIS_TIMEOUT', 0.0)
-            ));
+            );
         });
 
-        $container->set(\Redis::class, function(Redis $redis){
+        $container->set(\Redis::class, function (Redis $redis) {
             return $redis;
         });
 

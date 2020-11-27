@@ -8,6 +8,9 @@ class Redis extends \Redis
     private int $port;
     private int $timeout;
 
+    /** @var Lua\AbstractLuaExtension[] */
+    private array $scripts;
+
     public function __construct($host, $port = 6379, $timeout = 0.0)
     {
         $this->host = $host;
@@ -16,22 +19,10 @@ class Redis extends \Redis
         parent::__construct();
     }
 
-    public function isAvailable() : bool
-    {
-        try {
-            $this->ping('am I human?');
-            return true;
-        }catch(\RedisException $redisException){
-            return false;
-        }
-    }
-
-    /** @var Lua\AbstractLuaExtension[] */
-    private array $scripts;
-
     public function __call($name, $arguments)
     {
-        \Kint::dump($name, $arguments);exit;
+        \Kint::dump($name, $arguments);
+        exit;
         foreach ($this->scripts as $script) {
             foreach ($script->getFunctionNames() as $functionName) {
                 if (strtolower($name) == strtolower($functionName)) {
@@ -43,9 +34,20 @@ class Redis extends \Redis
         }
     }
 
-    public function get($key)
+    public function isAvailable(): bool
     {
-        if(!$this->isConnected()){
+        try {
+            $this->ping('am I human?');
+
+            return true;
+        } catch (\RedisException $redisException) {
+            return false;
+        }
+    }
+
+    public function get($key): void
+    {
+        if (!$this->isConnected()) {
             parent::pconnect($this->host, $this->port, $this->timeout);
             $this->initialiseExtensions();
         }
@@ -62,6 +64,6 @@ class Redis extends \Redis
 
     public function connect($host, $port = 6379, $timeout = 0.0, $reserved = null, $retryInterval = 0, $readTimeout = 0.0): void
     {
-        throw new \RedisException("Do not directly call connect()");
+        throw new \RedisException('Do not directly call connect()');
     }
 }

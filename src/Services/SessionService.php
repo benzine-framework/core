@@ -7,8 +7,8 @@ use Benzine\Redis\Redis;
 class SessionService implements \SessionHandlerInterface
 {
     protected Redis $redis;
-    private ?bool $redisIsAvailable = null;
     protected $oldID;
+    private ?bool $redisIsAvailable = null;
 
     private int $lifetime = 43200;
     private array $dirtyCheck = [];
@@ -75,10 +75,12 @@ class SessionService implements \SessionHandlerInterface
         return true;
     }
 
-    public function useRedis() : bool {
-        if($this->redisIsAvailable === null){
+    public function useRedis(): bool
+    {
+        if ($this->redisIsAvailable === null) {
             $this->redisIsAvailable = $this->redis->isAvailable();
         }
+
         return $this->redisIsAvailable;
     }
 
@@ -95,7 +97,7 @@ class SessionService implements \SessionHandlerInterface
         }
 
         $result = '';
-        if($this->useRedis()) {
+        if ($this->useRedis()) {
             $serialised = $this->redis->get("session:{$session_id}");
             if (null != $serialised) {
                 if (!empty($this->oldID)) {
@@ -119,9 +121,10 @@ class SessionService implements \SessionHandlerInterface
     /**
      * @param string $session_id
      * @param string $session_data
-     * @return bool Always returns true.
+     *
+     * @return bool always returns true
      */
-    public function write($session_id, $session_data) : bool
+    public function write($session_id, $session_data): bool
     {
         if ($this->useAPCU()) {
             $dirty = crc32(apcu_fetch('read-'.$session_id)) != crc32($session_data);
@@ -134,8 +137,8 @@ class SessionService implements \SessionHandlerInterface
             $this->redis->expire("session:{$session_id}", $this->getLifetime());
         }
 
-        if($this->useAPCU()) {
-            apcu_store('read-' . $session_id, $session_data);
+        if ($this->useAPCU()) {
+            apcu_store('read-'.$session_id, $session_data);
         }
 
         return true;
