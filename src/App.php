@@ -289,8 +289,9 @@ class App
             return $monolog;
         });
 
-        $container->set(Redis::class, function (EnvironmentService $environmentService) {
+        $container->set(Redis::class, function (Logger $logger, EnvironmentService $environmentService) {
             return new Redis(
+                $logger,
                 $environmentService->get('REDIS_HOST', 'redis'),
                 $environmentService->get('REDIS_PORT', 6379),
                 $environmentService->get('REDIS_TIMEOUT', 0.0)
