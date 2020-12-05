@@ -19,6 +19,8 @@ abstract class AbstractQueueWorker extends AbstractWorker
 
     protected bool $showRemainingQueueLength = true;
 
+    protected int $lastLength = -1;
+
     public function __construct(
         QueueService $queueService,
         Logger $logger,
@@ -95,12 +97,13 @@ abstract class AbstractQueueWorker extends AbstractWorker
     public function iterate(): bool
     {
         $queueLength = $this->queueService->getQueueLength($this->inputQueue);
-        if ($this->showRemainingQueueLength) {
+        if ($this->showRemainingQueueLength && $queueLength != $this->lastLength) {
             $this->logger->debug(sprintf(
                 'Queue %s Length: %d',
                 $this->inputQueue,
                 $queueLength
             ));
+            $this->lastLength = $queueLength;
         }
 
         if (isset($this->cliArguments['stop-on-zero']) && true === $this->cliArguments['stop-on-zero'] && 0 == $queueLength) {
