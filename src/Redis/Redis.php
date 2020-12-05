@@ -21,8 +21,6 @@ class Redis extends \Redis
 
     public function __call($name, $arguments)
     {
-        \Kint::dump($name, $arguments);
-        exit;
         foreach ($this->scripts as $script) {
             foreach ($script->getFunctionNames() as $functionName) {
                 if (strtolower($name) == strtolower($functionName)) {
