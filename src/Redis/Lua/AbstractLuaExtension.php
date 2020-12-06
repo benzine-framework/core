@@ -2,6 +2,8 @@
 
 namespace Benzine\Redis\Lua;
 
+use Benzine\Redis\Redis;
+
 abstract class AbstractLuaExtension
 {
     protected Redis $redis;
