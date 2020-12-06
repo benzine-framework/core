@@ -6,8 +6,6 @@ use Monolog\Logger;
 
 /**
  * A wrapper around \Redis for my own sanity.
- *
- * @package Benzine\Redis
  */
 class Redis
 {
@@ -35,7 +33,7 @@ class Redis
     {
         $this->runBeforeRedisCommand();
 
-        if(method_exists($this->redis, $name)){
+        if (method_exists($this->redis, $name)) {
             return call_user_func_array([$this->redis, $name], $arguments);
         }
 
@@ -50,21 +48,16 @@ class Redis
         }
     }
 
-    /**
-     * @return \Redis
-     */
     public function getUnderlyingRedis(): \Redis
     {
         return $this->redis;
     }
 
-    /**
-     * @return Logger
-     */
     public function getLogger(): Logger
     {
         return $this->logger;
     }
+
     public function isAvailable(): bool
     {
         try {

@@ -19,8 +19,6 @@ class Filter
     }
 
     /**
-     * @param mixed $orderDirection
-     *
      * @throws FilterDecodeException
      *
      * @return Filter
@@ -74,8 +72,6 @@ class Filter
     }
 
     /**
-     * @param mixed $limit
-     *
      * @return Filter
      */
     public function setLimit($limit): self
@@ -91,8 +87,6 @@ class Filter
     }
 
     /**
-     * @param mixed $offset
-     *
      * @return Filter
      */
     public function setOffset($offset): self
@@ -108,8 +102,6 @@ class Filter
     }
 
     /**
-     * @param mixed $wheres
-     *
      * @return Filter
      */
     public function setWheres($wheres): self
@@ -125,8 +117,6 @@ class Filter
     }
 
     /**
-     * @param mixed $order
-     *
      * @return Filter
      */
     public function setOrder($order): self
