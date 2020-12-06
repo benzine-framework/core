@@ -4,10 +4,10 @@ namespace Benzine\Redis\Lua;
 
 abstract class AbstractLuaExtension
 {
-    protected \Redis $redis;
+    protected Redis $redis;
     protected ?string $hash = null;
 
-    public function __construct(\Redis $redis)
+    public function __construct(Redis $redis)
     {
         $this->redis = $redis;
     }
@@ -29,9 +29,9 @@ abstract class AbstractLuaExtension
     public function load(): void
     {
         if (!$this->hash) {
-            $exists = $this->redis->script('exists', $this->getScript());
+            $exists = $this->getUnderlyingRedis()->script('exists', $this->getScript());
             if (!$exists[0]) {
-                $this->hash = $this->redis->script('load', $this->getScript());
+                $this->hash = $this->getUnderlyingRedis()->script('load', $this->getScript());
             }
         }
         //printf("Loaded \"%s\" as \"%s\"\n", $this->getFunctionNames()[0], $this->hash);

@@ -50,10 +50,25 @@ class Redis
         }
     }
 
+    /**
+     * @return \Redis
+     */
+    public function getUnderlyingRedis(): \Redis
+    {
+        return $this->redis;
+    }
+
+    /**
+     * @return Logger
+     */
+    public function getLogger(): Logger
+    {
+        return $this->logger;
+    }
     public function isAvailable(): bool
     {
         try {
-            $this->redis->ping('am I human?');
+            $this->ping('am I human?');
 
             return true;
         } catch (\RedisException $redisException) {

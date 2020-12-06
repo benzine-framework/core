@@ -266,7 +266,7 @@ class App
 
             // If Redis is configured, add it to the pool.
             if ($redis->isAvailable()) {
-                $caches[] = new RedisCachePool($redis);
+                $caches[] = new RedisCachePool($redis->getUnderlyingRedis());
             }
             $caches[] = new ArrayCachePool();
 
@@ -296,10 +296,6 @@ class App
                 $environmentService->get('REDIS_PORT', 6379),
                 $environmentService->get('REDIS_TIMEOUT', 1.0)
             );
-        });
-
-        $container->set(\Redis::class, function (Redis $redis) {
-            return $redis;
         });
 
         $container->set(Laminator::class, function (ConfigurationService $configurationService, Databases $databases) {
