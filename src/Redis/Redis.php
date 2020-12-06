@@ -71,10 +71,10 @@ class Redis
 
     public function initialiseExtensions(): void
     {
-        $this->scripts[] = new Lua\SetIfHigher($this->redis);
-        $this->scripts[] = new Lua\SetIfLower($this->redis);
-        $this->scripts[] = new Lua\ZAddIfHigher($this->redis);
-        $this->scripts[] = new Lua\ZAddIfLower($this->redis);
+        $this->scripts[] = new Lua\SetIfHigher($this);
+        $this->scripts[] = new Lua\SetIfLower($this);
+        $this->scripts[] = new Lua\ZAddIfHigher($this);
+        $this->scripts[] = new Lua\ZAddIfLower($this);
     }
 
     public function connect($host, $port = 6379, $timeout = 0.0, $reserved = null, $retryInterval = 0, $readTimeout = 0.0): void
