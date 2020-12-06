@@ -23,7 +23,7 @@ class Filter
      *
      * @return Filter
      */
-    public function setOrderDirection($orderDirection): self
+    public function setOrderDirection(string $orderDirection): self
     {
         if (!in_array(strtoupper($orderDirection), ['ASC', 'DESC', 'RAND'], true)) {
             throw new FilterDecodeException("Failed to decode Filter Order, Direction unknown: {$orderDirection} must be ASC|DESC|RAND");
