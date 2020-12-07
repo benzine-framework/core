@@ -31,9 +31,9 @@ abstract class AbstractLuaExtension
     public function load(): void
     {
         if (!$this->hash) {
-            $exists = $this->getUnderlyingRedis()->script('exists', $this->getScript());
+            $exists = $this->redis->getUnderlyingRedis()->script('exists', $this->getScript());
             if (!$exists[0]) {
-                $this->hash = $this->getUnderlyingRedis()->script('load', $this->getScript());
+                $this->hash = $this->redis->getUnderlyingRedis()->script('load', $this->getScript());
             }
         }
         //printf("Loaded \"%s\" as \"%s\"\n", $this->getFunctionNames()[0], $this->hash);
