@@ -4,7 +4,6 @@ namespace Benzine\Redis;
 
 use Monolog\Logger;
 
-
 class Redis
 {
     /**
