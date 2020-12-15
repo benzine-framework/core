@@ -51,11 +51,17 @@ abstract class AbstractHTMLController extends AbstractController
             $parameters
         )->withHeader('Content-Type', 'text/html');
 
-        $this->logger->debug(sprintf(
-            'Took %sms to render %s',
-            number_format((microtime(true) - $renderStart) * 1000, 2),
-            $template
-        ));
+        $renderTimeLimitMs = 500;
+        $renderTimeMs = (microtime(true) - $renderStart) * 1000;
+
+        if($renderTimeMs >= $renderTimeLimitMs) {
+            $this->logger->debug(sprintf(
+                'Took %sms to render %s, which is over %sms limit',
+                number_format($renderTimeMs, 2),
+                $template,
+                $renderTimeLimitMs
+            ));
+        }
         $this->debugBar['time']->stopMeasure('render');
 
         return $response;

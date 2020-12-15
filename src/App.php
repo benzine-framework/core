@@ -30,6 +30,7 @@ use Faker\Provider;
 use Middlewares\TrailingSlash;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\ErrorLogHandler;
+use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
 use Psr\Container\ContainerInterface;
@@ -63,6 +64,7 @@ class App
     private array $supportedLanguages = ['en_US'];
 
     private static bool $isInitialised = false;
+    protected ?CachePoolChain $cachePoolChain = null;
 
     public function __construct()
     {
@@ -134,6 +136,7 @@ class App
         //   $container->enableCompilation($this->getCachePath());
         //   $container->writeProxiesToFile(true, "{$this->getCachePath()}/injection-proxies");
         //}
+
         $container = $container->build();
 
         $container->set(Slim\Views\Twig::class, function (
@@ -254,23 +257,27 @@ class App
             return $faker;
         });
 
-        $container->set(CachePoolChain::class, function (Redis $redis) {
-            $caches = [];
+        $container->set(CachePoolChain::class, function (Logger $logger, Redis $redis) {
+            if (!$this->cachePoolChain) {
+                $caches = [];
 
-            // If apc/apcu present, add it to the pool
-            if (function_exists('apcu_add')) {
-                $caches[] = new ApcuCachePool();
-            } elseif (function_exists('apc_add')) {
-                $caches[] = new ApcCachePool();
+                // If apc/apcu present, add it to the pool
+                if (function_exists('apcu_add')) {
+                    $caches[] = new ApcuCachePool(true);
+                } elseif (function_exists('apc_add')) {
+                    $caches[] = new ApcCachePool(true);
+                }
+
+                // If Redis is configured, add it to the pool.
+                if ($redis->isAvailable()) {
+                    $caches[] = new RedisCachePool($redis->getUnderlyingRedis());
+                }
+                $caches[] = new ArrayCachePool();
+
+                $this->cachePoolChain = new CachePoolChain($caches);
+
             }
-
-            // If Redis is configured, add it to the pool.
-            if ($redis->isAvailable()) {
-                $caches[] = new RedisCachePool($redis->getUnderlyingRedis());
-            }
-            $caches[] = new ArrayCachePool();
-
-            return new CachePoolChain($caches);
+            return $this->cachePoolChain;
         });
 
         $container->set('MonologFormatter', function (EnvironmentService $environmentService) {
@@ -281,8 +288,11 @@ class App
             );
         });
 
-        $container->set(Logger::class, function (ConfigurationService $configurationService) {
-            $monolog = new Logger($configurationService->get(ConfigurationService::KEY_APP_NAME));
+        $container->set(Logger::class, function (ConfigurationService $configurationService, EnvironmentService $environmentService) {
+            $appName = $configurationService->get(ConfigurationService::KEY_APP_NAME);
+            $logName = $environmentService->has("REQUEST_URI") ? sprintf("%s(%s)", $appName, $environmentService->get("REQUEST_URI")) : $appName;
+            $monolog = new Logger($logName);
+            $monolog->pushHandler(new StreamHandler(sprintf("/var/log/%s.log", strtolower($appName))));
             $monolog->pushHandler(new ErrorLogHandler(), Logger::DEBUG);
             $monolog->pushProcessor(new PsrLogMessageProcessor());
 
@@ -339,6 +349,7 @@ class App
 
         $this->router = $container->get(Router::class);
 
+        #!\Kint::dump($this->environmentService->all());exit;
         return $container;
     }
 
@@ -482,7 +493,11 @@ class App
         $this->interrogateControllers();
         $this->debugBar['time']->stopMeasure('interrogateControllers');
 
-        $this->logger->debug(sprintf('Bootstrap complete in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
+        $timeToBootstrapMs = (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000;
+        $bootstrapTooLongThresholdMs = 300;
+        if($timeToBootstrapMs >= $bootstrapTooLongThresholdMs) {
+            $this->logger->warning(sprintf('Bootstrap complete in %sms which is more than the threshold of %sms', number_format($timeToBootstrapMs, 2), $bootstrapTooLongThresholdMs));
+        }
 
         $this->router->populateRoutes($this->getApp(), $request);
 
@@ -527,8 +542,6 @@ class App
 
         $this->router->cache();
 
-        $this->logger->debug(sprintf(
-            'ROUTE_CACHE miss. Perhaps enable ROUTE_CACHE envvar.'
-        ));
+        $this->logger->info('ROUTE_CACHE miss.');
     }
 }

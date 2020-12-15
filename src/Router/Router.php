@@ -71,7 +71,7 @@ class Router
                         }
 
                         foreach ($routeAnnotation->methods as $httpMethod) {
-                            $newRoute = new Route($this->logger);
+                            $newRoute = new Route();
 
                             $newRoute
                                 ->setHttpMethod($httpMethod)
@@ -141,7 +141,10 @@ class Router
         }
 
         $this->routes = $cacheItem->get();
-        $this->logger->debug(sprintf('Loaded routes from Cache in %sms', number_format((microtime(true) - $time) * 1000, 2)));
+        $timeToLoadFromCacheMs = (microtime(true) - $time) * 1000;
+        if($timeToLoadFromCacheMs >= 500) {
+            $this->logger->warning(sprintf('Loaded routes from Cache in %sms, which is slower than 500ms', number_format($timeToLoadFromCacheMs, 2)));
+        }
 
         return true;
     }
@@ -156,8 +159,9 @@ class Router
 
         try {
             $this->cachePoolChain->save($routeItem);
+            $this->logger->info("Cached router to cache pool");
         } catch (CachePoolException $cachePoolException) {
-            $this->logger->critical($cachePoolException->getMessage());
+            $this->logger->critical("Cache Pool Exception: " . $cachePoolException->getMessage());
         }
 
         return $this;

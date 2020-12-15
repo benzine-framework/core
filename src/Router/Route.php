@@ -34,13 +34,6 @@ class Route
     ];
     protected array $validDomains = [];
 
-    private Logger $logger;
-
-    public function __construct(Logger $logger)
-    {
-        $this->logger = $logger;
-    }
-
     public function getCallbackProperties(): array
     {
         return $this->callbackProperties;
