@@ -218,6 +218,7 @@ class Redis
      * @method xRevRange($stream, $end, $start, $count = null)
      * @method xTrim($stream, $maxLen, $isApproximate)
      * @method sAddArray($key, array $values)
+     * @method ping(string $string)
      */
     private string $host;
     private int $port;
