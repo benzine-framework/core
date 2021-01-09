@@ -7,22 +7,20 @@ use duncan3dc\Forker\Fork;
 use Benzine\App;
 use Benzine\Exceptions\BenzineException;
 
-$args = CommandLine::parseArgs($_SERVER['argv']);
-if(!isset($args['worker'])){
-    die("You must pass a --worker= argument with this script\n");
-}
+$flags = new \donatj\Flags();
 
-$environment = array_merge($_SERVER, $_ENV);
-ksort($environment);
+$worker = &$flags->string('worker',null,'Worker class to run in this job');
+$threads = &$flags->int('threads',1,'Number of threads to use.');
+$stopOnZero = &$flags->bool('stop-on-zero', false, 'Should this process stop on zero?');
 
-$threads = $args['threads'] ?? $environment['THREADS'] ?? (int) shell_exec("grep -c processor /proc/cpuinfo");
+$flags->parse();
 
-if(class_exists($args['worker'])){
-    $workerClass = $args['worker'];
+if(class_exists($worker)){
+    $workerClass = $worker;
 } else {
-    $workerFile = __DIR__ . "/../../../../src/Workers/{$args['worker']}.php";
+    $workerFile = __DIR__ . "/../../../../src/Workers/{$worker}.php";
     if (!file_exists($workerFile)) {
-        throw new BenzineException(sprintf("No such worker as \"%s\", no such class as \"%s\"", realpath($workerFile), $args['worker']));
+        throw new BenzineException(sprintf("No such worker as \"%s\", no such class as \"%s\"", realpath($workerFile), $worker));
     }
     require_once($workerFile);
 
@@ -58,7 +56,7 @@ echo "Starting {$workerClass} with {$threads} threads.\n";
 if($threads == 1){
     /** @var AbstractQueueWorker $worker */
     $worker = App::DI($workerClass);
-    $worker->setCliArguments($args);
+    $worker->setStopOnZero($stopOnZero);
     $worker->run();
 }else {
     $fork = new Fork;
@@ -67,7 +65,7 @@ if($threads == 1){
         $fork->call(function () use ($workerClass, $args) {
             /** @var AbstractQueueWorker $worker */
             $worker = App::DI($workerClass);
-            $worker->setCliArguments($args);
+            $worker->setStopOnZero($stopOnZero);
             $worker->run();
         });
     }

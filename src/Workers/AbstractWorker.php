@@ -9,8 +9,8 @@ abstract class AbstractWorker implements WorkerInterface
 {
     protected Logger $logger;
     protected EnvironmentService $environmentService;
-    protected array $cliArguments;
     protected int $timeBetweenRuns = 5;
+    protected bool $stopOnZero = false;
 
     public function __construct(
         Logger $logger,
@@ -27,20 +27,17 @@ abstract class AbstractWorker implements WorkerInterface
         );
     }
 
+    /**
+     * @param bool $stopOnZero
+     */
+    public function setStopOnZero(bool $stopOnZero): self
+    {
+        $this->stopOnZero = $stopOnZero;
+        return $this;
+    }
+    
     protected function setUp(): void
     {
-    }
-
-    public function getCliArguments(): array
-    {
-        return $this->cliArguments;
-    }
-
-    public function setCliArguments(array $cliArguments): AbstractWorker
-    {
-        $this->cliArguments = $cliArguments;
-
-        return $this;
     }
 
     public function run(): void
