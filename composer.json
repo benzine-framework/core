@@ -63,9 +63,11 @@
         "symfony/twig-bridge": "^5.1",
         "symfony/yaml": "^5.1",
         "tuupola/server-timing-middleware": "^0.8.2",
+        "twig/extensions":"^1.3",
         "twig/intl-extra": "^3.0"
     },
     "require-dev": {
+        "benzine/orm": "dev-master",
         "brainmaestro/composer-git-hooks": "^2.8",
         "brianium/paratest": "^4.1",
         "clue/commander": "^v1.3.0",
