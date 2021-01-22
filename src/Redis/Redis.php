@@ -296,7 +296,7 @@ class Redis
     private function runBeforeRedisCommand(): void
     {
         if (!$this->redis->isConnected()) {
-            $this->redis->pconnect($this->host, $this->port, $this->timeout);
+            @$this->redis->pconnect($this->host, $this->port, $this->timeout);
             $this->initialiseExtensions();
         }
     }
