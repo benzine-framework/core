@@ -63,6 +63,7 @@ class App
     private string $cachePath = APP_ROOT.'/cache';
     private string $logPath = APP_ROOT."/logs";
     private array $supportedLanguages = ['en_US'];
+    private bool $debugMode = false;
 
     private static bool $isInitialised = false;
     protected ?CachePoolChain $cachePoolChain = null;
@@ -96,7 +97,13 @@ class App
 
         $this->setupMiddlewares($container);
 
-        $this->app->addErrorMiddleware(true, true, true, $this->logger);
+        // Determine if we're going to enable debug mode
+        $this->debugMode = $this->environmentService->get('DEBUG_MODE', 'off') == 'on';
+
+        // Enable the slim error middleware if appropriate.
+        if ($this->debugMode) {
+            $this->app->addErrorMiddleware(true, true, true, $this->logger);
+        }
 
         $this->debugBar['time']->startMeasure('interrogateTranslations', 'Time to interrogate translation files');
         $this->interrogateTranslations();
