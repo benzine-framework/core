@@ -14,4 +14,6 @@ parameters:
         - bin/
         - src/
         - tests/
+    ignoreErrors:
+        - '#Call to an undefined method Benzine\\Redis\\Redis::[a-zA-Z0-9\\_]+\(\)#'
 
