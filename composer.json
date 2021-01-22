@@ -66,6 +66,7 @@
         "twig/intl-extra": "^3.0"
     },
     "require-dev": {
+        "brainmaestro/composer-git-hooks": "^2.8",
         "brianium/paratest": "^4.1",
         "clue/commander": "^v1.3.0",
         "jc21/clitable": "^1.2",
@@ -93,5 +94,22 @@
         "bin/queue-status",
         "bin/queue-view-item",
         "bin/worker"
-    ]
+    ],
+    "extra": {
+        "hooks": {
+            "pre-commit": [
+                "echo committing as $(git config user.name)",
+                "vendor/bin/php-cs-fixer fix ."
+            ],
+            "pre-push": [
+                "vendor/bin/php-cs-fixer fix .",
+                "make test"
+            ],
+            "post-merge": "composer install --ignore-platform-reqs"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": "cghooks add --ignore-lock",
+        "post-update-cmd": "cghooks update"
+    }
 }
