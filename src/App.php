@@ -456,7 +456,7 @@ class App
         return $this;
     }
 
-    public static function Log(int $level = Logger::DEBUG, $message)
+    public static function Log($message, int $level = Logger::DEBUG)
     {
         return self::Instance()
             ->getLogger()
