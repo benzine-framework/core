@@ -108,6 +108,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
 
         if ($this->stopOnZero && 0 == $queueLength) {
             $this->logger->warning('--stop-on-zero is set, and the queue length is zero! Stopping!');
+
             exit;
         }
 

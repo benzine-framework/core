@@ -23,7 +23,7 @@ abstract class AbstractController
     public function __construct(Logger $logger, CacheProvider $cacheProvider)
     {
         $this->logger = $logger;
-        #$this->logger->debug(sprintf('Entered Controller in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
+        //$this->logger->debug(sprintf('Entered Controller in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
         $this->cacheProvider = $cacheProvider;
     }
 

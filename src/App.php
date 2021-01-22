@@ -59,14 +59,14 @@ class App
     protected Router $router;
     protected bool $isSessionsEnabled = true;
     protected bool $interrogateControllersComplete = false;
+    protected ?CachePoolChain $cachePoolChain = null;
     private array $viewPaths = [];
     private string $cachePath = APP_ROOT.'/cache';
-    private string $logPath = APP_ROOT."/logs";
+    private string $logPath = APP_ROOT.'/logs';
     private array $supportedLanguages = ['en_US'];
     private bool $debugMode = false;
 
     private static bool $isInitialised = false;
-    protected ?CachePoolChain $cachePoolChain = null;
 
     public function __construct()
     {
@@ -134,11 +134,13 @@ class App
 
     /**
      * @param array $viewPaths
+     *
      * @return App
      */
     public function setViewPaths(array $viewPaths): App
     {
         $this->viewPaths = $viewPaths;
+
         return $this;
     }
 
@@ -152,11 +154,13 @@ class App
 
     /**
      * @param string $logPath
+     *
      * @return App
      */
     public function setLogPath(string $logPath): App
     {
         $this->logPath = $logPath;
+
         return $this;
     }
 
@@ -319,8 +323,8 @@ class App
                 $caches[] = new ArrayCachePool();
 
                 $this->cachePoolChain = new CachePoolChain($caches);
-
             }
+
             return $this->cachePoolChain;
         });
 
@@ -334,9 +338,9 @@ class App
 
         $container->set(Logger::class, function (ConfigurationService $configurationService, EnvironmentService $environmentService) {
             $appName = $configurationService->get(ConfigurationService::KEY_APP_NAME);
-            $logName = $environmentService->has("REQUEST_URI") ? sprintf("%s(%s)", $appName, $environmentService->get("REQUEST_URI")) : $appName;
+            $logName = $environmentService->has('REQUEST_URI') ? sprintf('%s(%s)', $appName, $environmentService->get('REQUEST_URI')) : $appName;
             $monolog = new Logger($logName);
-            $monolog->pushHandler(new StreamHandler(sprintf("%s/%s.log", $this->getLogPath(), strtolower($appName))));
+            $monolog->pushHandler(new StreamHandler(sprintf('%s/%s.log', $this->getLogPath(), strtolower($appName))));
             $monolog->pushHandler(new ErrorLogHandler(), Logger::DEBUG);
             $monolog->pushProcessor(new PsrLogMessageProcessor());
 
@@ -393,7 +397,7 @@ class App
 
         $this->router = $container->get(Router::class);
 
-        #!\Kint::dump($this->environmentService->all());exit;
+        //!\Kint::dump($this->environmentService->all());exit;
         return $container;
     }
 
@@ -539,7 +543,7 @@ class App
 
         $timeToBootstrapMs = (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000;
         $bootstrapTooLongThresholdMs = 300;
-        if($timeToBootstrapMs >= $bootstrapTooLongThresholdMs) {
+        if ($timeToBootstrapMs >= $bootstrapTooLongThresholdMs) {
             $this->logger->warning(sprintf('Bootstrap complete in %sms which is more than the threshold of %sms', number_format($timeToBootstrapMs, 2), $bootstrapTooLongThresholdMs));
         }
 

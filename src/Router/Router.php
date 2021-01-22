@@ -142,7 +142,7 @@ class Router
 
         $this->routes = $cacheItem->get();
         $timeToLoadFromCacheMs = (microtime(true) - $time) * 1000;
-        if($timeToLoadFromCacheMs >= 500) {
+        if ($timeToLoadFromCacheMs >= 500) {
             $this->logger->warning(sprintf('Loaded routes from Cache in %sms, which is slower than 500ms', number_format($timeToLoadFromCacheMs, 2)));
         }
 
@@ -159,9 +159,9 @@ class Router
 
         try {
             $this->cachePoolChain->save($routeItem);
-            $this->logger->info("Cached router to cache pool");
+            $this->logger->info('Cached router to cache pool');
         } catch (CachePoolException $cachePoolException) {
-            $this->logger->critical("Cache Pool Exception: " . $cachePoolException->getMessage());
+            $this->logger->critical('Cache Pool Exception: '.$cachePoolException->getMessage());
         }
 
         return $this;

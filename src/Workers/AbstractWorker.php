@@ -27,17 +27,18 @@ abstract class AbstractWorker implements WorkerInterface
         );
     }
 
+    protected function setUp(): void
+    {
+    }
+
     /**
      * @param bool $stopOnZero
      */
     public function setStopOnZero(bool $stopOnZero): self
     {
         $this->stopOnZero = $stopOnZero;
+
         return $this;
-    }
-    
-    protected function setUp(): void
-    {
     }
 
     public function run(): void

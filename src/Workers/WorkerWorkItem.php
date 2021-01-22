@@ -13,13 +13,16 @@ class WorkerWorkItem implements \Serializable
     {
         $method = substr(strtolower($name), 0, 3);
         $field = substr(strtolower($name), 3);
+
         switch ($method) {
             case 'set':
                 $this->data[$field] = $arguments[0];
 
                 return $this;
+
             case 'get':
                 return $this->data[$field];
+
             default:
                 throw new WorkerException("Method {$name} doesn't exist");
         }
