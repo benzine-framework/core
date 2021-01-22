@@ -103,7 +103,7 @@
             ],
             "pre-push": [
                 "vendor/bin/php-cs-fixer fix .",
-                "make test"
+                "vendor/bin/phpstan analyse"
             ],
             "post-merge": "composer install --ignore-platform-reqs"
         }
