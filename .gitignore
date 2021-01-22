@@ -6,3 +6,4 @@ vendor/
 .php_cs.cache
 docs
 phploc.xml
+cghooks.lock
