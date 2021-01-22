@@ -61,6 +61,7 @@ class App
     protected bool $interrogateControllersComplete = false;
     private array $viewPaths = [];
     private string $cachePath = APP_ROOT.'/cache';
+    private string $logPath = APP_ROOT."/logs";
     private array $supportedLanguages = ['en_US'];
 
     private static bool $isInitialised = false;
@@ -113,6 +114,42 @@ class App
     {
         $this->cachePath = $cachePath;
 
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getViewPaths(): array
+    {
+        return $this->viewPaths;
+    }
+
+    /**
+     * @param array $viewPaths
+     * @return App
+     */
+    public function setViewPaths(array $viewPaths): App
+    {
+        $this->viewPaths = $viewPaths;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLogPath(): string
+    {
+        return $this->logPath;
+    }
+
+    /**
+     * @param string $logPath
+     * @return App
+     */
+    public function setLogPath(string $logPath): App
+    {
+        $this->logPath = $logPath;
         return $this;
     }
 
@@ -292,7 +329,7 @@ class App
             $appName = $configurationService->get(ConfigurationService::KEY_APP_NAME);
             $logName = $environmentService->has("REQUEST_URI") ? sprintf("%s(%s)", $appName, $environmentService->get("REQUEST_URI")) : $appName;
             $monolog = new Logger($logName);
-            $monolog->pushHandler(new StreamHandler(sprintf("/var/log/%s.log", strtolower($appName))));
+            $monolog->pushHandler(new StreamHandler(sprintf("%s/%s.log", $this->getLogPath(), strtolower($appName))));
             $monolog->pushHandler(new ErrorLogHandler(), Logger::DEBUG);
             $monolog->pushProcessor(new PsrLogMessageProcessor());
 
