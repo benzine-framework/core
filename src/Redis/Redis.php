@@ -222,7 +222,7 @@ class Redis
      */
     private string $host;
     private int $port;
-    private string $password;
+    private ?string $password;
     private float $timeout;
     private \Redis $redis;
     private Logger $logger;
