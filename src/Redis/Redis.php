@@ -222,6 +222,7 @@ class Redis
      */
     private string $host;
     private int $port;
+    private string $password;
     private float $timeout;
     private \Redis $redis;
     private Logger $logger;
@@ -229,12 +230,13 @@ class Redis
     /** @var Lua\AbstractLuaExtension[] */
     private array $scripts;
 
-    public function __construct(Logger $logger, string $host, int $port = 6379, float $timeout = 0.0)
+    public function __construct(Logger $logger, string $host, int $port = 6379, string $password = null, float $timeout = 0.0)
     {
         $this->logger = $logger;
 
         $this->host = $host;
         $this->port = $port;
+        $this->password = $password;
         $this->timeout = $timeout;
 
         $this->redis = new \Redis();
@@ -297,6 +299,9 @@ class Redis
     {
         if (!$this->redis->isConnected()) {
             @$this->redis->pconnect($this->host, $this->port, $this->timeout);
+            if($this->password){
+                $this->redis->auth($this->password);
+            }
             $this->initialiseExtensions();
         }
     }

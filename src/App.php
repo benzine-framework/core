@@ -352,6 +352,7 @@ class App
                 $logger,
                 $environmentService->get('REDIS_HOST', 'redis'),
                 $environmentService->get('REDIS_PORT', 6379),
+                $environmentService->get('REDIS_PASSWORD', null),
                 $environmentService->get('REDIS_TIMEOUT', 1.0)
             );
         });
