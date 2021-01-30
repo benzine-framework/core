@@ -101,10 +101,10 @@
         "hooks": {
             "pre-commit": [
                 "echo committing as $(git config user.name)",
-                "vendor/bin/php-cs-fixer fix ."
+                "docker run --rm -i -v $(pwd):/app cytopia/php-cs-fixer:latest fix /app"
             ],
             "pre-push": [
-                "vendor/bin/php-cs-fixer fix .",
+                "docker run --rm -i -v $(pwd):/app cytopia/php-cs-fixer:latest fix /app",
                 "vendor/bin/phpstan analyse"
             ],
             "post-merge": "composer install --ignore-platform-reqs"

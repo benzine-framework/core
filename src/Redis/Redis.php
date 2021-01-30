@@ -299,7 +299,7 @@ class Redis
     {
         if (!$this->redis->isConnected()) {
             @$this->redis->pconnect($this->host, $this->port, $this->timeout);
-            if($this->password){
+            if ($this->password) {
                 $this->redis->auth($this->password);
             }
             $this->initialiseExtensions();
