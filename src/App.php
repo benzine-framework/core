@@ -430,6 +430,7 @@ class App
             } else {
                 self::$instance = $tempApp;
             }
+            self::$isInitialised = true;
         }
 
         return self::$instance;
