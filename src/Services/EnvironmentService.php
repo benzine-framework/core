@@ -47,4 +47,13 @@ class EnvironmentService
 
         return $this;
     }
+
+    public function getPublicHostname(): string
+    {
+        return sprintf(
+            '%s://%s',
+            $this->get('SERVER_PORT', 43) == 443 ? 'https' : 'http',
+            $this->get('HTTP_HOST')
+        );
+    }
 }
