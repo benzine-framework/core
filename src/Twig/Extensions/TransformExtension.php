@@ -55,23 +55,18 @@ class TransformExtension extends AbstractExtension
             case 'camel':
             case 'camelcase':
                 return new Format\CamelCase();
-
             case 'screaming':
             case 'screamingsnake':
             case 'screamingsnakecase':
                 return new Format\ScreamingSnakeCase();
-
             case 'snake':
             case 'snakecase':
                 return new Format\SnakeCase();
-
             case 'spinal':
             case 'spinalcase':
                 return new Format\SpinalCase();
-
             case 'studly':
                 return new Format\StudlyCaps();
-
             default:
                 throw new TransformExtensionException("Unknown transformer: \"{$name}\".");
         }

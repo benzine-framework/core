@@ -19,10 +19,8 @@ class WorkerWorkItem implements \Serializable
                 $this->data[$field] = $arguments[0];
 
                 return $this;
-
             case 'get':
                 return $this->data[$field];
-
             default:
                 throw new WorkerException("Method {$name} doesn't exist");
         }
