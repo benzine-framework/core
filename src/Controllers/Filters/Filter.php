@@ -46,18 +46,22 @@ class Filter
                     $this->setLimit($value);
 
                     break;
+
                 case 'offset':
                     $this->setOffset($value);
 
                     break;
+
                 case 'wheres':
                     $this->setWheres($value);
 
                     break;
+
                 case 'order':
                     $this->parseOrder($value);
 
                     break;
+
                 default:
                     throw new FilterDecodeException("Failed to decode Filter, unknown key: {$key}");
             }
