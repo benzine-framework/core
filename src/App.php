@@ -15,6 +15,7 @@ use Cache\Adapter\Apcu\ApcuCachePool;
 use Cache\Adapter\Chain\CachePoolChain;
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\Adapter\Redis\RedisCachePool;
+use Cocur\Slugify\Slugify;
 use DebugBar\Bridge\MonologCollector;
 use DebugBar\DataCollector\ExceptionsCollector;
 use DebugBar\DataCollector\MemoryCollector;
@@ -336,11 +337,16 @@ class App
             );
         });
 
-        $container->set(Logger::class, function (ConfigurationService $configurationService, EnvironmentService $environmentService) {
+        $container->set(Logger::class, function (ConfigurationService $configurationService, EnvironmentService $environmentService, Slugify $slugify) {
             $appName = $configurationService->get(ConfigurationService::KEY_APP_NAME);
             $logName = $environmentService->has('REQUEST_URI') ? sprintf('%s(%s)', $appName, $environmentService->get('REQUEST_URI')) : $appName;
             $monolog = new Logger($logName);
-            $monolog->pushHandler(new StreamHandler(sprintf('%s/%s.log', $this->getLogPath(), strtolower($appName))));
+            $monolog->pushHandler(new StreamHandler(sprintf(
+                '%s/%s.%s.log',
+                $this->getLogPath(),
+                $slugify->slugify($appName),
+                $slugify->slugify(PHP_SAPI)
+            )));
             $monolog->pushHandler(new ErrorLogHandler(), Logger::DEBUG);
             $monolog->pushProcessor(new PsrLogMessageProcessor());
 

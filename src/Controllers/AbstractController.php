@@ -4,7 +4,6 @@ namespace Benzine\Controllers;
 
 use Benzine\Controllers\Filters\Filter;
 use Benzine\Exceptions\FilterDecodeException;
-use Benzine\ORM\Abstracts\AbstractService;
 use League\Flysystem\Filesystem;
 use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
@@ -15,40 +14,10 @@ use Slim\Psr7\Response;
 
 abstract class AbstractController
 {
-    protected Logger $logger;
-    protected AbstractService $service;
-    protected bool $apiExplorerEnabled = true;
-    protected CacheProvider $cacheProvider;
-
-    public function __construct(Logger $logger, CacheProvider $cacheProvider)
-    {
-        $this->logger = $logger;
-        //$this->logger->debug(sprintf('Entered Controller in %sms', number_format((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2)));
-        $this->cacheProvider = $cacheProvider;
-    }
-
-    public function getService(): AbstractService
-    {
-        return $this->service;
-    }
-
-    public function setService(AbstractService $service): self
-    {
-        $this->service = $service;
-
-        return $this;
-    }
-
-    public function isApiExplorerEnabled(): bool
-    {
-        return $this->apiExplorerEnabled;
-    }
-
-    public function setApiExplorerEnabled(bool $apiExplorerEnabled): self
-    {
-        $this->apiExplorerEnabled = $apiExplorerEnabled;
-
-        return $this;
+    public function __construct(
+        protected Logger $logger,
+        protected CacheProvider $cacheProvider
+    ) {
     }
 
     public function xmlResponse(\SimpleXMLElement $root, Request $request, Response $response): Response

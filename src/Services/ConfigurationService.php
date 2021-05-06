@@ -3,6 +3,7 @@
 namespace Benzine\Services;
 
 use Benzine\App;
+use Benzine\Exceptions\BenzineConfigurationException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
@@ -22,6 +23,8 @@ class ConfigurationService
     protected EnvironmentService $environmentService;
     protected string $appRoot;
     protected array $config;
+
+    protected array $configNotFoundInPaths = [];
 
     public function __construct(App $app, EnvironmentService $environmentService)
     {
@@ -106,11 +109,20 @@ class ConfigurationService
         }
 
         if (!(new Filesystem())->exists($path.'/.benzine.yml')) {
+            $this->configNotFoundInPaths[] = $path;
             $currentDirElem = explode(DIRECTORY_SEPARATOR, $path);
             array_pop($currentDirElem);
             $parentPath = implode(DIRECTORY_SEPARATOR, $currentDirElem);
 
-            return $this->findConfig($parentPath);
+            if (!in_array($parentPath, $this->configNotFoundInPaths, true)) {
+                return $this->findConfig($parentPath);
+            }
+            $this->configNotFoundInPaths = array_unique($this->configNotFoundInPaths);
+
+            throw new BenzineConfigurationException(sprintf(
+                    'Cannot find .benzine.yml in any of the following locations: %s',
+                    implode(', ', $this->configNotFoundInPaths)
+                ));
         }
 
         $this->parseFile($path.'/.benzine.yml');

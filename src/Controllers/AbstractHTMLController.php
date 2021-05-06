@@ -11,19 +11,15 @@ use Slim\Views\Twig;
 
 abstract class AbstractHTMLController extends AbstractController
 {
-    protected Twig $twig;
-    protected DebugBar $debugBar;
     protected string $pageNotFoundTemplate = '404.html.twig';
 
     public function __construct(
         Logger $logger,
         CacheProvider $cacheProvider,
-        Twig $twig,
-        DebugBar $debugBar
+        protected Twig $twig,
+        protected DebugBar $debugBar
     ) {
         parent::__construct($logger, $cacheProvider);
-        $this->twig = $twig;
-        $this->debugBar = $debugBar;
     }
 
     protected function renderInlineCss(array $files)
