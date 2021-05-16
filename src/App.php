@@ -249,7 +249,7 @@ class App
             $twig->offsetSet('language', $translator->trans($selectedLanguage));
 
             // Add Twig Intl Extension
-            $twig->addExtension(new Twig\Extensions\IntlExtension());
+            $twig->addExtension(new Twig\Extra\Intl\IntlExtension);
 
             // Set some default parameters
             $twig->offsetSet('app_name', defined('APP_NAME') ? APP_NAME : 'APP_NAME not set');
