@@ -45,7 +45,6 @@
         "middlewares/debugbar": "^2.0",
         "middlewares/encoder": "^2.1",
         "middlewares/geolocation": "^3.0",
-        "middlewares/minifier": "dev-master",
         "middlewares/payload": "^3.0",
         "middlewares/response-time": "^2.0",
         "middlewares/trailing-slash": "^2.0",
