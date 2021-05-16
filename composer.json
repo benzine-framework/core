@@ -25,6 +25,7 @@
         "ext-sockets": "*",
         "ext-zip": "*",
         "bjeavons/zxcvbn-php": "^1.0",
+        "brainmaestro/composer-git-hooks": "^2.8",
         "cache/apc-adapter": "^1.0",
         "cache/apcu-adapter": "^1.0",
         "cache/array-adapter": "^1.0",
@@ -69,7 +70,6 @@
     },
     "require-dev": {
         "benzine/orm": "dev-master",
-        "brainmaestro/composer-git-hooks": "^2.8",
         "brianium/paratest": "^6.0",
         "clue/commander": "^v1.3.0",
         "jc21/clitable": "^1.2",
