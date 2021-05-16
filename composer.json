@@ -41,7 +41,7 @@
         "kint-php/kint-twig": "^3.0",
         "mattketmo/camel": "^1.1",
         "maximebf/debugbar": "^1.16",
-        "middlewares/content-length": "^1.1",
+        "middlewares/content-length": "^2.0",
         "middlewares/debugbar": "^2.0",
         "middlewares/encoder": "^2.1",
         "middlewares/geolocation": "^2.0",
