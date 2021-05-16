@@ -2,7 +2,7 @@
 
 namespace Benzine\Twig\Extensions;
 
-use Gone\Inflection\Inflect;
+use MatthewBaggett\Inflection\Inflect;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
@@ -11,11 +11,11 @@ class InflectionExtension extends AbstractExtension
     public function getFilters()
     {
         $filters = [];
-        $filters['pluralize'] = new TwigFilter('pluralize', function (string $word): string {
-            return Inflect::pluralize($word);
+        $filters['pluralize'] = new TwigFilter('pluralize', function (string $word = null): string {
+            return !empty($word) ? Inflect::pluralize($word) : '';
         });
-        $filters['singularize'] = new TwigFilter('singularize', function (string $word): string {
-            return Inflect::singularize($word);
+        $filters['singularize'] = new TwigFilter('singularize', function (string $word = null): string {
+            return !empty($word) ? Inflect::singularize($word) : '';
         });
 
         return $filters;
