@@ -44,7 +44,7 @@
         "middlewares/content-length": "^2.0",
         "middlewares/debugbar": "^2.0",
         "middlewares/encoder": "^2.1",
-        "middlewares/geolocation": "^2.0",
+        "middlewares/geolocation": "^3.0",
         "middlewares/minifier": "^2.0",
         "middlewares/payload": "^3.0",
         "middlewares/response-time": "^2.0",
