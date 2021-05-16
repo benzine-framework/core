@@ -1,5 +1,6 @@
 <?php
-require_once(__DIR__ . "/bin/find-autoloader.php");
+
+require_once __DIR__.'/bin/find-autoloader.php';
 
 $app = require VENDOR_PATH.'/../bootstrap.php';
 use Benzine\ORM;

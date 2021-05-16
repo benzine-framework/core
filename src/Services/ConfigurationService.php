@@ -120,9 +120,9 @@ class ConfigurationService
             $this->configNotFoundInPaths = array_unique($this->configNotFoundInPaths);
 
             throw new BenzineConfigurationException(sprintf(
-                    'Cannot find .benzine.yml in any of the following locations: %s',
-                    implode(', ', $this->configNotFoundInPaths)
-                ));
+                'Cannot find .benzine.yml in any of the following locations: %s',
+                implode(', ', $this->configNotFoundInPaths)
+            ));
         }
 
         $this->parseFile($path.'/.benzine.yml');

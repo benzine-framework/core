@@ -37,7 +37,7 @@ if (file_exists(__PHPCS_ROOT__.'/vendor/benzine')) {
     }
 }
 
-return PhpCsFixer\Config::create()
+return (new PhpCsFixer\Config)
     ->setRiskyAllowed(true)
     ->setHideProgress(false)
     ->setRules([
