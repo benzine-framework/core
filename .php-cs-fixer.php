@@ -2,7 +2,7 @@
 $finder = PhpCsFixer\Finder::create();
 
 if (!defined('__PHPCS_ROOT__')) {
-    define('__PHPCS_ROOT__', __DIR__);
+    define('__PHPCS_ROOT__', getcwd());
 }
 
 $directories = [
