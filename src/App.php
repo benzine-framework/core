@@ -340,15 +340,30 @@ class App
         $container->set(Logger::class, function (ConfigurationService $configurationService, EnvironmentService $environmentService, Slugify $slugify) {
             $appName = $configurationService->get(ConfigurationService::KEY_APP_NAME);
             $logName = $environmentService->has('REQUEST_URI') ? sprintf('%s(%s)', $appName, $environmentService->get('REQUEST_URI')) : $appName;
+
+            // Instantiate Monolog
             $monolog = new Logger($logName);
+            $monolog->pushProcessor(new PsrLogMessageProcessor());
+
+            // Create a logfile based on the PHP_SAPI
             $monolog->pushHandler(new StreamHandler(sprintf(
                 '%s/%s.%s.log',
                 $this->getLogPath(),
                 $slugify->slugify($appName),
                 $slugify->slugify(PHP_SAPI)
             )));
-            $monolog->pushHandler(new ErrorLogHandler(), Logger::DEBUG);
-            $monolog->pushProcessor(new PsrLogMessageProcessor());
+
+            // Configure a pretty CLI Handler
+            $cliHandler = new StreamHandler('php://stdout', Logger::DEBUG);
+            $cliFormatter = new ColoredLineFormatter(
+                new TrafficLight(),
+                // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%"
+                $environmentService->get('MONOLOG_FORMAT', '[%datetime%] %level_name%: %message%')."\n",
+                'g:i'
+            );
+            $cliHandler->setFormatter($cliFormatter);
+            $monolog->pushHandler($cliHandler);
+
 
             return $monolog;
         });

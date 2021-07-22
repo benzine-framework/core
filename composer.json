@@ -26,6 +26,7 @@
         "ext-zip": "*",
         "bjeavons/zxcvbn-php": "^1.0",
         "brainmaestro/composer-git-hooks": "^2.8",
+        "bramus/monolog-colored-line-formatter": "^3.0",
         "cache/apc-adapter": "^1.0",
         "cache/apcu-adapter": "^1.0",
         "cache/array-adapter": "^1.0",
