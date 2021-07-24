@@ -2,6 +2,7 @@
 
 namespace Benzine;
 
+use Benzine\Exceptions\JsonErrorHandler;
 use Benzine\ORM\Connection\Databases;
 use Benzine\ORM\Laminator;
 use Benzine\Redis\Redis;
@@ -47,6 +48,7 @@ use Symfony\Component\Translation;
 use Tuupola\Middleware\ServerTimingMiddleware;
 use Twig;
 use Twig\Loader\FilesystemLoader;
+use Zeuxisoo\Whoops\Slim\WhoopsMiddleware;
 
 class App
 {
@@ -106,7 +108,7 @@ class App
         if ($this->debugMode) {
             $this->app->addErrorMiddleware(true, true, true, $this->logger);
         }
-
+        
         $this->debugBar['time']->startMeasure('interrogateTranslations', 'Time to interrogate translation files');
         $this->interrogateTranslations();
         $this->debugBar['time']->stopMeasure('interrogateTranslations');
