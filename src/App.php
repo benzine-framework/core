@@ -10,6 +10,8 @@ use Benzine\Services\ConfigurationService;
 use Benzine\Services\EnvironmentService;
 use Benzine\Services\SessionService;
 use Benzine\Twig\Extensions;
+use Bramus\Monolog\Formatter\ColoredLineFormatter;
+use Bramus\Monolog\Formatter\ColorSchemes\TrafficLight;
 use Cache\Adapter\Apc\ApcCachePool;
 use Cache\Adapter\Apcu\ApcuCachePool;
 use Cache\Adapter\Chain\CachePoolChain;
@@ -30,7 +32,6 @@ use Faker\Factory as FakerFactory;
 use Faker\Provider;
 use Middlewares\TrailingSlash;
 use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\ErrorLogHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
@@ -363,7 +364,6 @@ class App
             );
             $cliHandler->setFormatter($cliFormatter);
             $monolog->pushHandler($cliHandler);
-
 
             return $monolog;
         });
