@@ -98,25 +98,23 @@ abstract class AbstractController
     {
         $response = new Response();
 
-        if (!$filesystem->has($filename)) {
+        if (!$filesystem->fileExists($filename)) {
             return $this->pageNotFound();
         }
 
-        // Get file metadata from flysystem
-        $meta = $filesystem->getMetadata($filename);
-        $etag = md5(implode($meta));
+        // Generate an etag
+        $etag = md5($filesystem->lastModified($filename) . $filename);
+        $response = $this->cacheProvider->withEtag($response, $etag);
 
         // Detect mimetype for content-type header from file meta
         $mimetype = (new ExtensionMimeTypeDetector())
-            ->detectMimeTypeFromPath($meta['path'])
-        ;
+                ->detectMimeTypeFromPath($filename);
 
         // No dice? Early-load the data and interrogate that for mimetype then I GUESS.
         if (!$mimetype) {
             $data = $filesystem->read($filename);
             $mimetype = (new FinfoMimeTypeDetector())
-                ->detectMimeTypeFromBuffer($data)
-            ;
+                ->detectMimeTypeFromBuffer($data);
         }
 
         // If we have mimetype by this point, send the contenttype
@@ -124,11 +122,10 @@ abstract class AbstractController
             $response = $response->withHeader('Content-Type', $mimetype);
         }
 
-        // Attach ETag
-        $response = $this->cacheProvider->withEtag($response, $etag);
-
-        $response->getBody()
-            ->write($data ?? $filesystem->read($filename))
+        // Send back the response
+        $response
+            ->getBody()
+                ->write($data ?? $filesystem->read($filename))
         ;
 
         return $response;

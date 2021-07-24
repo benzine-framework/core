@@ -4,7 +4,7 @@ namespace Benzine\Services;
 
 use Benzine\Redis\Redis;
 use Benzine\Workers\WorkerWorkItem;
-use Gone\UUID\UUID;
+use MatthewBaggett\UUID\UUID;
 use Monolog\Logger;
 
 class QueueService
