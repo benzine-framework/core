@@ -36,7 +36,7 @@
         "doctrine/annotations": "^1.10",
         "donatj/flags": "^1.4",
         "fakerphp/faker": "^1.14.1",
-        "friendsofphp/php-cs-fixer": "^2.0",
+        "friendsofphp/php-cs-fixer": "^3.0",
         "kint-php/kint": "^3.3",
         "kint-php/kint-twig": "^3.0",
         "matthewbaggett/inflection": "^2.1",
