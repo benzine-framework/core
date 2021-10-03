@@ -428,6 +428,7 @@ class App
     public function setupMiddlewares(ContainerInterface $container): void
     {
         // Middlewares
+        $this->app->addBodyParsingMiddleware();
         //$this->app->add($container->get(\Middlewares\Geolocation::class));
         $this->app->add($container->get(\Middlewares\TrailingSlash::class));
         //$this->app->add($container->get(\Middlewares\Whoops::class));
