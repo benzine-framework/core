@@ -3,6 +3,8 @@
 namespace Benzine;
 
 use Benzine\Exceptions\JsonErrorHandler;
+use Benzine\Middleware\JsonResponseExecTimeMiddleware;
+use Benzine\Middleware\JsonValidationMiddleware;
 use Benzine\ORM\Connection\Databases;
 use Benzine\ORM\Laminator;
 use Benzine\Redis\Redis;
@@ -97,9 +99,13 @@ class App
         // Configure Slim
         $this->app = AppFactory::create();
         $this->app->add(Slim\Views\TwigMiddleware::createFromContainer($this->app));
-        $this->app->addRoutingMiddleware();
 
         $this->setupMiddlewares($container);
+
+        $this->app->add($container->get(JsonValidationMiddleware::class));
+        $this->app->addBodyParsingMiddleware();
+        $this->app->addRoutingMiddleware();
+        $this->app->add($container->get(JsonResponseExecTimeMiddleware::class));
 
         // Determine if we're going to enable debug mode
         $this->debugMode = $this->environmentService->get('DEBUG_MODE', 'off') == 'on';
