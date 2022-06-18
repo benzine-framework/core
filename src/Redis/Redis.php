@@ -305,4 +305,8 @@ class Redis
             $this->initialiseExtensions();
         }
     }
+
+    public function emit(array $message){
+        return $this->redis->publish(APP_NAME, json_encode($message));
+    }
 }
