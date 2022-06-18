@@ -27,9 +27,11 @@ class JsonResponseExecTimeMiddleware implements MiddlewareInterface{
 
             return $response;
         }
+        $memoryUsageBytes = memory_get_peak_usage();
         $responseJson['Exec'] = [
-            'TimeSeconds' => microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
-            'MemoryBytes' => memory_get_peak_usage(),
+            'TimeSeconds' => (float) number_format(microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],5),
+            'MemoryBytes' => $memoryUsageBytes,
+            'MemoryMegaBytes' => (float) number_format($memoryUsageBytes/1024/1024,3),
         ];
 
         $replacementResponse = new Response();

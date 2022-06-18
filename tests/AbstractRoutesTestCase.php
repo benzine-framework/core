@@ -15,6 +15,10 @@ abstract class AbstractRoutesTestCase extends AbstractBaseTestCase
         parent::setUp();
     }
 
+    public function getApp(){
+        return $this->slimApp;
+    }
+
     /**
      * @deprecated this has been deprecated in favour of the calls inside AppTestTrait
      *
