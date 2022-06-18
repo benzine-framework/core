@@ -307,6 +307,15 @@ class Redis
     }
 
     public function emit(array $message){
-        return $this->redis->publish(APP_NAME, json_encode($message));
+        return $this->redis->publish(strtolower(APP_NAME), json_encode($message));
+    }
+
+    public function listen($callback){
+        ini_set("default_socket_timeout", -1);
+        try {
+            $this->redis->psubscribe([strtolower(APP_NAME)], $callback);
+        }catch(\RedisException $exception){
+
+        }
     }
 }
