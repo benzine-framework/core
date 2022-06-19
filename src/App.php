@@ -574,7 +574,7 @@ class App
 
         $timeToBootstrapMs = (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000;
         $bootstrapTooLongThresholdMs = 300;
-        if ($timeToBootstrapMs >= $bootstrapTooLongThresholdMs) {
+        if ($timeToBootstrapMs >= $bootstrapTooLongThresholdMs && php_sapi_name() != 'cli') {
             $this->logger->warning(sprintf('Bootstrap complete in %sms which is more than the threshold of %sms', number_format($timeToBootstrapMs, 2), $bootstrapTooLongThresholdMs));
         }
 
