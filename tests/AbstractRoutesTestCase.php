@@ -42,6 +42,10 @@ abstract class AbstractRoutesTestCase extends AbstractBaseTestCase
             $request = $request->withHeader('Content-Type', 'application/json');
         }
 
+        foreach($extraHeaders as $key => $value){
+            $request = $request->withHeader($key, $value);
+        }
+
         return $this->slimApp->handle($request);
     }
 }
