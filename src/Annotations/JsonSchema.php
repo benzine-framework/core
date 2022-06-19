@@ -17,5 +17,4 @@ class JsonSchema
      * @Required
      */
     public string $schema;
-
 }

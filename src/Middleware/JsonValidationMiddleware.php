@@ -4,18 +4,17 @@ namespace Benzine\Middleware;
 
 use Benzine\Annotations\JsonSchema;
 use Doctrine\Common\Annotations\AnnotationReader;
-use Swaggest\JsonSchema\Exception;
-use Swaggest\JsonSchema\Schema;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 use Slim\Routing\RouteContext;
+use Swaggest\JsonSchema\Exception;
+use Swaggest\JsonSchema\Schema;
 
-class JsonValidationMiddleware implements MiddlewareInterface{
-
+class JsonValidationMiddleware implements MiddlewareInterface
+{
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         // get the route out of the router...
@@ -24,7 +23,7 @@ class JsonValidationMiddleware implements MiddlewareInterface{
         // Load an annotation reader
         $reader = new AnnotationReader();
         // Break up our route into class & method
-        list ($class, $method) = explode(":", $route->getCallable());
+        [$class, $method] = explode(':', $route->getCallable());
         // Create the reflection class for our class..
         $rc = new \ReflectionClass($class);
         // .. And snag the method
@@ -33,7 +32,7 @@ class JsonValidationMiddleware implements MiddlewareInterface{
         // Try to read a json schema annotation..
         $jsonSchemaAnnotation = $reader->getMethodAnnotation($method, JsonSchema::class);
         // No annotation? Return early.
-        if(!($jsonSchemaAnnotation instanceof JsonSchema)){
+        if (!($jsonSchemaAnnotation instanceof JsonSchema)) {
             return $handler->handle($request);
         }
 
@@ -47,12 +46,12 @@ class JsonValidationMiddleware implements MiddlewareInterface{
         );
 
         // Throw it through validation.. if it passes, continue
-        try{
+        try {
             // Validate it...
             $schema->in(json_decode($request->getBody()->getContents()));
             // And if we get here, we're golden.
             return $handler->handle($request);
-        }catch (Exception $exception){
+        } catch (Exception $exception) {
             // Whelp, we've failed validation, build a failure message.
             $response = new Response();
             $content = json_encode([
@@ -68,5 +67,4 @@ class JsonValidationMiddleware implements MiddlewareInterface{
             return $response->withStatus(400);
         }
     }
-
 }

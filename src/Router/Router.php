@@ -55,15 +55,14 @@ class Router
                         continue;
                     }
 
-
                     $rc = new \ReflectionClass($expectedClass);
                     if ($rc->isAbstract()) {
                         continue;
                     }
-                    #\Kint::dump(
-                    #    $expectedClass,
-                    #    $rc
-                    #);
+                    // \Kint::dump(
+                    //    $expectedClass,
+                    //    $rc
+                    // );
 
                     foreach ($rc->getMethods() as $method) {
                         if (!$method->isPublic()) {
@@ -78,8 +77,8 @@ class Router
                         foreach ($routeAnnotation->methods as $httpMethod) {
                             $newRoute = new Route();
 
-                            #\Kint::dump($method);
-                            #exit;
+                            // \Kint::dump($method);
+                            // exit;
 
                             $newRoute
                                 ->setHttpMethod($httpMethod)

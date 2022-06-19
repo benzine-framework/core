@@ -2,7 +2,6 @@
 
 namespace Benzine;
 
-use Benzine\Exceptions\JsonErrorHandler;
 use Benzine\Middleware\JsonResponseExecTimeMiddleware;
 use Benzine\Middleware\JsonValidationMiddleware;
 use Benzine\ORM\Connection\Databases;
@@ -50,7 +49,6 @@ use Symfony\Component\Translation;
 use Tuupola\Middleware\ServerTimingMiddleware;
 use Twig;
 use Twig\Loader\FilesystemLoader;
-use Zeuxisoo\Whoops\Slim\WhoopsMiddleware;
 
 class App
 {
@@ -114,7 +112,7 @@ class App
         if ($this->debugMode) {
             $this->app->addErrorMiddleware(true, true, true, $this->logger);
         }
-        
+
         $this->debugBar['time']->startMeasure('interrogateTranslations', 'Time to interrogate translation files');
         $this->interrogateTranslations();
         $this->debugBar['time']->stopMeasure('interrogateTranslations');
@@ -190,10 +188,10 @@ class App
                 ->useAutowiring(true)
                 ->useAnnotations(true)
             ;
-        //if ((new Filesystem())->exists($this->getCachePath())) {
+        // if ((new Filesystem())->exists($this->getCachePath())) {
         //   $container->enableCompilation($this->getCachePath());
         //   $container->writeProxiesToFile(true, "{$this->getCachePath()}/injection-proxies");
-        //}
+        // }
 
         $container = $container->build();
 
@@ -402,7 +400,7 @@ class App
             return (new DebugBar())
                 ->addCollector(new PhpInfoCollector())
                 ->addCollector(new MessagesCollector())
-                //->addCollector(new RequestDataCollector())
+                // ->addCollector(new RequestDataCollector())
                 ->addCollector(new TimeDataCollector())
                 ->addCollector(new MemoryCollector())
                 ->addCollector(new ExceptionsCollector())
@@ -427,7 +425,7 @@ class App
 
         $this->router = $container->get(Router::class);
 
-        //!\Kint::dump($this->environmentService->all());exit;
+        // !\Kint::dump($this->environmentService->all());exit;
         return $container;
     }
 
@@ -435,11 +433,11 @@ class App
     {
         // Middlewares
         $this->app->addBodyParsingMiddleware();
-        //$this->app->add($container->get(\Middlewares\Geolocation::class));
+        // $this->app->add($container->get(\Middlewares\Geolocation::class));
         $this->app->add($container->get(\Middlewares\TrailingSlash::class));
-        //$this->app->add($container->get(\Middlewares\Whoops::class));
-        //$this->app->add($container->get(\Middlewares\Minifier::class));
-        //$this->app->add($container->get(\Middlewares\GzipEncoder::class));
+        // $this->app->add($container->get(\Middlewares\Whoops::class));
+        // $this->app->add($container->get(\Middlewares\Minifier::class));
+        // $this->app->add($container->get(\Middlewares\GzipEncoder::class));
         $this->app->add($container->get(\Middlewares\ContentLength::class));
     }
 
@@ -450,8 +448,10 @@ class App
     {
         if (!self::$isInitialised) {
             $calledClass = get_called_class();
+
             /** @var App $tempApp */
             $tempApp = new $calledClass();
+
             /** @var ConfigurationService $config */
             $config = $tempApp->get(ConfigurationService::class);
             $configCoreClass = $config->getCore();

@@ -12,6 +12,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
 
     /** @var string Name of the input redis queue */
     protected ?string $inputQueue;
+
     /** @var string[] Name of the output redis queues */
     protected ?array $outputQueues;
 

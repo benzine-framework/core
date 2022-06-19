@@ -5,12 +5,15 @@ namespace Benzine\Guzzle;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
-class JsonResponse implements ResponseInterface {
+class JsonResponse implements ResponseInterface
+{
     public function __construct(
         protected ResponseInterface $response
-    ){}
+    ) {
+    }
 
-    public function json(){
+    public function json()
+    {
         return json_decode($this->response->getBody()->getContents(), false);
     }
 

@@ -105,7 +105,7 @@ class ConfigurationService
     {
         if (!$path) {
             $path = getcwd();
-            //$path = dirname($this->environmentService->get('SCRIPT_FILENAME'));
+            // $path = dirname($this->environmentService->get('SCRIPT_FILENAME'));
         }
 
         if (!(new Filesystem())->exists($path.'/.benzine.yml')) {

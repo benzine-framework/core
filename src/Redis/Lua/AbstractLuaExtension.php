@@ -36,7 +36,7 @@ abstract class AbstractLuaExtension
                 $this->hash = $this->redis->getUnderlyingRedis()->script('load', $this->getScript());
             }
         }
-        //printf("Loaded \"%s\" as \"%s\"\n", $this->getFunctionNames()[0], $this->hash);
+        // printf("Loaded \"%s\" as \"%s\"\n", $this->getFunctionNames()[0], $this->hash);
     }
 
     abstract protected function getScript(): string;

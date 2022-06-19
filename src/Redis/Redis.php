@@ -295,6 +295,21 @@ class Redis
         throw new \RedisException('Do not directly call connect()');
     }
 
+    public function emit(array $message)
+    {
+        return $this->redis->publish(strtolower(APP_NAME), json_encode($message));
+    }
+
+    public function listen($callback): void
+    {
+        ini_set('default_socket_timeout', -1);
+
+        try {
+            $this->redis->psubscribe([strtolower(APP_NAME)], $callback);
+        } catch (\RedisException $exception) {
+        }
+    }
+
     private function runBeforeRedisCommand(): void
     {
         if (!$this->redis->isConnected()) {
@@ -303,19 +318,6 @@ class Redis
                 $this->redis->auth($this->password);
             }
             $this->initialiseExtensions();
-        }
-    }
-
-    public function emit(array $message){
-        return $this->redis->publish(strtolower(APP_NAME), json_encode($message));
-    }
-
-    public function listen($callback){
-        ini_set("default_socket_timeout", -1);
-        try {
-            $this->redis->psubscribe([strtolower(APP_NAME)], $callback);
-        }catch(\RedisException $exception){
-
         }
     }
 }

@@ -4,7 +4,6 @@ namespace Benzine\Tests;
 
 use Benzine\Tests\Traits\AppTestTrait;
 use Psr\Http\Message\ResponseInterface;
-use Slim\Http\Request;
 
 abstract class AbstractRoutesTestCase extends AbstractBaseTestCase
 {
@@ -15,7 +14,8 @@ abstract class AbstractRoutesTestCase extends AbstractBaseTestCase
         parent::setUp();
     }
 
-    public function getApp(){
+    public function getApp()
+    {
         return $this->slimApp;
     }
 
