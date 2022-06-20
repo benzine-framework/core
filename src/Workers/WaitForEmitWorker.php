@@ -47,5 +47,7 @@ abstract class WaitForEmitWorker extends AbstractWorker
     {
         $this->logger->debug('Running Emit Worker');
         $this->redis->listen([$this, 'recv']);
+
+        return true;
     }
 }

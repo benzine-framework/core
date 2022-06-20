@@ -3,8 +3,6 @@
 namespace Benzine\Tests;
 
 use Benzine\Tests\Traits\AppTestTrait;
-use GuzzleHttp\Psr7\Utils;
-use Middlewares\Utils\Factory as MiddlewareFactory;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Psr7\Request;
 
@@ -43,12 +41,12 @@ abstract class AbstractRoutesTestCase extends AbstractBaseTestCase
                 $request = $request->withParsedBody($dataOrPost);
             }
             $request = $request->withHeader('Content-Type', 'application/json');
-        }else{
+        } else {
             $request->getBody()->write($dataOrPost);
             $request->getBody()->rewind();
         }
 
-        foreach($extraHeaders as $key => $value){
+        foreach ($extraHeaders as $key => $value) {
             $request = $request->withHeader($key, $value);
         }
 

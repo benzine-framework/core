@@ -166,7 +166,7 @@ class Router
 
         try {
             $this->cachePoolChain->save($routeItem);
-            //$this->logger->info('Cached router to cache pool');
+            // $this->logger->info('Cached router to cache pool');
         } catch (CachePoolException $cachePoolException) {
             $this->logger->critical('Cache Pool Exception: '.$cachePoolException->getMessage());
         }
