@@ -3,7 +3,10 @@
 namespace Benzine\Tests;
 
 use Benzine\Tests\Traits\AppTestTrait;
+use GuzzleHttp\Psr7\Utils;
+use Middlewares\Utils\Factory as MiddlewareFactory;
 use Psr\Http\Message\ResponseInterface;
+use Slim\Psr7\Request;
 
 abstract class AbstractRoutesTestCase extends AbstractBaseTestCase
 {
@@ -31,6 +34,7 @@ abstract class AbstractRoutesTestCase extends AbstractBaseTestCase
         bool $isJsonRequest = true,
         array $extraHeaders = []
     ): ResponseInterface {
+        /** @var Request $request */
         $request = $this->createRequest($method, $path);
 
         if ($isJsonRequest) {
@@ -38,8 +42,10 @@ abstract class AbstractRoutesTestCase extends AbstractBaseTestCase
                 $dataOrPost = json_decode(json_encode($dataOrPost), true);
                 $request = $request->withParsedBody($dataOrPost);
             }
-
             $request = $request->withHeader('Content-Type', 'application/json');
+        }else{
+            $request->getBody()->write($dataOrPost);
+            $request->getBody()->rewind();
         }
 
         foreach($extraHeaders as $key => $value){

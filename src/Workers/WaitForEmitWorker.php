@@ -35,12 +35,6 @@ abstract class WaitForEmitWorker extends AbstractWorker
         return $this;
     }
 
-    public function run(): void
-    {
-        $this->logger->debug('Running Emit Worker');
-        $this->redis->listen([$this, 'recv']);
-    }
-
     public function recv($redis, $pattern, $chan, $msg): void
     {
         $json = json_decode($msg, true);
@@ -51,5 +45,7 @@ abstract class WaitForEmitWorker extends AbstractWorker
 
     public function iterate(): bool
     {
+        $this->logger->debug('Running Emit Worker');
+        $this->redis->listen([$this, 'recv']);
     }
 }

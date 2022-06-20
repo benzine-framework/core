@@ -621,6 +621,6 @@ class App
 
         $this->router->cache();
 
-        $this->logger->info('ROUTE_CACHE miss.');
+        //$this->logger->info('ROUTE_CACHE miss.');
     }
 }
