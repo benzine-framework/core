@@ -15,6 +15,9 @@ $stopOnZero = &$flags->bool('stop-on-zero', false, 'Should this process stop on 
 
 $flags->parse();
 
+$databases = App::Instance()->get(\Benzine\ORM\Connection\Databases::class)
+    ->waitForConnectivity();
+
 if(class_exists($worker)){
     $workerClass = $worker;
 } else {
