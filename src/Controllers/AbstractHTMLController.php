@@ -65,7 +65,7 @@ abstract class AbstractHTMLController extends AbstractController
 
     protected function pageNotFound(): Response
     {
-        $response = (parent::pageNotFound());
+        $response = parent::pageNotFound();
         $response->withHeader('Content-Type', 'text/html');
         $response->getBody()
             ->write($this->twig->fetch($this->pageNotFoundTemplate))

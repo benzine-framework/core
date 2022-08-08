@@ -187,7 +187,7 @@ class App
             (new ContainerBuilder())
                 ->useAutowiring(true)
                 ->useAnnotations(true)
-            ;
+        ;
         // if ((new Filesystem())->exists($this->getCachePath())) {
         //   $container->enableCompilation($this->getCachePath());
         //   $container->writeProxiesToFile(true, "{$this->getCachePath()}/injection-proxies");
@@ -338,7 +338,7 @@ class App
 
         $container->set('MonologFormatter', function (EnvironmentService $environmentService) {
             return new LineFormatter(
-            // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%"
+                // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%"
                 $environmentService->get('MONOLOG_FORMAT', '[%datetime%] %channel%.%level_name%: %message% %context% %extra%')."\n",
                 'Y n j, g:i a'
             );

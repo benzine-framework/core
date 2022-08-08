@@ -70,7 +70,7 @@ class Router
                         }
 
                         $routeAnnotation = $reader->getMethodAnnotation($method, \Benzine\Annotations\Route::class);
-                        if (!($routeAnnotation instanceof \Benzine\Annotations\Route)) {
+                        if (!$routeAnnotation instanceof \Benzine\Annotations\Route) {
                             continue;
                         }
 

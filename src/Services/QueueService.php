@@ -137,7 +137,7 @@ class QueueService
     public function listLists(): array
     {
         $lists = [];
-        foreach ($this->redis->keys(('queue:queues:*')) as $queue) {
+        foreach ($this->redis->keys('queue:queues:*') as $queue) {
             $lists[$queue] = substr($queue, strlen('queue:queues:'));
         }
         ksort($lists);

@@ -32,7 +32,7 @@ class JsonValidationMiddleware implements MiddlewareInterface
         // Try to read a json schema annotation..
         $jsonSchemaAnnotation = $reader->getMethodAnnotation($method, JsonSchema::class);
         // No annotation? Return early.
-        if (!($jsonSchemaAnnotation instanceof JsonSchema)) {
+        if (!$jsonSchemaAnnotation instanceof JsonSchema) {
             return $handler->handle($request);
         }
 
