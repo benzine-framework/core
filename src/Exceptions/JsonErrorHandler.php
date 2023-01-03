@@ -3,11 +3,10 @@
 namespace Benzine\Exceptions;
 
 use Slim\Interfaces\ErrorRendererInterface;
-use Throwable;
 
 class JsonErrorHandler implements ErrorRendererInterface
 {
-    public function __invoke(Throwable $exception, bool $displayErrorDetails): string
+    public function __invoke(\Throwable $exception, bool $displayErrorDetails): string
     {
         return json_encode([
             'error' => $exception->getMessage(),

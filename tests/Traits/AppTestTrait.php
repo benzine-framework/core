@@ -4,7 +4,6 @@ namespace Benzine\Tests\Traits;
 
 use Benzine\App as BenzineApp;
 use DI\Container;
-use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -12,7 +11,6 @@ use Psr\Http\Message\UriInterface;
 use Slim\App as SlimApp;
 use Slim\Factory\ServerRequestCreatorFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
-use UnexpectedValueException;
 
 /**
  * Container Trait.
@@ -28,7 +26,7 @@ trait AppTestTrait
      *
      * @before
      *
-     * @throws UnexpectedValueException
+     * @throws \UnexpectedValueException
      */
     protected function setupContainer(): void
     {
@@ -37,7 +35,7 @@ trait AppTestTrait
         $container = $this->slimApp->getContainer();
 
         if ($container === null) {
-            throw new UnexpectedValueException('Container must be initialized');
+            throw new \UnexpectedValueException('Container must be initialized');
         }
 
         $this->container = $container;
@@ -58,7 +56,7 @@ trait AppTestTrait
     protected function mock(string $class): MockObject
     {
         if (!class_exists($class)) {
-            throw new InvalidArgumentException(sprintf('Class not found: %s', $class));
+            throw new \InvalidArgumentException(sprintf('Class not found: %s', $class));
         }
 
         $mock = $this->getMockBuilder($class)
