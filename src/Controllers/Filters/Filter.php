@@ -19,9 +19,9 @@ class Filter
     }
 
     /**
-     * @return Filter
-     *
      * @throws FilterDecodeException
+     *
+     * @return Filter
      */
     public function setOrderDirection(string $orderDirection): self
     {
