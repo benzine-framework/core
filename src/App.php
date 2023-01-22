@@ -186,7 +186,7 @@ class App
         $container =
             (new ContainerBuilder())
                 ->useAutowiring(true)
-                ->useAnnotations(true)
+                ->useAttributes(true)
         ;
         // if ((new Filesystem())->exists($this->getCachePath())) {
         //   $container->enableCompilation($this->getCachePath());
