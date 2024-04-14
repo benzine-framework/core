@@ -1,0 +1,6 @@
+application:
+  name: Core Self Test App
+  core: Benzine\Tests\TestApp
+  default_access: public
+  debug: true
+  root: /app/tests

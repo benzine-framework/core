@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.2/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         enforceTimeLimit="true"
+         defaultTimeLimit="3"
+         executionOrder="depends,defects"
+         cacheResult="true"
+         cacheResultFile=".phpunit.result.cache"
+         testdox="true"
+         colors="true"
+         failOnRisky="true"
+         failOnWarning="true"
+         failOnIncomplete="false"
+         failOnSkipped="false"
+         failOnDeprecation="true"
+         failOnEmptyTestSuite="true"
+         failOnNotice="true"
+         displayDetailsOnSkippedTests="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnTestsThatTriggerErrors="true"
+         displayDetailsOnTestsThatTriggerNotices="true"
+         displayDetailsOnTestsThatTriggerWarnings="true"
+         beStrictAboutOutputDuringTests="true"
+         stopOnDefect="false"
+>
+    <php>
+        <ini name="memory_limit" value="128M" />
+        <ini name="display_errors" value="On"/>
+        <ini name="display_startup_errors" value="On"/>
+        <ini name="error_reporting" value="E_ALL"/>
+        <env name="BENZINE_CONFIG_PATH" value="tests/.benzine.yml"/>
+        <env name="XDEBUG_MODE" value="coverage"/>
+    </php>
+    <coverage includeUncoveredFiles="true" cacheDirectory=".coverage/cache">
+        <report>
+            <clover outputFile=".coverage/clover.xml"/>
+            <html outputDirectory=".coverage/html"/>
+            <text outputFile="php://stdout" showOnlySummary="true"/>
+        </report>
+    </coverage>
+    <extensions>
+        <bootstrap class="Ergebnis\PHPUnit\SlowTestDetector\Extension"/>
+    </extensions>
+    <testsuites>
+        <testsuite name="Test Suite">
+            <directory>./tests/</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+        <exclude>
+            <directory suffix=".php">src/Fixtures</directory>
+        </exclude>
+    </source>
+</phpunit>

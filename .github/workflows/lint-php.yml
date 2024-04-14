@@ -1,0 +1,30 @@
+name: Lint PHP
+on: [push, pull_request]
+
+jobs:
+  php-cs-fixer:
+    name: PHP-CS-Fixer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Composer Action
+        run: docker run -v $PWD/:/app gone/php:cli-7.4 /usr/local/bin/composer install
+      - name: PHP-CS-Fixer
+        run: |
+          docker-compose run web \
+            phpdbg -qrr -d memory_limit=-1 \
+              vendor/bin/php-cs-fixer fix --dry-run
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Composer Action
+        run: docker run -v $PWD/:/app gone/php:cli-7.4 /usr/local/bin/composer install
+      - name: PHPStan
+        run: |
+          docker-compose run web \
+            phpdbg -qrr -d memory_limit=-1 \
+              vendor/bin/phpstan analyse src/ test/ bin

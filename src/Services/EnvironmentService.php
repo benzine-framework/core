@@ -26,7 +26,7 @@ class EnvironmentService
         return $this->environmentVariables;
     }
 
-    public function get(string $key, ?string $default = null)
+    public function get(string $key, mixed $default = null)
     {
         if (isset($this->environmentVariables[$key])) {
             return $this->environmentVariables[$key];

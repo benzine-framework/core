@@ -7,3 +7,6 @@ vendor/
 docs
 phploc.xml
 cghooks.lock
+/.php-cs-fixer.cache
+/.coverage
+/phpunit.xml

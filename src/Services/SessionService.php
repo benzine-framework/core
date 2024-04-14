@@ -55,24 +55,24 @@ class SessionService implements \SessionHandlerInterface
         session_start();
     }
 
-    public function close()
+    public function close(): bool
     {
         return true;
     }
 
-    public function destroy($session_id)
+    public function destroy(string $id): bool
     {
-        $this->oldID = $session_id;
+        $this->oldID = $id;
 
         return true;
     }
 
-    public function gc($maxlifetime)
+    public function gc(int $max_lifetime): false | int
     {
-        return true;
+        return 0;
     }
 
-    public function open($save_path, $name)
+    public function open(string $path, string $name): bool
     {
         return true;
     }
@@ -86,25 +86,23 @@ class SessionService implements \SessionHandlerInterface
         return $this->redisIsAvailable;
     }
 
-    public function read($session_id)
+    public function read(string $id): false | string
     {
         if ($this->useAPCU()) {
-            if (apcu_exists('read-' . $session_id)) {
-                return apcu_fetch('read-' . $session_id);
+            if (apcu_exists('read-' . $id)) {
+                return apcu_fetch('read-' . $id);
             }
         }
 
-        if (!empty($this->oldID)) {
-            $session_id = $this->oldID ? $this->oldID : $session_id;
-        }
+        $id = !empty($this->oldID) ? $this->oldID : $id;
 
         $result = '';
         if ($this->useRedis()) {
-            $serialised = $this->redis->get("session:{$session_id}");
+            $serialised = $this->redis->get("session:{$id}");
             if (null != $serialised) {
                 if (!empty($this->oldID)) {
                     // clean up old session after regenerate
-                    $this->redis->del("session:{$session_id}");
+                    $this->redis->del("session:{$id}");
                     $this->oldID = null;
                 }
                 $result = unserialize($serialised);
@@ -112,9 +110,9 @@ class SessionService implements \SessionHandlerInterface
         }
 
         if ($this->useAPCU()) {
-            apcu_store('read-' . $session_id, $result, 30);
+            apcu_store('read-' . $id, $result, 30);
         } else {
-            $this->dirtyCheck['read-' . $session_id] = crc32($result);
+            $this->dirtyCheck['read-' . $id] = crc32($result);
         }
 
         return $result;

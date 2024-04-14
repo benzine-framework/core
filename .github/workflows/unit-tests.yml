@@ -1,0 +1,61 @@
+name: Test
+on: [push, pull_request]
+jobs:
+  ingest:
+    name: PHPUnit/Ingest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Composer Install
+        run: docker run -v $PWD/:/app gone/php:cli-7.4 /usr/local/bin/composer install
+      - name: PHPUnit
+        run: |
+          docker-compose run web \
+            phpdbg -qrr -d memory_limit=-1 \
+              vendor/bin/paratest \
+                --testsuite=Ingest
+
+  human:
+    name: PHPUnit/Human
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Composer Install
+        run: docker run -v $PWD/:/app gone/php:cli-7.4 /usr/local/bin/composer install
+      - name: PHPUnit
+        run: |
+          docker-compose run test \
+            phpdbg -qrr -d memory_limit=-1 \
+              vendor/bin/phpunit \
+                --testsuite=Human
+
+  models:
+    name: PHPUnit/Models
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Composer Install
+        run: docker run -v $PWD/:/app gone/php:cli-7.4 /usr/local/bin/composer install
+      - name: PHPUnit
+        run: |
+          docker-compose run test \
+            phpdbg -qrr -d memory_limit=-1 \
+              vendor/bin/phpunit \
+                --testsuite=Models
+  services:
+    name: PHPUnit/Services
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Composer Install
+        run: docker run -v $PWD/:/app gone/php:cli-7.4 /usr/local/bin/composer install
+      - name: PHPUnit
+        run: |
+          docker-compose run test \
+            phpdbg -qrr -d memory_limit=-1 \
+              vendor/bin/phpunit \
+                --testsuite=Services
