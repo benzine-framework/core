@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Redis;
 
 use Monolog\Logger;
@@ -230,14 +232,14 @@ class Redis
     /** @var Lua\AbstractLuaExtension[] */
     private array $scripts;
 
-    public function __construct(Logger $logger, string $host, int $port = 6379, string $password = null, float $timeout = 0.0)
+    public function __construct(Logger $logger, string $host, int $port = 6379, ?string $password = null, float $timeout = 0.0)
     {
         $this->logger = $logger;
 
-        $this->host = $host;
-        $this->port = $port;
+        $this->host     = $host;
+        $this->port     = $port;
         $this->password = $password;
-        $this->timeout = $timeout;
+        $this->timeout  = $timeout;
 
         $this->redis = new \Redis();
     }

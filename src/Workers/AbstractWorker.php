@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Workers;
 
 use Benzine\Services\EnvironmentService;
@@ -10,13 +12,13 @@ abstract class AbstractWorker implements WorkerInterface
     protected Logger $logger;
     protected EnvironmentService $environmentService;
     protected int $timeBetweenRuns = 5;
-    protected bool $stopOnZero = false;
+    protected bool $stopOnZero     = false;
 
     public function __construct(
         Logger $logger,
         EnvironmentService $environmentService
     ) {
-        $this->logger = $logger;
+        $this->logger             = $logger;
         $this->environmentService = $environmentService;
         $this->setUp();
         $this->logger->info(
@@ -27,13 +29,8 @@ abstract class AbstractWorker implements WorkerInterface
         );
     }
 
-    protected function setUp(): void
-    {
-    }
+    protected function setUp(): void {}
 
-    /**
-     * @param bool $stopOnZero
-     */
     public function setStopOnZero(bool $stopOnZero): self
     {
         $this->stopOnZero = $stopOnZero;

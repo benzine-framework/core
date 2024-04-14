@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Controllers;
 
 use DebugBar\DebugBar;
@@ -48,7 +50,7 @@ abstract class AbstractHTMLController extends AbstractController
         )->withHeader('Content-Type', 'text/html');
 
         $renderTimeLimitMs = 500;
-        $renderTimeMs = (microtime(true) - $renderStart) * 1000;
+        $renderTimeMs      = (microtime(true) - $renderStart) * 1000;
 
         if ($renderTimeMs >= $renderTimeLimitMs) {
             $this->logger->debug(sprintf(

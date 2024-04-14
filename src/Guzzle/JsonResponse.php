@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Guzzle;
 
 use Psr\Http\Message\ResponseInterface;
@@ -9,8 +11,7 @@ class JsonResponse implements ResponseInterface
 {
     public function __construct(
         protected ResponseInterface $response
-    ) {
-    }
+    ) {}
 
     public function json()
     {

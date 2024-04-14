@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Tests;
 
 use PHPUnit\Framework\TestCase;
@@ -17,8 +19,8 @@ abstract class AbstractTestCase extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->singleTestTime = microtime(true);
-        $this->waypoint_count = 0;
+        $this->singleTestTime     = microtime(true);
+        $this->waypoint_count     = 0;
         $this->waypoint_last_time = $this->singleTestTime;
     }
 
@@ -27,7 +29,7 @@ abstract class AbstractTestCase extends TestCase
         parent::tearDown();
         if (defined('DEBUG') && DEBUG) {
             $time = microtime(true) - $this->singleTestTime;
-            echo ''.get_called_class().':'.$this->getName().': Took '.number_format($time, 3)." seconds\n\n";
+            echo '' . get_called_class() . ':' . $this->getName() . ': Took ' . number_format($time, 3) . " seconds\n\n";
         }
     }
 
@@ -35,7 +37,7 @@ abstract class AbstractTestCase extends TestCase
     {
         if (defined('DEBUG') && DEBUG) {
             $time_since_last_waypoint = number_format((microtime(true) - $this->waypoint_last_time) * 1000, 2, '.', '');
-            $time_since_begin = number_format((microtime(true) - $this->singleTestTime) * 1000, 2, '.', '');
+            $time_since_begin         = number_format((microtime(true) - $this->singleTestTime) * 1000, 2, '.', '');
             ++$this->waypoint_count;
             if (1 == $this->waypoint_count) {
                 echo "\n";

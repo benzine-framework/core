@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Workers;
 
 use Benzine\Redis\Redis;

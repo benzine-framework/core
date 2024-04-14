@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Controllers;
 
 use Benzine\Controllers\Filters\Filter;
@@ -17,8 +19,7 @@ abstract class AbstractController
     public function __construct(
         protected Logger $logger,
         protected CacheProvider $cacheProvider
-    ) {
-    }
+    ) {}
 
     public function xmlResponse(\SimpleXMLElement $root, Request $request, Response $response): Response
     {
@@ -69,7 +70,7 @@ abstract class AbstractController
                     return true;
                 }
 
-                throw new FilterDecodeException('Could not decode given Filter. Reason: Not JSON. Given: "'.$filterText.'"');
+                throw new FilterDecodeException('Could not decode given Filter. Reason: Not JSON. Given: "' . $filterText . '"');
             }
         }
 
@@ -103,7 +104,7 @@ abstract class AbstractController
         }
 
         // Generate an etag
-        $etag = md5($filesystem->lastModified($filename).$filename);
+        $etag     = md5($filesystem->lastModified($filename) . $filename);
         $response = $this->cacheProvider->withEtag($response, $etag);
 
         // Detect mimetype for content-type header from file meta
@@ -113,7 +114,7 @@ abstract class AbstractController
 
         // No dice? Early-load the data and interrogate that for mimetype then I GUESS.
         if (!$mimetype) {
-            $data = $filesystem->read($filename);
+            $data     = $filesystem->read($filename);
             $mimetype = (new FinfoMimeTypeDetector())
                 ->detectMimeTypeFromBuffer($data)
             ;

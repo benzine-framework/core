@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Controllers;
 
 use Benzine\ORM\Interfaces\ModelInterface;
@@ -15,7 +17,7 @@ abstract class AbstractCrudController extends AbstractController
         $service = $this->getService();
         if ($this->requestHasFilters($request, $response)) {
             $filterBehaviours = $this->parseFilters($request, $response);
-            $foundObjects = $service->getAll(
+            $foundObjects     = $service->getAll(
                 $filterBehaviours->getLimit(),
                 $filterBehaviours->getOffset(),
                 $filterBehaviours->getWheres(),
@@ -32,8 +34,8 @@ abstract class AbstractCrudController extends AbstractController
 
         return $this->jsonResponse(
             [
-                'Status' => 'Okay',
-                'Action' => 'LIST',
+                'Status'                        => 'Okay',
+                'Action'                        => 'LIST',
                 $this->service->getTermPlural() => $objects,
             ],
             $request,
@@ -47,8 +49,8 @@ abstract class AbstractCrudController extends AbstractController
         if ($object) {
             return $this->jsonResponse(
                 [
-                    'Status' => 'Okay',
-                    'Action' => 'GET',
+                    'Status'                          => 'Okay',
+                    'Action'                          => 'GET',
                     $this->service->getTermSingular() => $object->__toArray(),
                 ],
                 $request,
@@ -79,8 +81,8 @@ abstract class AbstractCrudController extends AbstractController
 
             return $this->jsonResponse(
                 [
-                    'Status' => 'Okay',
-                    'Action' => 'CREATE',
+                    'Status'                          => 'Okay',
+                    'Action'                          => 'CREATE',
                     $this->service->getTermSingular() => $object->__toArray(),
                 ],
                 $request,
@@ -101,8 +103,8 @@ abstract class AbstractCrudController extends AbstractController
 
             return $this->jsonResponse(
                 [
-                    'Status' => 'Okay',
-                    'Action' => 'DELETE',
+                    'Status'                          => 'Okay',
+                    'Action'                          => 'DELETE',
                     $this->service->getTermSingular() => $array,
                 ],
                 $request,

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Tests\Traits;
 
 use Benzine\App as BenzineApp;
@@ -30,9 +32,9 @@ trait AppTestTrait
      */
     protected function setupContainer(): void
     {
-        $this->benzineApp = require __DIR__.'/../../../../../bootstrap.php';
-        $this->slimApp = $this->benzineApp->getApp();
-        $container = $this->slimApp->getContainer();
+        $this->benzineApp = require __DIR__ . '/../../../../../bootstrap.php';
+        $this->slimApp    = $this->benzineApp->getApp();
+        $container        = $this->slimApp->getContainer();
 
         if ($container === null) {
             throw new \UnexpectedValueException('Container must be initialized');
@@ -41,7 +43,7 @@ trait AppTestTrait
         $this->container = $container;
 
         $serverRequestCreator = ServerRequestCreatorFactory::create();
-        $request = $serverRequestCreator->createServerRequestFromGlobals();
+        $request              = $serverRequestCreator->createServerRequestFromGlobals();
 
         $this->benzineApp->loadAllRoutes($request);
     }
@@ -98,7 +100,7 @@ trait AppTestTrait
      * @param string|UriInterface $uri    The URI
      * @param null|array          $data   The json data
      */
-    protected function createJsonRequest(string $method, $uri, array $data = null): ServerRequestInterface
+    protected function createJsonRequest(string $method, $uri, ?array $data = null): ServerRequestInterface
     {
         $request = $this->createRequest($method, $uri);
 
@@ -116,7 +118,7 @@ trait AppTestTrait
      * @param string|UriInterface $uri    The URI
      * @param null|array          $data   The form data
      */
-    protected function createFormRequest(string $method, $uri, array $data = null): ServerRequestInterface
+    protected function createFormRequest(string $method, $uri, ?array $data = null): ServerRequestInterface
     {
         $request = $this->createRequest($method, $uri);
 

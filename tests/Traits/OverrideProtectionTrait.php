@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Tests\Traits;
 
 trait OverrideProtectionTrait
@@ -15,8 +17,8 @@ trait OverrideProtectionTrait
      */
     public function invokeMethod(&$object, $methodName, array $parameters = [])
     {
-        $reflection = new \ReflectionClass(get_class($object));
-        $method = $reflection->getMethod($methodName);
+        $reflection = new \ReflectionClass($object::class);
+        $method     = $reflection->getMethod($methodName);
         $method->setAccessible(true);
 
         return $method->invokeArgs($object, $parameters);
@@ -24,8 +26,8 @@ trait OverrideProtectionTrait
 
     public function setProtectedProperty(&$object, $property, $value)
     {
-        $reflection = new \ReflectionClass(get_class($object));
-        $prop = $reflection->getProperty($property);
+        $reflection = new \ReflectionClass($object::class);
+        $prop       = $reflection->getProperty($property);
         $prop->setAccessible(true);
 
         return $prop->setValue($object, $value);
@@ -33,8 +35,8 @@ trait OverrideProtectionTrait
 
     public function getProtectedProperty(&$object, $property)
     {
-        $reflection = new \ReflectionClass(get_class($object));
-        $prop = $reflection->getProperty($property);
+        $reflection = new \ReflectionClass($object::class);
+        $prop       = $reflection->getProperty($property);
         $prop->setAccessible(true);
 
         return $prop->getValue($object);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Services;
 
 use Benzine\Redis\Redis;
@@ -10,7 +12,7 @@ class SessionService implements \SessionHandlerInterface
     protected $oldID;
     private ?bool $redisIsAvailable = null;
 
-    private int $lifetime = 43200;
+    private int $lifetime     = 43200;
     private array $dirtyCheck = [];
 
     public function __construct(Redis $redis)
@@ -87,8 +89,8 @@ class SessionService implements \SessionHandlerInterface
     public function read($session_id)
     {
         if ($this->useAPCU()) {
-            if (apcu_exists('read-'.$session_id)) {
-                return apcu_fetch('read-'.$session_id);
+            if (apcu_exists('read-' . $session_id)) {
+                return apcu_fetch('read-' . $session_id);
             }
         }
 
@@ -110,9 +112,9 @@ class SessionService implements \SessionHandlerInterface
         }
 
         if ($this->useAPCU()) {
-            apcu_store('read-'.$session_id, $result, 30);
+            apcu_store('read-' . $session_id, $result, 30);
         } else {
-            $this->dirtyCheck['read-'.$session_id] = crc32($result);
+            $this->dirtyCheck['read-' . $session_id] = crc32($result);
         }
 
         return $result;
@@ -127,9 +129,9 @@ class SessionService implements \SessionHandlerInterface
     public function write($session_id, $session_data): bool
     {
         if ($this->useAPCU()) {
-            $dirty = crc32(apcu_fetch('read-'.$session_id)) != crc32($session_data);
+            $dirty = crc32(apcu_fetch('read-' . $session_id)) != crc32($session_data);
         } else {
-            $dirty = $this->dirtyCheck['read-'.$session_id] != crc32($session_data);
+            $dirty = $this->dirtyCheck['read-' . $session_id] != crc32($session_data);
         }
 
         if ($this->useRedis() && $dirty) {
@@ -138,7 +140,7 @@ class SessionService implements \SessionHandlerInterface
         }
 
         if ($this->useAPCU()) {
-            apcu_store('read-'.$session_id, $session_data);
+            apcu_store('read-' . $session_id, $session_data);
         }
 
         return true;

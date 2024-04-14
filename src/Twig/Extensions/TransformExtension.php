@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Twig\Extensions;
 
 use Camel\CaseTransformer;
@@ -22,12 +24,10 @@ class TransformExtension extends AbstractExtension
         $filters = [];
         foreach ($this->transformers as $fromTransformer) {
             foreach ($this->transformers as $toTransformer) {
-                $name = 'transform_'.strtolower($fromTransformer).'_to_'.strtolower($toTransformer);
-                $context = $this;
+                $name           = 'transform_' . strtolower($fromTransformer) . '_to_' . strtolower($toTransformer);
+                $context        = $this;
                 $filters[$name] =
-                    new TwigFilter($name, function (string $word) use ($context, $fromTransformer, $toTransformer): string {
-                        return $context->transform($word, $fromTransformer, $toTransformer);
-                    });
+                    new TwigFilter($name, fn (string $word): string => $context->transform($word, $fromTransformer, $toTransformer));
             }
         }
 
@@ -37,7 +37,7 @@ class TransformExtension extends AbstractExtension
     public function transform($string, $from, $to)
     {
         $fromTransformer = $this->getTransformer($from);
-        $toTransformer = $this->getTransformer($to);
+        $toTransformer   = $this->getTransformer($to);
 
         $transformer = new CaseTransformer($fromTransformer, $toTransformer);
 

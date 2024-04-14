@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine;
 
 use Benzine\Middleware\JsonResponseExecTimeMiddleware;
@@ -31,7 +33,10 @@ use DebugBar\DebugBar;
 use DI\Container;
 use DI\ContainerBuilder;
 use Faker\Factory as FakerFactory;
+use Faker\Generator;
 use Faker\Provider;
+use Kint\Twig\TwigExtension;
+use Middlewares\ContentLength;
 use Middlewares\TrailingSlash;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
@@ -57,30 +62,26 @@ class App
 
     protected EnvironmentService $environmentService;
     protected ConfigurationService $configurationService;
-    protected \Slim\App $app;
+    protected Slim\App $app;
     protected Logger $logger;
     protected DebugBar $debugBar;
     protected Router $router;
-    protected bool $isSessionsEnabled = true;
+    protected bool $isSessionsEnabled              = true;
     protected bool $interrogateControllersComplete = false;
-    protected ?CachePoolChain $cachePoolChain = null;
-    private array $viewPaths = [];
-    private string $cachePath = APP_ROOT.'/cache';
-    private string $logPath = APP_ROOT.'/logs';
-    private array $supportedLanguages = ['en_US'];
-    private bool $debugMode = false;
+    protected ?CachePoolChain $cachePoolChain      = null;
+    private array $viewPaths                       = [];
+    private string $cachePath                      = APP_ROOT . '/cache';
+    private string $logPath                        = APP_ROOT . '/logs';
+    private array $supportedLanguages              = ['en_US'];
+    private bool $debugMode                        = false;
 
     private static bool $isInitialised = false;
 
     public function __construct()
     {
-        if (!ini_get('auto_detect_line_endings')) {
-            ini_set('auto_detect_line_endings', '1');
-        }
-
         // Configure Dependency Injector
-        $container = $this->setupContainer();
-        $this->logger = $container->get(Logger::class);
+        $container      = $this->setupContainer();
+        $this->logger   = $container->get(Logger::class);
         $this->debugBar = $container->get(DebugBar::class);
         AppFactory::setContainer($container);
 
@@ -91,8 +92,8 @@ class App
         }
 
         // Configure default expected views paths
-        $this->viewPaths[] = APP_ROOT.'/views/';
-        $this->viewPaths[] = APP_ROOT.'/src/Views/';
+        $this->viewPaths[] = APP_ROOT . '/views/';
+        $this->viewPaths[] = APP_ROOT . '/src/Views/';
 
         // Configure Slim
         $this->app = AppFactory::create();
@@ -132,19 +133,11 @@ class App
         return $this;
     }
 
-    /**
-     * @return array
-     */
     public function getViewPaths(): array
     {
         return $this->viewPaths;
     }
 
-    /**
-     * @param array $viewPaths
-     *
-     * @return App
-     */
     public function setViewPaths(array $viewPaths): App
     {
         $this->viewPaths = $viewPaths;
@@ -152,19 +145,11 @@ class App
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getLogPath(): string
     {
         return $this->logPath;
     }
 
-    /**
-     * @param string $logPath
-     *
-     * @return App
-     */
     public function setLogPath(string $logPath): App
     {
         $this->logPath = $logPath;
@@ -182,7 +167,7 @@ class App
 
     public function setupContainer(): Container
     {
-        $app = $this;
+        $app       = $this;
         $container =
             (new ContainerBuilder())
                 ->useAutowiring(true)
@@ -207,7 +192,7 @@ class App
             }
 
             $twigCachePath = "{$this->getCachePath()}/twig";
-            $twigSettings = [];
+            $twigSettings  = [];
 
             if ($environmentService->has('TWIG_CACHE') && 'on' == strtolower($environmentService->get('TWIG_CACHE'))) {
                 $twigSettings['cache'] = $twigCachePath;
@@ -215,7 +200,7 @@ class App
 
             if (!(new Filesystem())->exists($twigCachePath)) {
                 try {
-                    (new Filesystem())->mkdir($twigCachePath, 0777);
+                    (new Filesystem())->mkdir($twigCachePath, 0o777);
                 } catch (IOException $IOException) {
                     unset($twigSettings['cache']);
                     if (!in_array(PHP_SAPI, ['cli', 'phpdbg'], true)) {
@@ -245,7 +230,7 @@ class App
             $twig->addExtension(new Twig\Extension\DebugExtension());
 
             // Add Twig extension to integrate Kint
-            $twig->addExtension(new \Kint\Twig\TwigExtension());
+            $twig->addExtension(new TwigExtension());
 
             // Add Twig extension to check if something is an instance of a known class or entity
             $twig->addExtension(new Extensions\InstanceOfExtension());
@@ -267,9 +252,7 @@ class App
         });
 
         // This is required as some plugins for Slim expect there to be a twig available as "view"
-        $container->set('view', function (Slim\Views\Twig $twig) {
-            return $twig;
-        });
+        $container->set('view', fn (Slim\Views\Twig $twig) => $twig);
 
         $container->set(Translation\Translator::class, function (SessionService $sessionService) {
             $selectedLanguage = $sessionService->has('Language') ? $sessionService->get('Language') : 'en_US';
@@ -286,7 +269,7 @@ class App
             $translator->addLoader('yaml', $yamlLoader);
 
             // add some resources to the translator
-            $translator->addResource('yaml', APP_ROOT."/src/Strings/{$selectedLanguage}.yaml", $selectedLanguage);
+            $translator->addResource('yaml', APP_ROOT . "/src/Strings/{$selectedLanguage}.yaml", $selectedLanguage);
 
             return $translator;
         });
@@ -298,7 +281,7 @@ class App
             );
         });
 
-        $container->set(\Faker\Generator::class, function () {
+        $container->set(Generator::class, function () {
             $faker = FakerFactory::create();
             $faker->addProvider(new Provider\Base($faker));
             $faker->addProvider(new Provider\DateTime($faker));
@@ -339,7 +322,7 @@ class App
         $container->set('MonologFormatter', function (EnvironmentService $environmentService) {
             return new LineFormatter(
                 // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%"
-                $environmentService->get('MONOLOG_FORMAT', '[%datetime%] %channel%.%level_name%: %message% %context% %extra%')."\n",
+                $environmentService->get('MONOLOG_FORMAT', '[%datetime%] %channel%.%level_name%: %message% %context% %extra%') . "\n",
                 'Y n j, g:i a'
             );
         });
@@ -361,11 +344,11 @@ class App
             )));
 
             // Configure a pretty CLI Handler
-            $cliHandler = new StreamHandler('php://stdout', Logger::DEBUG);
+            $cliHandler   = new StreamHandler('php://stdout', Logger::DEBUG);
             $cliFormatter = new ColoredLineFormatter(
                 new TrafficLight(),
                 // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%"
-                $environmentService->get('MONOLOG_FORMAT', '[%datetime%] %level_name%: %message%')."\n",
+                $environmentService->get('MONOLOG_FORMAT', '[%datetime%] %level_name%: %message%') . "\n",
                 'g:i'
             );
             $cliHandler->setFormatter($cliFormatter);
@@ -392,9 +375,7 @@ class App
             );
         });
 
-        $container->set(TrailingSlash::class, function () {
-            return (new TrailingSlash())->redirect();
-        });
+        $container->set(TrailingSlash::class, fn () => (new TrailingSlash())->redirect());
 
         $container->set(DebugBar::class, function (Logger $logger) {
             return (new DebugBar())
@@ -414,7 +395,7 @@ class App
             );
         });
 
-        $this->environmentService = $container->get(Services\EnvironmentService::class);
+        $this->environmentService = $container->get(EnvironmentService::class);
         if ($this->environmentService->has('TIMEZONE')) {
             date_default_timezone_set($this->environmentService->get('TIMEZONE'));
         } elseif ((new Filesystem())->exists('/etc/timezone')) {
@@ -434,11 +415,11 @@ class App
         // Middlewares
         $this->app->addBodyParsingMiddleware();
         // $this->app->add($container->get(\Middlewares\Geolocation::class));
-        $this->app->add($container->get(\Middlewares\TrailingSlash::class));
+        $this->app->add($container->get(TrailingSlash::class));
         // $this->app->add($container->get(\Middlewares\Whoops::class));
         // $this->app->add($container->get(\Middlewares\Minifier::class));
         // $this->app->add($container->get(\Middlewares\GzipEncoder::class));
-        $this->app->add($container->get(\Middlewares\ContentLength::class));
+        $this->app->add($container->get(ContentLength::class));
     }
 
     /**
@@ -453,7 +434,7 @@ class App
             $tempApp = new $calledClass();
 
             /** @var ConfigurationService $config */
-            $config = $tempApp->get(ConfigurationService::class);
+            $config          = $tempApp->get(ConfigurationService::class);
             $configCoreClass = $config->getCore();
             if ($configCoreClass != get_called_class()) {
                 self::$instance = new $configCoreClass();
@@ -499,7 +480,7 @@ class App
     public function runHttp(): void
     {
         $serverRequestCreator = ServerRequestCreatorFactory::create();
-        $request = $serverRequestCreator->createServerRequestFromGlobals();
+        $request              = $serverRequestCreator->createServerRequestFromGlobals();
 
         $this->loadAllRoutes($request);
 
@@ -532,7 +513,7 @@ class App
     public function addSupportedLanguage(string $supportedLanguage): self
     {
         $this->supportedLanguages[] = $supportedLanguage;
-        $this->supportedLanguages = array_unique($this->supportedLanguages);
+        $this->supportedLanguages   = array_unique($this->supportedLanguages);
 
         return $this;
     }
@@ -573,7 +554,7 @@ class App
         $this->interrogateControllers();
         $this->debugBar['time']->stopMeasure('interrogateControllers');
 
-        $timeToBootstrapMs = (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000;
+        $timeToBootstrapMs           = (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000;
         $bootstrapTooLongThresholdMs = 300;
         if ($timeToBootstrapMs >= $bootstrapTooLongThresholdMs && php_sapi_name() != 'cli') {
             $this->logger->warning(sprintf('Bootstrap complete in %sms which is more than the threshold of %sms', number_format($timeToBootstrapMs, 2), $bootstrapTooLongThresholdMs));
@@ -586,7 +567,7 @@ class App
 
     protected function interrogateTranslations(): void
     {
-        $stringPath = APP_ROOT.'/src/Strings';
+        $stringPath = APP_ROOT . '/src/Strings';
         if (!(new Filesystem())->exists($stringPath)) {
             return;
         }
@@ -615,7 +596,7 @@ class App
         $appClass = new \ReflectionClass(static::class);
         $this->router->loadRoutesFromAnnotations(
             [
-                APP_ROOT.'/src/Controllers',
+                APP_ROOT . '/src/Controllers',
             ],
             $appClass->getNamespaceName()
         );

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Services;
 
 use Benzine\App;
@@ -9,14 +11,14 @@ use Symfony\Component\Yaml\Yaml;
 
 class ConfigurationService
 {
-    public const KEY_APP_NAME = 'application/name';
-    public const KEY_APP_ROOT = 'application/root';
-    public const KEY_DEBUG_ENABLE = 'application/debug';
-    public const KEY_DEFAULT_ACCESS = 'application/default_access';
-    public const KEY_TIMEZONE = 'application/timezone';
-    public const KEY_LOCALE = 'application/locale';
-    public const KEY_SESSION_ENABLED = 'application/session_enabled';
-    public const KEY_LOG_FORMAT_DATE = 'logging/format_date';
+    public const KEY_APP_NAME           = 'application/name';
+    public const KEY_APP_ROOT           = 'application/root';
+    public const KEY_DEBUG_ENABLE       = 'application/debug';
+    public const KEY_DEFAULT_ACCESS     = 'application/default_access';
+    public const KEY_TIMEZONE           = 'application/timezone';
+    public const KEY_LOCALE             = 'application/locale';
+    public const KEY_SESSION_ENABLED    = 'application/session_enabled';
+    public const KEY_LOG_FORMAT_DATE    = 'logging/format_date';
     public const KEY_LOG_FORMAT_MESSAGE = 'logging/format_message';
 
     protected App $app;
@@ -28,9 +30,9 @@ class ConfigurationService
 
     public function __construct(App $app, EnvironmentService $environmentService)
     {
-        $this->app = $app;
+        $this->app                = $app;
         $this->environmentService = $environmentService;
-        $this->findConfig();
+        $this->findConfig($this->environmentService->get('BENZINE_CONFIG_PATH', null));
         $this->setupDefines();
     }
 
@@ -42,7 +44,7 @@ class ConfigurationService
     /**
      * @return null|array|string
      */
-    public function get(string $key, string $defaultValue = null)
+    public function get(string $key, ?string $defaultValue = null)
     {
         $scope = $this->config;
         foreach (explode('/', strtolower($key)) as $keyBit) {
@@ -101,16 +103,16 @@ class ConfigurationService
     /**
      * Locate .benzine.yml.
      */
-    protected function findConfig(string $path = null): bool
+    protected function findConfig(?string $path = null): bool
     {
         if (!$path) {
             $path = getcwd();
             // $path = dirname($this->environmentService->get('SCRIPT_FILENAME'));
         }
 
-        if (!(new Filesystem())->exists($path.'/.benzine.yml')) {
+        if (!(new Filesystem())->exists($path . '/.benzine.yml')) {
             $this->configNotFoundInPaths[] = $path;
-            $currentDirElem = explode(DIRECTORY_SEPARATOR, $path);
+            $currentDirElem                = explode(DIRECTORY_SEPARATOR, $path);
             array_pop($currentDirElem);
             $parentPath = implode(DIRECTORY_SEPARATOR, $currentDirElem);
 
@@ -125,7 +127,7 @@ class ConfigurationService
             ));
         }
 
-        $this->parseFile($path.'/.benzine.yml');
+        $this->parseFile($path . '/.benzine.yml');
         $this->appRoot = $path;
 
         return true;

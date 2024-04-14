@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Router;
 
 use Cache\Adapter\Chain\CachePoolChain;
@@ -22,13 +24,13 @@ class Router
 
     public function __construct(Logger $logger, CachePoolChain $cachePoolChain)
     {
-        $this->logger = $logger;
+        $this->logger         = $logger;
         $this->cachePoolChain = $cachePoolChain;
     }
 
     public function loadRoutesFromAnnotations(
         array $controllerPaths,
-        string $baseNamespace = null
+        ?string $baseNamespace = null
     ): void {
         AnnotationRegistry::registerLoader('class_exists');
 
@@ -39,15 +41,15 @@ class Router
                 continue;
             }
 
-            $dirIterator = new \RecursiveDirectoryIterator($controllerPath);
+            $dirIterator      = new \RecursiveDirectoryIterator($controllerPath);
             $iteratorIterator = new \RecursiveIteratorIterator($dirIterator);
-            $phpFiles = new \RegexIterator($iteratorIterator, '/^.+\.php$/i', \RecursiveRegexIterator::GET_MATCH);
+            $phpFiles         = new \RegexIterator($iteratorIterator, '/^.+\.php$/i', \RecursiveRegexIterator::GET_MATCH);
 
             foreach ($phpFiles as $controllerFile) {
-                $fileClassName = ltrim(str_replace([$controllerPath, '/', '.php'], ['', '\\', ''], $controllerFile[0]), '\\');
+                $fileClassName   = ltrim(str_replace([$controllerPath, '/', '.php'], ['', '\\', ''], $controllerFile[0]), '\\');
                 $expectedClasses = [
-                    $baseNamespace.'\\Controllers\\'.$fileClassName,
-                    'Benzine\\Controllers\\'.$fileClassName,
+                    $baseNamespace . '\\Controllers\\' . $fileClassName,
+                    'Benzine\\Controllers\\' . $fileClassName,
                 ];
 
                 foreach ($expectedClasses as $expectedClass) {
@@ -82,8 +84,8 @@ class Router
 
                             $newRoute
                                 ->setHttpMethod($httpMethod)
-                                ->setRouterPattern('/'.ltrim($routeAnnotation->path, '/'))
-                                ->setCallback($expectedClass.':'.$method->name)
+                                ->setRouterPattern('/' . ltrim($routeAnnotation->path, '/'))
+                                ->setCallback($expectedClass . ':' . $method->name)
                                 ->setWeight($routeAnnotation->weight)
                             ;
 
@@ -101,7 +103,7 @@ class Router
         }
     }
 
-    public function populateRoutes(App $app, ServerRequestInterface $request = null): App
+    public function populateRoutes(App $app, ?ServerRequestInterface $request = null): App
     {
         if ($this->routesArePopulated) {
             return $app;
@@ -141,13 +143,13 @@ class Router
 
     public function loadCache(): bool
     {
-        $time = microtime(true);
+        $time      = microtime(true);
         $cacheItem = $this->cachePoolChain->getItem('routes');
         if (!$cacheItem || null === $cacheItem->get()) {
             return false;
         }
 
-        $this->routes = $cacheItem->get();
+        $this->routes          = $cacheItem->get();
         $timeToLoadFromCacheMs = (microtime(true) - $time) * 1000;
         if ($timeToLoadFromCacheMs >= 500) {
             $this->logger->warning(sprintf('Loaded routes from Cache in %sms, which is slower than 500ms', number_format($timeToLoadFromCacheMs, 2)));
@@ -168,13 +170,13 @@ class Router
             $this->cachePoolChain->save($routeItem);
             // $this->logger->info('Cached router to cache pool');
         } catch (CachePoolException $cachePoolException) {
-            $this->logger->critical('Cache Pool Exception: '.$cachePoolException->getMessage());
+            $this->logger->critical('Cache Pool Exception: ' . $cachePoolException->getMessage());
         }
 
         return $this;
     }
 
-    protected function weighRoutes(string $host = null): self
+    protected function weighRoutes(?string $host = null): self
     {
         $allocatedRoutes = [];
         if (is_array($this->routes) && count($this->routes) > 0) {
@@ -189,7 +191,7 @@ class Router
             });
 
             foreach ($this->routes as $index => $route) {
-                $routeKey = $route->getHttpMethod().$route->getRouterPattern();
+                $routeKey = $route->getHttpMethod() . $route->getRouterPattern();
                 if (!isset($allocatedRoutes[$routeKey]) && ($route->isInContainedInValidDomains($host) || !$route->hasValidDomains())) {
                     $allocatedRoutes[$routeKey] = true;
                 } else {

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Router;
 
 use Slim\App;
 
 class Route
 {
-    public const ACCESS_PUBLIC = 'public';
+    public const ACCESS_PUBLIC  = 'public';
     public const ACCESS_PRIVATE = 'private';
 
     public const ARGUMENT_ACCESS = '_access';
@@ -19,7 +21,7 @@ class Route
     protected $routerPattern;
     protected $httpEndpoint;
     protected $httpMethod = 'GET';
-    protected $weight = 0;
+    protected $weight     = 0;
     protected $singular;
     protected $plural;
     protected $properties;
@@ -28,7 +30,7 @@ class Route
     protected $exampleEntity;
     protected $exampleEntityFinderFunction;
     protected array $callbackProperties = [];
-    protected array $arguments = [
+    protected array $arguments          = [
         self::ARGUMENT_ACCESS => self::ACCESS_PUBLIC,
     ];
     protected array $validDomains = [];
@@ -49,7 +51,6 @@ class Route
     }
 
     /**
-     * @param $name
      * @param null $default
      *
      * @return $this
@@ -58,21 +59,21 @@ class Route
     {
         return $this->populateCallbackProperty($name, [
             'isMandatory' => $mandatory,
-            'default' => $default,
+            'default'     => $default,
         ]);
     }
 
     public function populateCallbackProperty(string $name, array $property)
     {
-        $property['name'] = $name;
+        $property['name']                = $name;
         $this->callbackProperties[$name] = array_merge(
             [
-                'in' => null,
+                'in'          => null,
                 'description' => null,
                 'isMandatory' => null,
-                'default' => null,
-                'type' => null,
-                'examples' => [],
+                'default'     => null,
+                'type'        => null,
+                'examples'    => [],
             ],
             $property
         );
@@ -100,7 +101,7 @@ class Route
             if (is_numeric($name)) {
                 $this->properties[] = $type;
             } else {
-                $this->properties[] = $name;
+                $this->properties[]                = $name;
                 $this->propertyData[$name]['type'] = $type;
             }
         }
@@ -109,15 +110,13 @@ class Route
     }
 
     /**
-     * @param mixed $propertyOptions
-     *
      * @return Route
      */
     public function setPropertyOptions($propertyOptions)
     {
         $this->propertyOptions = [];
         foreach ($propertyOptions as $name => $options) {
-            $this->propertyOptions[$name] = $options;
+            $this->propertyOptions[$name]         = $options;
             $this->propertyData[$name]['options'] = $options;
         }
 
@@ -166,7 +165,7 @@ class Route
 
     public function setArgument(string $argument, $value): Route
     {
-        $argument = $this->prefixArgumentKey($argument);
+        $argument                   = $this->prefixArgumentKey($argument);
         $this->arguments[$argument] = $value;
 
         return $this;
@@ -322,8 +321,6 @@ class Route
     }
 
     /**
-     * @param mixed $exampleEntity
-     *
      * @return Route
      */
     public function setExampleEntity($exampleEntity)
@@ -339,8 +336,6 @@ class Route
     }
 
     /**
-     * @param mixed $exampleEntityFinderFunction
-     *
      * @return Route
      */
     public function setExampleEntityFinderFunction($exampleEntityFinderFunction)
@@ -389,7 +384,7 @@ class Route
         return count($this->validDomains) > 0;
     }
 
-    public function isInContainedInValidDomains(string $host = null): bool
+    public function isInContainedInValidDomains(?string $host = null): bool
     {
         if (null === $host) {
             return false;
@@ -413,7 +408,7 @@ class Route
 
     private function prefixArgumentKey(string $key)
     {
-        if (0 !== strpos($key, '_')) {
+        if (!str_starts_with($key, '_')) {
             $key = "_{$key}";
         }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Controllers\Filters;
 
 use Benzine\Exceptions\FilterDecodeException;
@@ -20,8 +22,6 @@ class Filter
 
     /**
      * @throws FilterDecodeException
-     *
-     * @return Filter
      */
     public function setOrderDirection(string $orderDirection): self
     {
@@ -34,8 +34,6 @@ class Filter
     }
 
     /**
-     * @param $header
-     *
      * @throws FilterDecodeException
      */
     public function parseFromHeader($header): self
@@ -75,11 +73,6 @@ class Filter
         return $this->limit;
     }
 
-    /**
-     * @param mixed $limit
-     *
-     * @return Filter
-     */
     public function setLimit($limit): self
     {
         $this->limit = $limit;
@@ -92,11 +85,6 @@ class Filter
         return $this->offset;
     }
 
-    /**
-     * @param mixed $offset
-     *
-     * @return Filter
-     */
     public function setOffset($offset): self
     {
         $this->offset = $offset;
@@ -109,11 +97,6 @@ class Filter
         return $this->wheres;
     }
 
-    /**
-     * @param mixed $wheres
-     *
-     * @return Filter
-     */
     public function setWheres($wheres): self
     {
         $this->wheres = $wheres;
@@ -126,11 +109,6 @@ class Filter
         return $this->order;
     }
 
-    /**
-     * @param mixed $order
-     *
-     * @return Filter
-     */
     public function setOrder($order): self
     {
         $this->order = $order;

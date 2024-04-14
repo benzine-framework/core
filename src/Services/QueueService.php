@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Services;
 
 use Benzine\Redis\Redis;
@@ -17,7 +19,7 @@ class QueueService
         Redis $redis,
         Logger $logger
     ) {
-        $this->redis = $redis;
+        $this->redis  = $redis;
         $this->logger = $logger;
     }
 
@@ -30,7 +32,7 @@ class QueueService
     {
         $this->redis->multi();
         foreach ($queueItems as $item) {
-            $itemId = UUID::v4();
+            $itemId     = UUID::v4();
             $serialised = serialize($item);
             // Set the data element itself
             $this->redis->set("queue:data:{$queueName}:{$itemId}", $serialised);
@@ -110,7 +112,7 @@ class QueueService
             $this->redis->get("queue:data:{$queueName}:{$itemId}");
             $this->redis->del(["queue:data:{$queueName}:{$itemId}"]);
             $this->redis->decr("queue:length:{$queueName}");
-            $response = $this->redis->exec();
+            $response          = $this->redis->exec();
             $workerWorkItems[] = unserialize($response[0]);
         }
         if ($this->redis->get("queue:length:{$queueName}") <= 0) {

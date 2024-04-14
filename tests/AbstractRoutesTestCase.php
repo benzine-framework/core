@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Tests;
 
 use Benzine\Tests\Traits\AppTestTrait;
@@ -38,7 +40,7 @@ abstract class AbstractRoutesTestCase extends AbstractBaseTestCase
         if ($isJsonRequest) {
             if ($dataOrPost !== null) {
                 $dataOrPost = json_decode(json_encode($dataOrPost), true);
-                $request = $request->withParsedBody($dataOrPost);
+                $request    = $request->withParsedBody($dataOrPost);
             }
             $request = $request->withHeader('Content-Type', 'application/json');
         } else {

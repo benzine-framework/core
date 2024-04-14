@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Twig\Extensions;
 
 use Twig\Extension\AbstractExtension;

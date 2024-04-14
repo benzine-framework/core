@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Tests;
 
 use Faker\Factory as FakerFactory;
@@ -55,8 +57,8 @@ abstract class AbstractBaseTestCase extends AbstractTestCase
      */
     public function invokeMethod(&$object, $methodName, array $parameters = [])
     {
-        $reflection = new \ReflectionClass(get_class($object));
-        $method = $reflection->getMethod($methodName);
+        $reflection = new \ReflectionClass($object::class);
+        $method     = $reflection->getMethod($methodName);
         $method->setAccessible(true);
 
         return $method->invokeArgs($object, $parameters);
@@ -64,8 +66,8 @@ abstract class AbstractBaseTestCase extends AbstractTestCase
 
     public function setProtectedProperty(&$object, $property, $value)
     {
-        $reflection = new \ReflectionClass(get_class($object));
-        $prop = $reflection->getProperty($property);
+        $reflection = new \ReflectionClass($object::class);
+        $prop       = $reflection->getProperty($property);
         $prop->setAccessible(true);
 
         return $prop->setValue($object, $value);
@@ -73,8 +75,8 @@ abstract class AbstractBaseTestCase extends AbstractTestCase
 
     public function getProtectedProperty(&$object, $property)
     {
-        $reflection = new \ReflectionClass(get_class($object));
-        $prop = $reflection->getProperty($property);
+        $reflection = new \ReflectionClass($object::class);
+        $prop       = $reflection->getProperty($property);
         $prop->setAccessible(true);
 
         return $prop->getValue($object);

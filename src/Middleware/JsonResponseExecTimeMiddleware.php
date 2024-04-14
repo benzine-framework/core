@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
@@ -18,10 +20,10 @@ class JsonResponseExecTimeMiddleware implements MiddlewareInterface
         if ($responseJson === null) {
             return $response;
         }
-        $memoryUsageBytes = memory_get_peak_usage();
+        $memoryUsageBytes     = memory_get_peak_usage();
         $responseJson['Exec'] = [
-            'TimeSeconds' => (float) number_format(microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 5),
-            'MemoryBytes' => $memoryUsageBytes,
+            'TimeSeconds'     => (float) number_format(microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 5),
+            'MemoryBytes'     => $memoryUsageBytes,
             'MemoryMegaBytes' => (float) number_format($memoryUsageBytes / 1024 / 1024, 3),
         ];
 

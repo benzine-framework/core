@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Redis\Lua;
 
 use Benzine\Redis\Redis;

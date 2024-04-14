@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Middleware;
 
 use Benzine\Annotations\JsonSchema;
@@ -49,15 +51,16 @@ class JsonValidationMiddleware implements MiddlewareInterface
         try {
             // Validate it...
             $schema->in(json_decode($request->getBody()->getContents()));
+
             // And if we get here, we're golden.
             return $handler->handle($request);
         } catch (Exception $exception) {
             // Whelp, we've failed validation, build a failure message.
             $response = new Response();
-            $content = json_encode([
+            $content  = json_encode([
                 'Status' => 'FAIL',
                 'Reason' => "Invalid JSON, doesn't match schema!",
-                'Error' => $exception->getMessage(),
+                'Error'  => $exception->getMessage(),
             ], JSON_PRETTY_PRINT);
 
             $response->getBody()->write($content);

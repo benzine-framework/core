@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Tests;
 
 use Benzine\App;
@@ -23,10 +25,10 @@ abstract class AbstractSeleniumTestCase extends AbstractBaseTestCase
     {
         parent::setUpBeforeClass();
 
-        self::$logger = App::DI(Logger::class);
+        self::$logger             = App::DI(Logger::class);
         self::$environmentService = App::DI(EnvironmentService::class);
 
-        $capabilities = [WebDriverCapabilityType::BROWSER_NAME => 'chrome'];
+        $capabilities    = [WebDriverCapabilityType::BROWSER_NAME => 'chrome'];
         self::$webDriver = RemoteWebDriver::create(
             sprintf(
                 'http://%s:%d/wd/hub',
@@ -40,7 +42,7 @@ abstract class AbstractSeleniumTestCase extends AbstractBaseTestCase
 
         self::$webDriver->manage()->timeouts()->implicitlyWait(3);
 
-        self::$screenshotsDir = APP_ROOT.'/build/Screenshots/'.date('Y-m-d H-i-s').'/';
+        self::$screenshotsDir = APP_ROOT . '/build/Screenshots/' . date('Y-m-d H-i-s') . '/';
     }
 
     public static function tearDownAfterClass(): void
@@ -68,9 +70,9 @@ abstract class AbstractSeleniumTestCase extends AbstractBaseTestCase
     protected function takeScreenshot($name): void
     {
         if (!(new Filesystem())->exists(self::$screenshotsDir)) {
-            (new Filesystem())->mkdir(self::$screenshotsDir, 0777);
+            (new Filesystem())->mkdir(self::$screenshotsDir, 0o777);
         }
-        self::$webDriver->takeScreenshot(self::$screenshotsDir.self::$screenshotIndex."_{$name}.jpg");
+        self::$webDriver->takeScreenshot(self::$screenshotsDir . self::$screenshotIndex . "_{$name}.jpg");
         ++self::$screenshotIndex;
     }
 }

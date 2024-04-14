@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 function detectAndLoadVendor($path = __DIR__): void
 {
     $path = realpath($path);
@@ -11,12 +13,12 @@ function detectAndLoadVendor($path = __DIR__): void
         if ($fileInfo->isDir() && 'vendor' == $fileInfo->getFilename()) {
             define('VENDOR_PATH', $fileInfo->getRealPath());
 
-            require_once VENDOR_PATH.'/autoload.php';
+            require_once VENDOR_PATH . '/autoload.php';
 
             return;
         }
     }
-    detectAndLoadVendor($path.'/../');
+    detectAndLoadVendor($path . '/../');
 }
 
 detectAndLoadVendor();

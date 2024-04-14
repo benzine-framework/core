@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Workers;
 
 use Benzine\Services\EnvironmentService;
@@ -117,7 +119,7 @@ abstract class AbstractQueueWorker extends AbstractWorker
             return false;
         }
 
-        $items = $this->queueService->pop($this->inputQueue);
+        $items             = $this->queueService->pop($this->inputQueue);
         $this->resultItems = [];
 
         // If there are no items popped, return fast.
@@ -144,9 +146,9 @@ abstract class AbstractQueueWorker extends AbstractWorker
                         $e->getMessage()
                     ),
                     [
-                        'file' => $e->getFile(),
-                        'line' => $e->getLine(),
-                        'code' => $e->getCode(),
+                        'file'  => $e->getFile(),
+                        'line'  => $e->getLine(),
+                        'code'  => $e->getCode(),
                         'trace' => array_slice($e->getTrace(), 0, 5),
                     ]
                 );

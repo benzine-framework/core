@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Workers;
 
 use Benzine\Exceptions\WorkerException;
@@ -12,7 +14,7 @@ class WorkerWorkItem implements \Serializable
     public function __call($name, $arguments)
     {
         $method = substr(strtolower($name), 0, 3);
-        $field = substr(strtolower($name), 3);
+        $field  = substr(strtolower($name), 3);
 
         switch ($method) {
             case 'set':
@@ -40,7 +42,7 @@ class WorkerWorkItem implements \Serializable
 
     public static function Factory(object $object)
     {
-        $class = get_class($object);
+        $class = $object::class;
 
         return (new WorkerWorkItem())
             ->setKey($class, $object)
@@ -52,9 +54,6 @@ class WorkerWorkItem implements \Serializable
         return $this->data;
     }
 
-    /**
-     * @return WorkerWorkItem
-     */
     public function setData(array $data): self
     {
         $this->data = $data;

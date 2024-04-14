@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Benzine\Services;
 
 class EnvironmentService
@@ -24,7 +26,7 @@ class EnvironmentService
         return $this->environmentVariables;
     }
 
-    public function get(string $key, string $default = null)
+    public function get(string $key, ?string $default = null)
     {
         if (isset($this->environmentVariables[$key])) {
             return $this->environmentVariables[$key];
