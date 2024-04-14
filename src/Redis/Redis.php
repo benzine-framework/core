@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Benzine\Redis;
 
+use Benzine\Services\ConfigurationService;
 use Monolog\Logger;
 
 class Redis
@@ -227,15 +228,18 @@ class Redis
     private ?string $password;
     private float $timeout;
     private \Redis $redis;
-    private Logger $logger;
 
     /** @var Lua\AbstractLuaExtension[] */
     private array $scripts;
 
-    public function __construct(Logger $logger, string $host, int $port = 6379, ?string $password = null, float $timeout = 0.0)
-    {
-        $this->logger = $logger;
-
+    public function __construct(
+        private Logger $logger,
+        private ConfigurationService $configurationService,
+        string $host,
+        int $port = 6379,
+        ?string $password = null,
+        float $timeout = 0.0
+    ) {
         $this->host     = $host;
         $this->port     = $port;
         $this->password = $password;
@@ -299,7 +303,7 @@ class Redis
 
     public function emit(array $message)
     {
-        return $this->redis->publish(strtolower(APP_NAME), json_encode($message));
+        return $this->redis->publish(strtolower($this->configurationService->get(ConfigurationService::KEY_APP_NAME)), json_encode($message));
     }
 
     public function listen($callback): void
@@ -307,8 +311,9 @@ class Redis
         ini_set('default_socket_timeout', -1);
 
         try {
-            $this->redis->psubscribe([strtolower(APP_NAME)], $callback);
-        } catch (\RedisException $exception) {
+            $this->redis->psubscribe([strtolower($this->configurationService->get(ConfigurationService::KEY_APP_NAME))], $callback);
+        } catch (\RedisException) {
+            // @ignoreException
         }
     }
 

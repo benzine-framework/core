@@ -58,9 +58,8 @@ class JsonValidationMiddleware implements MiddlewareInterface
             // Whelp, we've failed validation, build a failure message.
             $response = new Response();
             $content  = json_encode([
-                'Status' => 'FAIL',
-                'Reason' => "Invalid JSON, doesn't match schema!",
-                'Error'  => $exception->getMessage(),
+                'Status'      => 'FAIL',
+                'Reason'      => "Invalid JSON, doesn't match schema! {$exception->getMessage()}",
             ], JSON_PRETTY_PRINT);
 
             $response->getBody()->write($content);

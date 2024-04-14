@@ -38,6 +38,8 @@
     "friendsofphp/php-cs-fixer": "^3.0",
     "kint-php/kint": "^4.0",
     "kint-php/kint-twig": "^4.0",
+    "league/flysystem": "^3.27",
+    "league/flysystem-local": "^3.25",
     "matthewbaggett/inflection": "^2.1",
     "matthewbaggett/uuid": "^2.3",
     "mattketmo/camel": "^1.1",
@@ -88,7 +90,8 @@
     "wyrihaximus/html-compress": "^4.1"
   },
   "suggest": {
-    "benzine/orm": "Model/Service/Crud generation made easy"
+    "benzine/orm": "Model/Service/Crud generation made easy",
+    "league/flysystem-aws-s3-v3": "underlying support for s3 bucket stores using flysystem"
   },
   "autoload": {
     "psr-4": {

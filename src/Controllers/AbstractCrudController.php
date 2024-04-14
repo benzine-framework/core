@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Benzine\Controllers;
 
+use Benzine\ORM\Abstracts\AbstractService;
 use Benzine\ORM\Interfaces\ModelInterface;
 use Laminas\Db\Adapter\Exception\InvalidQueryException;
 use Slim\Psr7\Request;
@@ -11,6 +12,8 @@ use Slim\Psr7\Response;
 
 abstract class AbstractCrudController extends AbstractController
 {
+    abstract protected function getService(): AbstractService;
+
     public function listRequest(Request $request, Response $response): Response
     {
         $objects = [];
@@ -34,9 +37,9 @@ abstract class AbstractCrudController extends AbstractController
 
         return $this->jsonResponse(
             [
-                'Status'                        => 'Okay',
-                'Action'                        => 'LIST',
-                $this->service->getTermPlural() => $objects,
+                'Status'                             => 'Okay',
+                'Action'                             => 'LIST',
+                $this->getService()->getTermPlural() => $objects,
             ],
             $request,
             $response
@@ -51,7 +54,7 @@ abstract class AbstractCrudController extends AbstractController
                 [
                     'Status'                          => 'Okay',
                     'Action'                          => 'GET',
-                    $this->service->getTermSingular() => $object->__toArray(),
+                    $this->getService()->getTermSingular() => $object->__toArray(),
                 ],
                 $request,
                 $response
@@ -63,7 +66,7 @@ abstract class AbstractCrudController extends AbstractController
                 'Status' => 'Fail',
                 'Reason' => sprintf(
                     'No such %s found with id %s',
-                    strtolower($this->service->getTermSingular()),
+                    strtolower($this->getService()->getTermSingular()),
                     $args['id']
                 ),
             ],
@@ -83,7 +86,7 @@ abstract class AbstractCrudController extends AbstractController
                 [
                     'Status'                          => 'Okay',
                     'Action'                          => 'CREATE',
-                    $this->service->getTermSingular() => $object->__toArray(),
+                    $this->getService()->getTermSingular() => $object->__toArray(),
                 ],
                 $request,
                 $response
@@ -105,7 +108,7 @@ abstract class AbstractCrudController extends AbstractController
                 [
                     'Status'                          => 'Okay',
                     'Action'                          => 'DELETE',
-                    $this->service->getTermSingular() => $array,
+                    $this->getService()->getTermSingular() => $array,
                 ],
                 $request,
                 $response

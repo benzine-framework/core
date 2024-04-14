@@ -40,6 +40,7 @@ use Middlewares\ContentLength;
 use Middlewares\TrailingSlash;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
+use Monolog\Level;
 use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
 use Psr\Container\ContainerInterface;
@@ -344,7 +345,7 @@ class App
             )));
 
             // Configure a pretty CLI Handler
-            $cliHandler   = new StreamHandler('php://stdout', Logger::DEBUG);
+            $cliHandler   = new StreamHandler('php://stdout', Level::Debug);
             $cliFormatter = new ColoredLineFormatter(
                 new TrafficLight(),
                 // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%"
@@ -357,9 +358,10 @@ class App
             return $monolog;
         });
 
-        $container->set(Redis::class, function (Logger $logger, EnvironmentService $environmentService) {
+        $container->set(Redis::class, function (ConfigurationService $configurationService, Logger $logger, EnvironmentService $environmentService) {
             return new Redis(
                 $logger,
+                $configurationService,
                 $environmentService->get('REDIS_HOST', 'redis'),
                 $environmentService->get('REDIS_PORT', 6379),
                 $environmentService->get('REDIS_PASSWORD', null),
@@ -385,7 +387,7 @@ class App
                 ->addCollector(new TimeDataCollector())
                 ->addCollector(new MemoryCollector())
                 ->addCollector(new ExceptionsCollector())
-                ->addCollector(new MonologCollector($logger, Logger::DEBUG))
+                ->addCollector(new MonologCollector($logger, Level::Debug))
             ;
         });
 
@@ -469,9 +471,9 @@ class App
         return $this;
     }
 
-    public static function Log($message, int $level = Logger::DEBUG)
+    public static function Log($message, Level $level = Level::Debug): void
     {
-        return self::Instance()
+        self::Instance()
             ->getLogger()
             ->log($level, ($message instanceof \Exception) ? $message->__toString() : $message)
         ;

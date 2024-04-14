@@ -8,7 +8,7 @@ use Benzine\Redis\Redis;
 use Benzine\Services\EnvironmentService;
 use Monolog\Logger;
 
-abstract class WaitForEmitWorker extends AbstractWorker
+abstract class AbstractWaitForEmitWorker extends AbstractWorker
 {
     public $callback;
     protected array $messageTypes = [];

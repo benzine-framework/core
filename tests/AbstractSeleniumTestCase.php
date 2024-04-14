@@ -6,6 +6,7 @@ namespace Benzine\Tests;
 
 use Benzine\App;
 use Benzine\Services\EnvironmentService;
+use Facebook\WebDriver\Exception\NoSuchElementException;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Remote\RemoteWebElement;
 use Facebook\WebDriver\Remote\WebDriverCapabilityType;
@@ -60,7 +61,7 @@ abstract class AbstractSeleniumTestCase extends AbstractBaseTestCase
     {
         try {
             return self::$webDriver->findElement(WebDriverBy::cssSelector($sizzleSelector));
-        } catch (NoSuchElementException $noSuchElementException) {
+        } catch (NoSuchElementException) {
             self::$logger->debug("Couldn't find a match for sizzle selector '{$sizzleSelector}'");
 
             return null;

@@ -5,19 +5,16 @@ declare(strict_types=1);
 namespace Benzine\Tests;
 
 use Faker\Factory as FakerFactory;
-use Faker\Generator;
+use Faker\Generator as Faker;
 use Faker\Provider;
 
 abstract class AbstractBaseTestCase extends AbstractTestCase
 {
-    // Set this to true if you want to see whats going on inside some unit tests..
-    public const DEBUG_MODE = false;
+    private static Faker $faker;
 
-    private static Generator $faker;
-
-    public function __construct($name = null, array $data = [], $dataName = '')
+    public function __construct($name = null)
     {
-        parent::__construct($name, $data, $dataName);
+        parent::__construct($name);
 
         // Force Kint into CLI mode.
         \Kint::$mode_default = \Kint::MODE_CLI;
@@ -38,10 +35,7 @@ abstract class AbstractBaseTestCase extends AbstractTestCase
         self::$faker->addProvider(new Provider\en_US\Company(self::$faker));
     }
 
-    /**
-     * @return Generator
-     */
-    public static function getFaker()
+    public static function getFaker(): Faker
     {
         return self::$faker;
     }
@@ -55,7 +49,7 @@ abstract class AbstractBaseTestCase extends AbstractTestCase
      *
      * @return mixed method return
      */
-    public function invokeMethod(&$object, $methodName, array $parameters = [])
+    public function invokeMethod(&$object, $methodName, array $parameters = []) : mixed
     {
         $reflection = new \ReflectionClass($object::class);
         $method     = $reflection->getMethod($methodName);
@@ -64,13 +58,14 @@ abstract class AbstractBaseTestCase extends AbstractTestCase
         return $method->invokeArgs($object, $parameters);
     }
 
-    public function setProtectedProperty(&$object, $property, $value)
+    public function setProtectedProperty(&$object, $property, $value) : self
     {
         $reflection = new \ReflectionClass($object::class);
         $prop       = $reflection->getProperty($property);
         $prop->setAccessible(true);
+        $prop->setValue($object, $value);
 
-        return $prop->setValue($object, $value);
+        return $this;
     }
 
     public function getProtectedProperty(&$object, $property)
