@@ -92,7 +92,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Benzine\\": "src/"
+      "Benzine\\": "src/",
+      "Benzine\\Tests\\": "tests/"
     }
   },
   "autoload-dev": {
