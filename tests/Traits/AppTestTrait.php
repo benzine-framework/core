@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Benzine\Tests\Traits;
 
 use Benzine\App as BenzineApp;
+use Benzine\Middleware\JsonResponse;
 use DI\Container;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\ResponseInterface;
@@ -13,6 +14,8 @@ use Psr\Http\Message\UriInterface;
 use Slim\App as SlimApp;
 use Slim\Factory\ServerRequestCreatorFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
+use Slim\Psr7\Request;
+use Slim\Psr7\Response;
 
 /**
  * Container Trait.
@@ -140,5 +143,13 @@ trait AppTestTrait
         $actual = (string) $response->getBody();
         $this->assertJson($actual);
         $this->assertSame($expected, (array) json_decode($actual, true));
+    }
+
+    protected function send(Request $request) : JsonResponse|Response|ResponseInterface {
+        return $this
+            ->app
+                ->loadAllRoutes($request)
+            ->getApp()
+                ->handle($request);
     }
 }

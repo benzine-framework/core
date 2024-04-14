@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Benzine;
 
 use Benzine\Middleware\JsonResponseExecTimeMiddleware;
+use Benzine\Middleware\JsonResponseUnpackerMiddleware;
 use Benzine\Middleware\JsonValidationMiddleware;
 use Benzine\ORM\Connection\Databases;
 use Benzine\ORM\Laminator;
@@ -106,6 +107,7 @@ class App
         $this->app->addBodyParsingMiddleware();
         $this->app->addRoutingMiddleware();
         $this->app->add($container->get(JsonResponseExecTimeMiddleware::class));
+        $this->app->add($container->get(JsonResponseUnpackerMiddleware::class));
 
         // Determine if we're going to enable debug mode
         $this->debugMode = $this->environmentService->get('DEBUG_MODE', 'off') == 'on';

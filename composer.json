@@ -34,6 +34,7 @@
     "cocur/slugify": "^4.0",
     "doctrine/annotations": "^1.10",
     "donatj/flags": "^1.4",
+    "ergebnis/json": "^1.2",
     "fakerphp/faker": "^1.14.1",
     "friendsofphp/php-cs-fixer": "^3.0",
     "kint-php/kint": "^4.0",
