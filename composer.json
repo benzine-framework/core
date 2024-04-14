@@ -35,6 +35,7 @@
     "doctrine/annotations": "^1.10",
     "donatj/flags": "^1.4",
     "ergebnis/json": "^1.2",
+    "ergebnis/phpunit-slow-test-detector": "^2.14",
     "fakerphp/faker": "^1.14.1",
     "friendsofphp/php-cs-fixer": "^3.0",
     "kint-php/kint": "^4.0",
@@ -75,20 +76,7 @@
     "twig/twig": "^3.0"
   },
   "require-dev": {
-    "benzine/orm": "dev-main",
-    "brianium/paratest": "^7",
-    "clue/commander": "^v1.3.0",
-    "ergebnis/phpunit-slow-test-detector": "^2.1",
-    "jc21/clitable": "^1.2",
-    "php-coveralls/php-coveralls": "^2.1",
-    "phpstan/phpstan": "^1",
-    "phpstan/phpstan-deprecation-rules": "^1",
-    "phpstan/phpstan-phpunit": "^1",
-    "phpstan/phpstan-symfony": "^1",
-    "phpunit/phpunit": "^10",
-    "slam/phpstan-extensions": "^6",
-    "thecodingmachine/phpstan-strict-rules": "^1",
-    "wyrihaximus/html-compress": "^4.1"
+    "benzine/dev-tools": "dev-main"
   },
   "suggest": {
     "benzine/orm": "Model/Service/Crud generation made easy",
