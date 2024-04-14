@@ -599,6 +599,7 @@ class App
         $this->router->loadRoutesFromAnnotations(
             [
                 APP_ROOT . '/src/Controllers',
+                APP_ROOT . '/src/Actions',
             ],
             $appClass->getNamespaceName()
         );

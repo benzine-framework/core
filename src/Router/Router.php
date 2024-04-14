@@ -15,18 +15,16 @@ use Slim\App;
 class Router
 {
     /** @var Route[] */
-    private array $routes = [];
-    private Logger $logger;
-    private CachePoolChain $cachePoolChain;
-    private int $cacheTTL = 60;
+    protected array $routes = [];
+    protected int $cacheTTL = 60;
 
     private bool $routesArePopulated = false;
 
-    public function __construct(Logger $logger, CachePoolChain $cachePoolChain)
-    {
-        $this->logger         = $logger;
-        $this->cachePoolChain = $cachePoolChain;
-    }
+    public function __construct(
+        protected Logger $logger,
+        protected CachePoolChain $cachePoolChain
+    )
+    {}
 
     public function loadRoutesFromAnnotations(
         array $controllerPaths,
@@ -48,41 +46,44 @@ class Router
             foreach ($phpFiles as $controllerFile) {
                 $fileClassName   = ltrim(str_replace([$controllerPath, '/', '.php'], ['', '\\', ''], $controllerFile[0]), '\\');
                 $expectedClasses = [
+                    $baseNamespace . '\\Actions\\' . $fileClassName,
                     $baseNamespace . '\\Controllers\\' . $fileClassName,
                     'Benzine\\Controllers\\' . $fileClassName,
                 ];
 
                 foreach ($expectedClasses as $expectedClass) {
                     if (!class_exists($expectedClass)) {
+                        $this->logger->warning("While loading routes from annotations in {file}, expected class {expectedClass} does not exist.", [
+                            'file'          => $controllerFile[0],
+                            'expectedClass' => $expectedClass,
+                        ]);
                         continue;
                     }
 
                     $rc = new \ReflectionClass($expectedClass);
                     if ($rc->isAbstract()) {
+                        $this->logger->warning("While loading routes from annotations in {file}, expected class {expectedClass} is abstract.", [
+                            'file'          => $controllerFile[0],
+                            'expectedClass' => $expectedClass,
+                        ]);
                         continue;
                     }
-                    // \Kint::dump(
-                    //    $expectedClass,
-                    //    $rc
-                    // );
 
                     foreach ($rc->getMethods() as $method) {
                         if (!$method->isPublic()) {
+                            // Non public methods can't have actions called on them
                             continue;
                         }
 
                         $routeAnnotation = $reader->getMethodAnnotation($method, \Benzine\Annotations\Route::class);
                         if (!$routeAnnotation instanceof \Benzine\Annotations\Route) {
+                            // This isn't a route annotation. Somehow.
                             continue;
                         }
 
                         foreach ($routeAnnotation->methods as $httpMethod) {
-                            $newRoute = new Route();
 
-                            // \Kint::dump($method);
-                            // exit;
-
-                            $newRoute
+                            $newRoute = (new Route())
                                 ->setHttpMethod($httpMethod)
                                 ->setRouterPattern('/' . ltrim($routeAnnotation->path, '/'))
                                 ->setCallback($expectedClass . ':' . $method->name)
