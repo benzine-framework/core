@@ -64,7 +64,7 @@ class JsonValidationMiddleware implements MiddlewareInterface
 
             $response->getBody()->write($content);
 
-            $response = $response->withHeader('Content-type', 'application/json');
+            $response = $response->withHeader('Content-Type', 'application/json');
 
             return $response->withStatus(400);
         }

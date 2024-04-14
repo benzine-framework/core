@@ -25,7 +25,7 @@ abstract class AbstractController
     {
         $response->getBody()->write($root->asXML());
 
-        return $response->withHeader('Content-type', 'text/xml');
+        return $response->withHeader('Content-Type', 'text/xml');
     }
 
     public function jsonResponse($json, Request $request, Response $response): Response
@@ -33,7 +33,7 @@ abstract class AbstractController
         $content = json_encode($json, JSON_PRETTY_PRINT);
         $response->getBody()->write($content);
 
-        return $response->withHeader('Content-type', 'application/json');
+        return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function redirect(Response $response, string $url = '/', int $code = 302): Response

@@ -7,6 +7,8 @@ namespace Benzine\Tests\Traits;
 use Benzine\App as BenzineApp;
 use Benzine\Middleware\JsonResponse;
 use DI\Container;
+use Ergebnis\Json\Json;
+use Middlewares\Utils\Factory;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -14,8 +16,12 @@ use Psr\Http\Message\UriInterface;
 use Slim\App as SlimApp;
 use Slim\Factory\ServerRequestCreatorFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
+use Slim\Psr7\Headers;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
+use Benzine\Middleware\JsonResponseUnpackerMiddleware;
+use Slim\Psr7\Stream;
+use Slim\Psr7\Uri;
 
 /**
  * Container Trait.
@@ -145,11 +151,29 @@ trait AppTestTrait
         $this->assertSame($expected, (array) json_decode($actual, true));
     }
 
-    protected function send(Request $request) : JsonResponse|Response|ResponseInterface {
-        return $this
-            ->app
-                ->loadAllRoutes($request)
+    static protected function getHttpHandler() : SlimApp {
+        return self::$app
+            ->loadAllRoutes()
             ->getApp()
-                ->handle($request);
+            ->addMiddleware(new JsonResponseUnpackerMiddleware());
+    }
+
+    static protected function send(string $method, string $uri, ?array $data = []) : ResponseInterface {
+        $request = new Request(
+            method: $method,
+            uri: new \GuzzleHttp\Psr7\Uri($uri),
+            headers: new Headers(),
+            cookies: [],
+            serverParams: [],
+            body: new Stream(fopen('php://temp', 'r+')),
+            uploadedFiles: []
+        );
+        $request = $request->withParsedBody(Json::fromString(json_encode($data))->decoded());
+        $request = $request->withHeader('Content-Type', 'application/json');
+        return self::handle($request);
+    }
+
+    static function handle(Request $request) : JsonResponse|Response|ResponseInterface {
+        return self::getHttpHandler()->handle($request);
     }
 }

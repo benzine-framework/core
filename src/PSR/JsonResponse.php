@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Benzine\Middleware;
+namespace Benzine\PSR;
 
 use Ergebnis\Json\Json;
 use Psr\Http\Message\ResponseInterface;
@@ -14,10 +14,8 @@ use Slim\Psr7\Response;
 
 class JsonResponse implements ResponseInterface
 {
-    protected Response $response;
-    public function __construct(Response $response)
+    public function __construct(protected Response $response)
     {
-        $this->response = $response;
     }
     public function getJson() : Json
     {
@@ -103,5 +101,4 @@ class JsonResponse implements ResponseInterface
     {
         return $this->response->getReasonPhrase();
     }
-
 }

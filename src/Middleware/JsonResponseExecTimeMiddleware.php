@@ -14,6 +14,10 @@ class JsonResponseExecTimeMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        // If path ends in .schema, don't add exec time
+        if (str_ends_with($request->getUri()->getPath(), '.schema')) {
+            return $handler->handle($request);
+        }
         $response = $handler->handle($request);
         $response->getBody()->rewind();
         $responseJson = json_decode($response->getBody()->getContents(), true);
@@ -30,7 +34,7 @@ class JsonResponseExecTimeMiddleware implements MiddlewareInterface
         $replacementResponse = new Response();
         $replacementResponse->getBody()->write(json_encode($responseJson, JSON_PRETTY_PRINT));
 
-        $replacementResponse = $replacementResponse->withHeader('Content-type', 'application/json');
+        $replacementResponse = $replacementResponse->withHeader('Content-Type', 'application/json');
 
         $replacementResponse = $replacementResponse->withStatus($response->getStatusCode());
 
