@@ -8,7 +8,6 @@ use Benzine\App as BenzineApp;
 use Benzine\Middleware\JsonResponse;
 use DI\Container;
 use Ergebnis\Json\Json;
-use Middlewares\Utils\Factory;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -151,14 +150,17 @@ trait AppTestTrait
         $this->assertSame($expected, (array) json_decode($actual, true));
     }
 
-    static protected function getHttpHandler() : SlimApp {
+    protected static function getHttpHandler(): SlimApp
+    {
         return self::$app
             ->loadAllRoutes()
             ->getApp()
-            ->addMiddleware(new JsonResponseUnpackerMiddleware());
+            ->addMiddleware(new JsonResponseUnpackerMiddleware())
+        ;
     }
 
-    static protected function send(string $method, string $uri, ?array $data = []) : ResponseInterface {
+    protected static function send(string $method, string $uri, ?array $data = []): ResponseInterface
+    {
         $request = new Request(
             method: $method,
             uri: new \GuzzleHttp\Psr7\Uri($uri),
@@ -170,10 +172,12 @@ trait AppTestTrait
         );
         $request = $request->withParsedBody(Json::fromString(json_encode($data))->decoded());
         $request = $request->withHeader('Content-Type', 'application/json');
+
         return self::handle($request);
     }
 
-    static function handle(Request $request) : JsonResponse|Response|ResponseInterface {
+    public static function handle(Request $request): JsonResponse | Response | ResponseInterface
+    {
         return self::getHttpHandler()->handle($request);
     }
 }

@@ -16,9 +16,10 @@ class JsonResponseUnpackerMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = $handler->handle($request);
-        if($response->hasHeader("Content-Type") && $response->getHeader("Content-Type")[0] === "application/json" && $response instanceof Response) {
+        if ($response->hasHeader('Content-Type') && $response->getHeader('Content-Type')[0] === 'application/json' && $response instanceof Response) {
             $response = new JsonResponse($response);
         }
+
         return $response;
     }
 }

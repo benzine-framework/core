@@ -52,8 +52,8 @@ abstract class AbstractCrudController extends AbstractController
         if ($object) {
             return $this->jsonResponse(
                 [
-                    'Status'                          => 'Okay',
-                    'Action'                          => 'GET',
+                    'Status'                               => 'Okay',
+                    'Action'                               => 'GET',
                     $this->getService()->getTermSingular() => $object->__toArray(),
                 ],
                 $request,
@@ -84,8 +84,8 @@ abstract class AbstractCrudController extends AbstractController
 
             return $this->jsonResponse(
                 [
-                    'Status'                          => 'Okay',
-                    'Action'                          => 'CREATE',
+                    'Status'                               => 'Okay',
+                    'Action'                               => 'CREATE',
                     $this->getService()->getTermSingular() => $object->__toArray(),
                 ],
                 $request,
@@ -106,8 +106,8 @@ abstract class AbstractCrudController extends AbstractController
 
             return $this->jsonResponse(
                 [
-                    'Status'                          => 'Okay',
-                    'Action'                          => 'DELETE',
+                    'Status'                               => 'Okay',
+                    'Action'                               => 'DELETE',
                     $this->getService()->getTermSingular() => $array,
                 ],
                 $request,

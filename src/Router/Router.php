@@ -23,8 +23,7 @@ class Router
     public function __construct(
         protected Logger $logger,
         protected CachePoolChain $cachePoolChain
-    )
-    {}
+    ) {}
 
     public function loadRoutesFromAnnotations(
         array $controllerPaths,
@@ -53,19 +52,21 @@ class Router
 
                 foreach ($expectedClasses as $expectedClass) {
                     if (!class_exists($expectedClass)) {
-                        $this->logger->warning("While loading routes from annotations in {file}, expected class {expectedClass} does not exist.", [
+                        $this->logger->warning('While loading routes from annotations in {file}, expected class {expectedClass} does not exist.', [
                             'file'          => $controllerFile[0],
                             'expectedClass' => $expectedClass,
                         ]);
+
                         continue;
                     }
 
                     $rc = new \ReflectionClass($expectedClass);
                     if ($rc->isAbstract()) {
-                        $this->logger->warning("While loading routes from annotations in {file}, expected class {expectedClass} is abstract.", [
+                        $this->logger->warning('While loading routes from annotations in {file}, expected class {expectedClass} is abstract.', [
                             'file'          => $controllerFile[0],
                             'expectedClass' => $expectedClass,
                         ]);
+
                         continue;
                     }
 
@@ -82,7 +83,6 @@ class Router
                         }
 
                         foreach ($routeAnnotation->methods as $httpMethod) {
-
                             $newRoute = (new Route())
                                 ->setHttpMethod($httpMethod)
                                 ->setRouterPattern('/' . ltrim($routeAnnotation->path, '/'))

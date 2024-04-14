@@ -49,7 +49,7 @@ abstract class AbstractBaseTestCase extends AbstractTestCase
      *
      * @return mixed method return
      */
-    public function invokeMethod(&$object, $methodName, array $parameters = []) : mixed
+    public function invokeMethod(&$object, $methodName, array $parameters = []): mixed
     {
         $reflection = new \ReflectionClass($object::class);
         $method     = $reflection->getMethod($methodName);
@@ -58,7 +58,7 @@ abstract class AbstractBaseTestCase extends AbstractTestCase
         return $method->invokeArgs($object, $parameters);
     }
 
-    public function setProtectedProperty(&$object, $property, $value) : self
+    public function setProtectedProperty(&$object, $property, $value): self
     {
         $reflection = new \ReflectionClass($object::class);
         $prop       = $reflection->getProperty($property);

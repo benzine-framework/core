@@ -6,29 +6,28 @@ namespace Benzine\PSR;
 
 use Ergebnis\Json\Json;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
 
 class JsonResponse implements ResponseInterface
 {
-    public function __construct(protected Response $response)
-    {
-    }
-    public function getJson() : Json
+    public function __construct(protected Response $response) {}
+
+    public function getJson(): Json
     {
         $this->getBody()->rewind();
         $json = Json::fromString($this->getBody()->getContents());
         $this->getBody()->rewind();
+
         return $json;
     }
-    public function setJson(Json $json) : self
+
+    public function setJson(Json $json): self
     {
         $this->getBody()->rewind();
         $this->getBody()->write($json->toString());
         $this->getBody()->rewind();
+
         return $this;
     }
 
