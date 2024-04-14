@@ -7,3 +7,4 @@
 /.coverage
 /phpunit.xml
 /.github/cache
+/.github/act.secrets
