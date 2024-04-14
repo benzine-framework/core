@@ -605,4 +605,9 @@ class App
 
         // $this->logger->info('ROUTE_CACHE miss.');
     }
+
+    public function getContainer(): ContainerInterface
+    {
+        return $this->app->getContainer();
+    }
 }
