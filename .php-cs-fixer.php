@@ -38,6 +38,7 @@ if (file_exists(__PHPCS_ROOT__.'/vendor/benzine')) {
 }
 
 return (new PhpCsFixer\Config)
+    ->setParallelConfig(new ParallelConfig(10, 20, 120))
     ->setRiskyAllowed(true)
     ->setHideProgress(false)
     ->setRules([
