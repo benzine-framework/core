@@ -6,6 +6,7 @@ namespace Benzine\Services;
 
 use Benzine\App;
 use Benzine\Exceptions\BenzineConfigurationException;
+use SebastianBergmann\Timer\Timer;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 

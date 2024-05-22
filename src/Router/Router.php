@@ -10,6 +10,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Monolog\Logger;
 use Psr\Http\Message\ServerRequestInterface;
+use SebastianBergmann\Timer\Timer;
 use Slim\App;
 
 class Router
@@ -38,10 +39,25 @@ class Router
                 continue;
             }
 
+            $timer = new Timer();
+            $timer->start();
             $dirIterator      = new \RecursiveDirectoryIterator($controllerPath);
-            $iteratorIterator = new \RecursiveIteratorIterator($dirIterator);
-            $phpFiles         = new \RegexIterator($iteratorIterator, '/^.+\.php$/i', \RecursiveRegexIterator::GET_MATCH);
+            $duration = $timer->stop();
+            \Kint::dump($duration->asSeconds());
 
+            $timer = new Timer();
+            $timer->start();
+            $iteratorIterator = new \RecursiveIteratorIterator($dirIterator);
+            $duration = $timer->stop();
+            \Kint::dump($duration->asSeconds());
+
+            $timer = new Timer();
+            $timer->start();
+            $phpFiles         = new \RegexIterator($iteratorIterator, '/^.+\.php$/i', \RecursiveRegexIterator::GET_MATCH);
+            $duration = $timer->stop();
+            \Kint::dump($duration->asSeconds());
+            
+            \Kint::dump($phpFiles);exit;
             foreach ($phpFiles as $controllerFile) {
                 $fileClassName   = ltrim(str_replace([$controllerPath, '/', '.php'], ['', '\\', ''], $controllerFile[0]), '\\');
                 $expectedClasses = [

@@ -46,6 +46,7 @@ use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use SebastianBergmann\Timer\Timer;
 use Slim;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
@@ -81,11 +82,21 @@ class App
 
     public function __construct()
     {
+        self::$timer = new Timer();
+        self::$timer->start();
+
         // Configure Dependency Injector
         $container      = $this->setupContainer();
+        App::Timing();
+
         $this->logger   = $container->get(Logger::class);
+        App::Timing();
+
         $this->debugBar = $container->get(DebugBar::class);
+        App::Timing();
+
         AppFactory::setContainer($container);
+        App::Timing();
 
         // If we're not on the CLI and Sessions ARE enabled...
         if ('cli' !== php_sapi_name() && $this->isSessionsEnabled) {
@@ -100,8 +111,10 @@ class App
         // Configure Slim
         $this->app = AppFactory::create();
         $this->app->add(Slim\Views\TwigMiddleware::createFromContainer($this->app));
+        App::Timing();
 
         $this->setupMiddlewares($container);
+        App::Timing();
 
         $this->app->add($container->get(JsonValidationMiddleware::class));
         $this->app->addBodyParsingMiddleware();
@@ -122,6 +135,7 @@ class App
         $this->debugBar['time']->stopMeasure('interrogateTranslations');
 
         $this->app->add(new ServerTimingMiddleware());
+        App::Timing();
     }
 
     public function getCachePath(): string
@@ -170,19 +184,21 @@ class App
 
     public function setupContainer(): Container
     {
+        App::Timing();
         $app       = $this;
         $container =
             (new ContainerBuilder())
                 ->useAutowiring(true)
                 ->useAttributes(true)
         ;
+        App::Timing();
         // if ((new Filesystem())->exists($this->getCachePath())) {
         //   $container->enableCompilation($this->getCachePath());
         //   $container->writeProxiesToFile(true, "{$this->getCachePath()}/injection-proxies");
         // }
 
         $container = $container->build();
-
+        App::Timing();
         $container->set(Slim\Views\Twig::class, function (
             EnvironmentService $environmentService,
             SessionService $sessionService,
@@ -276,7 +292,7 @@ class App
 
             return $translator;
         });
-
+        App::Timing();
         $container->set(ConfigurationService::class, function (EnvironmentService $environmentService) use ($app) {
             return new ConfigurationService(
                 $app,
@@ -321,7 +337,7 @@ class App
 
             return $this->cachePoolChain;
         });
-
+        App::Timing();
         $container->set('MonologFormatter', function (EnvironmentService $environmentService) {
             return new LineFormatter(
                 // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%"
@@ -378,7 +394,7 @@ class App
                 $databases
             );
         });
-
+        App::Timing();
         $container->set(TrailingSlash::class, fn () => (new TrailingSlash())->redirect());
 
         $container->set(DebugBar::class, function (Logger $logger) {
@@ -407,6 +423,7 @@ class App
         } else {
             date_default_timezone_set(self::DEFAULT_TIMEZONE);
         }
+        App::Timing();
 
         $this->router = $container->get(Router::class);
 
@@ -483,9 +500,12 @@ class App
 
     public function runHttp(): void
     {
+        $timer = new Timer();
+        $timer->start();
         $serverRequestCreator = ServerRequestCreatorFactory::create();
         $request              = $serverRequestCreator->createServerRequestFromGlobals();
-
+        $duration = $timer->stop();
+        \Kint::dump($duration->asSeconds());
         $this->loadAllRoutes($request);
 
         $this->debugBar['time']->startMeasure('runHTTP', 'HTTP runtime');
@@ -605,6 +625,7 @@ class App
             ],
             $appClass->getNamespaceName()
         );
+        
 
         $this->router->cache();
 
@@ -614,5 +635,19 @@ class App
     public function getContainer(): ContainerInterface
     {
         return $this->app->getContainer();
+    }
+
+    protected static Timer $timer;
+    static public function Timing(){
+        $duration = self::$timer->stop();
+        # Get caller
+        $caller = debug_backtrace()[1];
+        if($duration->asSeconds() >= 1) {
+            $timingMessage = sprintf("%f seconds: %s::%s (%s:%d)", $duration->asSeconds(), $caller['class'], $caller['function'], $caller['file'], $caller['line']);
+            \Kint::dump($timingMessage);
+            self::DI(Logger::class)->debug($timingMessage);
+        }
+
+        self::$timer->start();
     }
 }
