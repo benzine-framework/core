@@ -10,6 +10,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Monolog\Logger;
 use Psr\Http\Message\ServerRequestInterface;
+use PushToLive\Kernel;
 use SebastianBergmann\Timer\Timer;
 use Slim\App;
 
@@ -39,25 +40,11 @@ class Router
                 continue;
             }
 
-            $timer = new Timer();
-            $timer->start();
             $dirIterator      = new \RecursiveDirectoryIterator($controllerPath);
-            $duration = $timer->stop();
-            \Kint::dump($duration->asSeconds());
-
-            $timer = new Timer();
-            $timer->start();
             $iteratorIterator = new \RecursiveIteratorIterator($dirIterator);
-            $duration = $timer->stop();
-            \Kint::dump($duration->asSeconds());
 
-            $timer = new Timer();
-            $timer->start();
             $phpFiles         = new \RegexIterator($iteratorIterator, '/^.+\.php$/i', \RecursiveRegexIterator::GET_MATCH);
-            $duration = $timer->stop();
-            \Kint::dump($duration->asSeconds());
-            
-            \Kint::dump($phpFiles);exit;
+
             foreach ($phpFiles as $controllerFile) {
                 $fileClassName   = ltrim(str_replace([$controllerPath, '/', '.php'], ['', '\\', ''], $controllerFile[0]), '\\');
                 $expectedClasses = [
@@ -65,6 +52,7 @@ class Router
                     $baseNamespace . '\\Controllers\\' . $fileClassName,
                     'Benzine\\Controllers\\' . $fileClassName,
                 ];
+
 
                 foreach ($expectedClasses as $expectedClass) {
                     if (!class_exists($expectedClass)) {
@@ -92,25 +80,22 @@ class Router
                             continue;
                         }
 
-                        $routeAnnotation = $reader->getMethodAnnotation($method, \Benzine\Annotations\Route::class);
-                        if (!$routeAnnotation instanceof \Benzine\Annotations\Route) {
-                            // This isn't a route annotation. Somehow.
-                            continue;
-                        }
-
-                        foreach ($routeAnnotation->methods as $httpMethod) {
-                            $newRoute = (new Route())
-                                ->setHttpMethod($httpMethod)
-                                ->setRouterPattern('/' . ltrim($routeAnnotation->path, '/'))
-                                ->setCallback($expectedClass . ':' . $method->name)
-                                ->setWeight($routeAnnotation->weight)
-                            ;
-
-                            foreach ($routeAnnotation->domains as $domain) {
-                                $newRoute->addValidDomain($domain);
+                        $routeAttibutes = $method->getAttributes(\Benzine\Annotations\Route::class);
+                        foreach($routeAttibutes as $routeAttibute){
+                            foreach($routeAttibute->getArguments()['methods'] as $httpMethod){
+                                $newRoute = (new Route())
+                                    ->setHttpMethod($httpMethod)
+                                    ->setRouterPattern('/' . ltrim($routeAttibute->getArguments()['path'], '/'))
+                                    ->setCallback($expectedClass . ':' . $method->name)
+                                    ->setWeight($routeAttibute->getArguments()['weight'] ?? 100)
+                                ;
+                                if(isset($routeAttibute->getArguments()['domains']) && is_array($routeAttibute->getArguments()['domains'])){
+                                    foreach ($routeAttibute->getArguments()['domains'] as $domain) {
+                                        $newRoute->addValidDomain($domain);
+                                    }
+                                }
+                                $this->addRoute($newRoute);
                             }
-
-                            $this->addRoute($newRoute);
                         }
                     }
 

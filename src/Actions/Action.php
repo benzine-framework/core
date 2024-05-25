@@ -24,30 +24,8 @@ abstract class Action
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
+        $this->response = new \Slim\Psr7\Response();
     }
-
-    /**
-     * @throws HttpNotFoundException
-     * @throws HttpBadRequestException
-     */
-    public function __invoke(Request $request, Response $response, array $args): Response
-    {
-        $this->request = $request;
-        $this->response = $response;
-        $this->args = $args;
-
-        try {
-            return $this->action();
-        } catch (DomainRecordNotFoundException $e) {
-            throw new HttpNotFoundException($this->request, $e->getMessage());
-        }
-    }
-
-    /**
-     * @throws DomainRecordNotFoundException
-     * @throws HttpBadRequestException
-     */
-    abstract protected function action(): Response;
 
     /**
      * @return array|object

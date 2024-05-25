@@ -46,6 +46,8 @@ use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
+use PushToLive\Kernel;
 use SebastianBergmann\Timer\Timer;
 use Slim;
 use Slim\Factory\AppFactory;
@@ -376,6 +378,10 @@ class App
             return $monolog;
         });
 
+        $container->set(LoggerInterface::class, function (Logger $logger) {
+            return $logger;
+        });
+
         $container->set(Redis::class, function (ConfigurationService $configurationService, Logger $logger, EnvironmentService $environmentService) {
             return new Redis(
                 $logger,
@@ -500,12 +506,9 @@ class App
 
     public function runHttp(): void
     {
-        $timer = new Timer();
-        $timer->start();
         $serverRequestCreator = ServerRequestCreatorFactory::create();
         $request              = $serverRequestCreator->createServerRequestFromGlobals();
-        $duration = $timer->stop();
-        \Kint::dump($duration->asSeconds());
+        Kernel::Timing();
         $this->loadAllRoutes($request);
 
         $this->debugBar['time']->startMeasure('runHTTP', 'HTTP runtime');
@@ -618,6 +621,7 @@ class App
         }
 
         $appClass = new \ReflectionClass(static::class);
+
         $this->router->loadRoutesFromAnnotations(
             [
                 APP_ROOT . '/src/Controllers',
@@ -625,11 +629,7 @@ class App
             ],
             $appClass->getNamespaceName()
         );
-        
-
         $this->router->cache();
-
-        // $this->logger->info('ROUTE_CACHE miss.');
     }
 
     public function getContainer(): ContainerInterface
@@ -641,11 +641,10 @@ class App
     static public function Timing(){
         $duration = self::$timer->stop();
         # Get caller
-        $caller = debug_backtrace()[1];
+        $caller = debug_backtrace()[0];
         if($duration->asSeconds() >= 1) {
-            $timingMessage = sprintf("%f seconds: %s::%s (%s:%d)", $duration->asSeconds(), $caller['class'], $caller['function'], $caller['file'], $caller['line']);
+            $timingMessage = sprintf("%f seconds: (%s:%d)", $duration->asSeconds(), $caller['file'], $caller['line']);
             \Kint::dump($timingMessage);
-            self::DI(Logger::class)->debug($timingMessage);
         }
 
         self::$timer->start();

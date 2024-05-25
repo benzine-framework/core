@@ -10,7 +10,7 @@ use Doctrine\Common\Annotations\Annotation\Required;
  * @Annotation
  * @Target("METHOD")
  */
-class Route
+#[\Attribute] class Route
 {
     public array $methods = ['GET'];
 
