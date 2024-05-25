@@ -58,4 +58,15 @@ class EnvironmentService
             $this->get('HTTP_HOST')
         );
     }
+
+    public function getPublicPath(): string
+    {
+        return $this->get('REQUEST_URI');
+    }
+
+    public function getPublicUrl(): string
+    {
+        return $this->getPublicHostname() . $this->getPublicPath();
+    }
+
 }

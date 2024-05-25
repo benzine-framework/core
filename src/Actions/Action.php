@@ -13,17 +13,14 @@ use Slim\Exception\HttpNotFoundException;
 
 abstract class Action
 {
-    protected LoggerInterface $logger;
-
     protected Request $request;
 
     protected Response $response;
 
     protected array $args;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(protected LoggerInterface $logger)
     {
-        $this->logger = $logger;
         $this->response = new \Slim\Psr7\Response();
     }
 
@@ -66,5 +63,12 @@ abstract class Action
         return $this->response
             ->withHeader('Content-Type', 'application/json')
             ->withStatus($payload->getStatusCode());
+    }
+
+    protected function redirect(string $redirectUrl) : Response
+    {
+        return $this->response
+            ->withHeader('Location', $redirectUrl)
+            ->withStatus(302);
     }
 }
