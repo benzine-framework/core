@@ -10,8 +10,6 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Monolog\Logger;
 use Psr\Http\Message\ServerRequestInterface;
-use PushToLive\Kernel;
-use SebastianBergmann\Timer\Timer;
 use Slim\App;
 
 class Router
@@ -53,7 +51,6 @@ class Router
                     'Benzine\\Controllers\\' . $fileClassName,
                 ];
 
-
                 foreach ($expectedClasses as $expectedClass) {
                     if (!class_exists($expectedClass)) {
                         $this->logger->warning('While loading routes from annotations in {file}, expected class {expectedClass} does not exist.', [
@@ -81,15 +78,15 @@ class Router
                         }
 
                         $routeAttibutes = $method->getAttributes(\Benzine\Annotations\Route::class);
-                        foreach($routeAttibutes as $routeAttibute){
-                            foreach($routeAttibute->getArguments()['methods'] as $httpMethod){
+                        foreach ($routeAttibutes as $routeAttibute) {
+                            foreach ($routeAttibute->getArguments()['methods'] as $httpMethod) {
                                 $newRoute = (new Route())
                                     ->setHttpMethod($httpMethod)
                                     ->setRouterPattern('/' . ltrim($routeAttibute->getArguments()['path'], '/'))
                                     ->setCallback($expectedClass . ':' . $method->name)
                                     ->setWeight($routeAttibute->getArguments()['weight'] ?? 100)
                                 ;
-                                if(isset($routeAttibute->getArguments()['domains']) && is_array($routeAttibute->getArguments()['domains'])){
+                                if (isset($routeAttibute->getArguments()['domains']) && is_array($routeAttibute->getArguments()['domains'])) {
                                     foreach ($routeAttibute->getArguments()['domains'] as $domain) {
                                         $newRoute->addValidDomain($domain);
                                     }

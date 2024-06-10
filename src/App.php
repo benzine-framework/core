@@ -74,7 +74,7 @@ class App
     protected bool $isSessionsEnabled              = true;
     protected bool $interrogateControllersComplete = false;
     protected ?CachePoolChain $cachePoolChain      = null;
-    private array $viewPaths                       = [];
+    private array $viewPaths                       = [APP_ROOT . '/views'];
     private string $cachePath                      = APP_ROOT . '/cache';
     private string $logPath                        = APP_ROOT . '/logs';
     private array $supportedLanguages              = ['en_US'];
@@ -378,9 +378,7 @@ class App
             return $monolog;
         });
 
-        $container->set(LoggerInterface::class, function (Logger $logger) {
-            return $logger;
-        });
+        $container->set(LoggerInterface::class, fn (Logger $logger) => $logger);
 
         $container->set(Redis::class, function (ConfigurationService $configurationService, Logger $logger, EnvironmentService $environmentService) {
             return new Redis(
@@ -638,12 +636,14 @@ class App
     }
 
     protected static Timer $timer;
-    static public function Timing(){
+
+    public static function Timing(): void
+    {
         $duration = self::$timer->stop();
-        # Get caller
+        // Get caller
         $caller = debug_backtrace()[0];
-        if($duration->asSeconds() >= 1) {
-            $timingMessage = sprintf("%f seconds: (%s:%d)", $duration->asSeconds(), $caller['file'], $caller['line']);
+        if ($duration->asSeconds() >= 1) {
+            $timingMessage = sprintf('%f seconds: (%s:%d)', $duration->asSeconds(), $caller['file'], $caller['line']);
             \Kint::dump($timingMessage);
         }
 

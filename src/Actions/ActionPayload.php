@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Benzine\Actions;
 
-use JsonSerializable;
-
-class ActionPayload implements JsonSerializable
+class ActionPayload implements \JsonSerializable
 {
     private int $statusCode;
 
     /**
-     * @var array|object|null
+     * @var null|array|object
      */
     private $data;
 
@@ -19,12 +17,12 @@ class ActionPayload implements JsonSerializable
 
     public function __construct(
         int $statusCode = 200,
-            $data = null,
+        $data = null,
         ?ActionError $error = null
     ) {
         $this->statusCode = $statusCode;
-        $this->data = $data;
-        $this->error = $error;
+        $this->data       = $data;
+        $this->error      = $error;
     }
 
     public function getStatusCode(): int
@@ -33,7 +31,7 @@ class ActionPayload implements JsonSerializable
     }
 
     /**
-     * @return array|null|object
+     * @return null|array|object
      */
     public function getData()
     {

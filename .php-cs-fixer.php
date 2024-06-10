@@ -1,4 +1,7 @@
 <?php
+
+use PhpCsFixer\Runner\Parallel\ParallelConfig;
+
 $finder = PhpCsFixer\Finder::create();
 
 if (!defined('__PHPCS_ROOT__')) {

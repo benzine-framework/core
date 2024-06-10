@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Benzine\Actions;
 
-use App\Domain\DomainException\DomainRecordNotFoundException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Log\LoggerInterface;
 use Slim\Exception\HttpBadRequestException;
-use Slim\Exception\HttpNotFoundException;
+use Slim\Views\Twig;
 
 abstract class Action
 {
@@ -19,8 +18,10 @@ abstract class Action
 
     protected array $args;
 
-    public function __construct(protected LoggerInterface $logger)
-    {
+    public function __construct(
+        protected LoggerInterface $logger,
+        protected Twig $twig,
+    ) {
         $this->response = new \Slim\Psr7\Response();
     }
 
@@ -33,7 +34,6 @@ abstract class Action
     }
 
     /**
-     * @return mixed
      * @throws HttpBadRequestException
      */
     protected function resolveArg(string $name)
@@ -46,7 +46,7 @@ abstract class Action
     }
 
     /**
-     * @param array|object|null $data
+     * @param null|array|object $data
      */
     protected function respondWithData($data = null, int $statusCode = 200): Response
     {
@@ -62,13 +62,24 @@ abstract class Action
 
         return $this->response
             ->withHeader('Content-Type', 'application/json')
-            ->withStatus($payload->getStatusCode());
+            ->withStatus($payload->getStatusCode())
+        ;
     }
 
-    protected function redirect(string $redirectUrl) : Response
+    protected function redirect(string $redirectUrl): Response
     {
         return $this->response
             ->withHeader('Location', $redirectUrl)
-            ->withStatus(302);
+            ->withStatus(302)
+        ;
+    }
+
+    protected function render($response, string $template, array $data = []): Response
+    {
+        return $this->twig->render(
+            $response,
+            $template,
+            $data
+        )->withHeader('Content-Type', 'text/html');
     }
 }
