@@ -11,7 +11,21 @@ class EnvironmentService
     public function __construct()
     {
         $this->environmentVariables = array_merge($_SERVER, $_ENV);
+        if(file_exists(APP_ROOT . '/.env')){
+            $env = file_get_contents(APP_ROOT . '/.env');
+            $lines = explode("\n", $env);
+            foreach($lines as $line){
+                $line = trim($line);
+                if($line == ''){
+                    continue;
+                }
+                $parts = explode('=', $line);
+                $this->environmentVariables[$parts[0]] = $parts[1];
+            }
+        }
+
         ksort($this->environmentVariables);
+
     }
 
     public function has(string $key): bool
