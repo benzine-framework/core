@@ -47,7 +47,6 @@ use Monolog\Processor\PsrLogMessageProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
-use PushToLive\Kernel;
 use SebastianBergmann\Timer\Timer;
 use Slim;
 use Slim\Factory\AppFactory;
@@ -506,7 +505,6 @@ class App
     {
         $serverRequestCreator = ServerRequestCreatorFactory::create();
         $request              = $serverRequestCreator->createServerRequestFromGlobals();
-        Kernel::Timing();
         $this->loadAllRoutes($request);
 
         $this->debugBar['time']->startMeasure('runHTTP', 'HTTP runtime');
