@@ -31,6 +31,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          coverage: xdebug
+          extensions: apcu, redis, sockets, zip
       - uses: php-actions/composer@v6
       - uses: php-actions/phpunit@v3
 
@@ -39,6 +43,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          coverage: xdebug
+          extensions: apcu, redis, sockets, zip
       - uses: php-actions/composer@v6
       - uses: php-actions/phpstan@v3
         with:
