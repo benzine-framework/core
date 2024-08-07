@@ -35,7 +35,7 @@ jobs:
         with:
           coverage: xdebug
           extensions: apcu, redis, sockets, zip
-      - uses: php-actions/composer@v6
+      - run: composer install
       - uses: php-actions/phpunit@v3
 
   phpstan:
@@ -47,7 +47,7 @@ jobs:
         with:
           coverage: xdebug
           extensions: apcu, redis, sockets, zip
-      - uses: php-actions/composer@v6
+      - run: composer install
       - uses: php-actions/phpstan@v3
         with:
           path: src/
